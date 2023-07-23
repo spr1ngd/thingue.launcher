@@ -5,3 +5,19 @@
 export function SelectExePath(arg1) {
   return window['go']['main']['App']['SelectExePath'](arg1);
 }
+
+export function ServerShutdown() {
+  return window['go']['main']['App']['ServerShutdown']();
+}
+
+export function ServerStart(arg1, arg2) {
+  return window['go']['main']['App']['ServerStart'](arg1, arg2);
+}
+
+export function UnrealStart(arg1, arg2) {
+  return window['go']['main']['App']['UnrealStart'](arg1, arg2);
+}
+
+export function UnrealStop(arg1) {
+  return window['go']['main']['App']['UnrealStop'](arg1);
+}
