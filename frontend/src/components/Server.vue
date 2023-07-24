@@ -7,15 +7,9 @@ const localServerConfig = reactive({
   basePath: "/"
 })
 
-const data = reactive({
-  path: "D:/Test/ue4-game/game/Binaries/Win64/game.exe",
+const remoteServerConfig = reactive({
+  addr: "127.0.0.1:8888",
 })
-
-function select() {
-  SelectExePath("").then(result => {
-    data.path = result
-  })
-}
 
 function serverStart() {
   ServerStart(localServerConfig.addr, localServerConfig.basePath);
@@ -23,10 +17,6 @@ function serverStart() {
 
 function serverShutdown() {
   ServerShutdown()
-}
-
-function unrealStart() {
-  UnrealStart(data.path,[""])
 }
 </script>
 
@@ -80,31 +70,28 @@ function unrealStart() {
     </q-card>
     <q-card v-if="true">
       <q-card-section>
-        <div class="text-h6">ThingUE</div>
+        <div class="row no-wrap items-center">
+          <div class="text-h6">远程信令服务</div>
+          <q-icon color="green" name="lens" class="q-ma-sm">
+            <q-tooltip>已连接</q-tooltip>
+          </q-icon>
+        </div>
       </q-card-section>
-      <q-separator/>
+      <q-separator />
       <q-card-actions vertical>
         <q-list dense>
           <q-item>
-            <q-item-label>
-              <div class="text-subtitle2"></div>
-            </q-item-label>
             <q-item-section>
-              <q-input dense square outlined v-model="data.path" style="width: 500px">
-                <template v-slot:after>
-                  <q-btn flat round icon="file_open" @click="select"/>
-                </template>
-              </q-input>
+              <div class="text-subtitle1">
+                服务地址：
+              </div>
             </q-item-section>
-          </q-item>
-          <q-item>
             <q-item-section avatar>
-              <q-btn dense label="启动" color="primary" @click="unrealStart"></q-btn>
+              <q-input dense square outlined type="text" style="width: 120px" v-model="remoteServerConfig.addr"/>
             </q-item-section>
           </q-item>
         </q-list>
       </q-card-actions>
-      <q-separator />
     </q-card>
   </div>
 </template>
