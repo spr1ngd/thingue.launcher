@@ -19,7 +19,7 @@ function unrealStart() {
     "-ForceRes",
     "-ResX=1920",
     "-ResX=1080",
-    "-PixelStreamingURL=ws://127.0.0.1:8080/ws",
+    "-PixelStreamingURL=ws://127.0.0.1:8080/ws/streamer/abcd",
   ])
 }
 </script>

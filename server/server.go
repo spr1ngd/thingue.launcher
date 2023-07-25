@@ -36,7 +36,7 @@ func Start(addr string, basePath string) {
 	})
 	group.Static("/static", "./static")
 	group.GET("/ws/streamer/:id", handleStreamerWebSocket)
-	group.GET("/ws/player/:id", handlePlayerWebSocket)
+	group.GET("/ws/player/:streamerId", handlePlayerWebSocket)
 	server = http.Server{
 		Addr:    addr,
 		Handler: router,

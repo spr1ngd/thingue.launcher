@@ -25,6 +25,9 @@ func handleStreamerWebSocket(c *gin.Context) {
 
 	id := c.Param("id")
 	fmt.Printf("端点已连接:%s\n", id)
+	streamer := NewStreamer(id, conn)
+	defer UnmapStreamerId(id)
+	streamer.Init()
 
 	for {
 		// 读取客户端发送的消息
@@ -36,16 +39,12 @@ func handleStreamerWebSocket(c *gin.Context) {
 
 		// 处理接收到的消息
 		fmt.Println(id, "端点收到消息:", string(msg))
+		StreamerMsgHandler(streamer, string(msg))
 
-		// 发送响应消息给客户端
-		err = conn.WriteMessage(websocket.TextMessage, []byte("Server received: "+string(msg)))
-		if err != nil {
-			fmt.Println("WebSocket write error:", err)
-			break
-		}
 	}
 	conn.Close()
 	fmt.Printf("端点已关闭:%s\n", id)
+	OnStreamerDisconnect(streamer)
 }
 
 func handlePlayerWebSocket(c *gin.Context) {
@@ -55,8 +54,12 @@ func handlePlayerWebSocket(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
-	fmt.Printf("端点已连接:%s\n", id)
+	streamerId := c.Param("streamerId")
+	fmt.Printf("player端点已连接:%s\n", streamerId)
+	player := NewPlayer(conn)
+	streamer := GetStreamerById(streamerId)
+	player.SetStreamer(streamer)
+	player.Init()
 
 	for {
 		// 读取客户端发送的消息
@@ -67,15 +70,10 @@ func handlePlayerWebSocket(c *gin.Context) {
 		}
 
 		// 处理接收到的消息
-		fmt.Println(id, "端点收到消息:", string(msg))
-
-		// 发送响应消息给客户端
-		err = conn.WriteMessage(websocket.TextMessage, []byte("Server received: "+string(msg)))
-		if err != nil {
-			fmt.Println("WebSocket write error:", err)
-			break
-		}
+		fmt.Println(streamerId, "端点收到消息:", string(msg))
+		PlayerMsgHandler(player, string(msg))
 	}
 	conn.Close()
-	fmt.Printf("端点已关闭:%s\n", id)
+	fmt.Printf("Player端点已关闭:%s\n", streamerId)
+	OnPlayerDisConnect(player)
 }
