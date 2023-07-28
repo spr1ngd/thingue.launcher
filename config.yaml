@@ -1,0 +1,16 @@
+agent:
+    instances: []
+    remoteservers: []
+    localserver:
+        basepath: /wss
+        bindaddr: 0.0.0.0:8080
+        enable: false
+        autostart: true
+app:
+    instances: []
+    localserver:
+        autostart: false
+        basepath: /api11
+        bindaddr: 127.0.0.1:8080
+        enable: false
+    remoteservers: []

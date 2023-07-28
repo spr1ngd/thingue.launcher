@@ -1,7 +1,9 @@
 <script setup>
 import {ref} from 'vue'
-import Server from './components/Server.vue'
-import Unreal from './components/Unreal.vue'
+import Server from '@/components/Server.vue'
+import Unreal from '@/components/Unreal.vue'
+import Setting from "@/components/Setting.vue";
+
 
 const tab = ref("unreal")
 const splitterModel = ref(10)
@@ -12,7 +14,7 @@ const splitterModel = ref(10)
     <q-splitter v-model="splitterModel" style="height: 100vh;">
       <template v-slot:before>
         <q-tabs v-model="tab" vertical class="text-primary shadow-2">
-          <q-tab name="unreal" icon="svguse:ue-logo-white.svg#icon-2" label="unreal"/>
+          <q-tab name="unreal" icon="svguse:ue-logo-white.svg#icon-1" label="unreal"/>
           <q-tab name="server" icon="cloud" label="服务"/>
           <q-tab name="settings" icon="settings" label="设置"/>
         </q-tabs>
@@ -39,6 +41,7 @@ const splitterModel = ref(10)
 
           <q-tab-panel name="settings">
             <!--            <div class="text-h4 q-mb-md">Movies</div>-->
+            <Setting/>
           </q-tab-panel>
         </q-tab-panels>
       </template>
