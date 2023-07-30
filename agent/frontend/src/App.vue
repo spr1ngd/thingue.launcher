@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue'
 import Server from '@/components/server/Server.vue'
-import Unreal from '@/components/Unreal.vue'
+import Unreal from '@/components/unreal/Unreal.vue'
 import Setting from "@/components/Setting.vue";
 
 
@@ -11,7 +11,7 @@ const splitterModel = ref(10)
 
 <template>
   <div>
-    <q-splitter v-model="splitterModel" style="height: 100vh;">
+    <q-splitter v-model="splitterModel" style="height: 100vh;" :limits="[10,10]">
       <template v-slot:before>
         <q-tabs v-model="tab" vertical class="text-primary shadow-2">
           <q-tab name="unreal" icon="svguse:ue-logo-white.svg#icon-1" label="unreal"/>
