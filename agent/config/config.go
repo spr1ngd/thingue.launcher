@@ -6,6 +6,7 @@ import (
 )
 
 type AppConfig struct {
+	ServerUrl     string
 	Instances     []Instance
 	RemoteServers []RemoteServer
 	LocalServer   LocalServer
