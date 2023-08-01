@@ -14,11 +14,10 @@ func InitGorm() {
 		panic("failed to connect database")
 	}
 	global.APP_DB = db
-	if err = db.AutoMigrate(&model.Server{}); err != nil {
+	if err = db.AutoMigrate(
+		&model.RemoteServer{},
+		&model.UnrealRunner{},
+	); err != nil {
 		fmt.Println(err)
 	}
-	if err := db.AutoMigrate(&model.Instance{}); err != nil {
-		fmt.Println(err)
-	}
-	//db.Create()
 }
