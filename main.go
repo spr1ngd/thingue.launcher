@@ -1,7 +1,17 @@
 package main
 
-import "thingue-launcher/agent"
+import (
+	"os"
+	"thingue-launcher/agent"
+	"thingue-launcher/common/config"
+	"thingue-launcher/server"
+)
 
 func main() {
-	agent.InitApp()
+	config.InitConfig()
+	if len(os.Args) > 1 && os.Args[1] == "server" {
+		server.Start()
+	} else {
+		agent.Startup()
+	}
 }

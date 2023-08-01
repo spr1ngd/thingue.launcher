@@ -31,7 +31,7 @@ func CorsMiddleware() gin.HandlerFunc {
 	}
 }
 
-func Start(addr string, basePath string) {
+func Startup(addr string, basePath string) {
 	router := gin.Default()
 	router.Use(CorsMiddleware())
 	group := router.Group(basePath)
@@ -58,6 +58,10 @@ func Start(addr string, basePath string) {
 	}
 }
 
+func Start() {
+
+}
+
 func Shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -69,6 +73,7 @@ func Shutdown() {
 		serverIsBoot = false
 	}
 }
+
 func GetServerStatus() bool {
 	return serverIsBoot
 }

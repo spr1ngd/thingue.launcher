@@ -2,3 +2,4 @@ build/bin
 node_modules
 agent/frontend/dist
 server/frontend/dist
+/agent/frontend/wailsjs/go/

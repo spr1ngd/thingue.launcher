@@ -1,12 +1,11 @@
 <script setup>
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import {
-  GetAppConfig,
   GetServerStatus,
   ServerShutdown,
   ServerStart,
   UpdateLocalServerConfig
-} from "@wails/go/agent/App.js";
+} from "@wails/go/server/Server.js";
 
 const tab = ref("local")
 

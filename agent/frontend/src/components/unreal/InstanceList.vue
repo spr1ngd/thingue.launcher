@@ -1,6 +1,7 @@
 <script setup>
-import {reactive, ref, computed} from "vue";
-import {SelectExePath, UnrealStart} from "@wails/go/agent/App.js";
+import {computed, onMounted, reactive, ref} from "vue";
+import {SelectExePath} from "@wails/go/app/App.js";
+import {ListInstance} from "@wails/go/unreal/Unreal.js";
 
 const data = reactive({
   name: "test11",
@@ -14,51 +15,17 @@ function select() {
 }
 
 function unrealStart() {
-  UnrealStart(data.path, [
-    "-AudioMixer",
-    "-RenderOffScreen",
-    "-ForceRes",
-    "-ResX=1920",
-    "-ResX=1080",
-    "-PixelStreamingURL=ws://127.0.0.1:8080/ws/streamer/abcd",
-  ])
+  // UnrealStart(data.path, [
+  //   "-AudioMixer",
+  //   "-RenderOffScreen",
+  //   "-ForceRes",
+  //   "-ResX=1920",
+  //   "-ResX=1080",
+  //   "-PixelStreamingURL=ws://127.0.0.1:8080/ws/streamer/abcd",
+  // ])
 }
 
-const rows = reactive([
-  {
-    name: "test1",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test2",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test3",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test4",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test5",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test6",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test7",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test8",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test9",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test10",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }, {
-    name: "test11",
-    path: "D:/Test/ue4-game/game/Binaries/Win64/127.0.0.1:8080/ws/streamer/abcd/game.exe",
-  }])
+const rows = ref([])
 
 const settingsDialog = ref(false)
 
@@ -73,16 +40,10 @@ const options = [
 
 const selected = ref("")
 
-const pagination = ref({
-  sortBy: 'desc',
-  descending: false,
-  page: 2,
-  rowsPerPage: 4
-  // rowsNumber: xx if getting data from a server
+onMounted(async () => {
+  let instances = await ListInstance();
+  rows.value = instances
 })
-
-const pagesNumber = computed(() => Math.ceil(rows.length / pagination.value.rowsPerPage))
-
 
 </script>
 
@@ -139,7 +100,7 @@ const pagesNumber = computed(() => Math.ceil(rows.length / pagination.value.rows
           <q-btn flat>关闭</q-btn>
         </div>
       </q-card-section>
-<!--      <q-separator/>-->
+      <!--      <q-separator/>-->
       <q-card-section class="q-pa-none q-pt-sm">
         <q-list dense>
           <q-item>
