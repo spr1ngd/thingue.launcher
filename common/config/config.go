@@ -36,3 +36,11 @@ func InitConfig() {
 func GetAppConfig() *AppConfig {
 	return &appConfig
 }
+
+func WriteConfig() {
+	viper.Set("agent", &appConfig)
+	err := viper.WriteConfig()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+}

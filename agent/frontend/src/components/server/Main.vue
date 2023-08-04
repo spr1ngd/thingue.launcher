@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue'
-import LocalServer from "@/components/server/LocalServer.vue";
-import RemoteServer from "@/components/server/RemoteServer.vue";
+import LocalServer from "@/components/server/LocalServerPanel.vue";
+import RemoteServer from "@/components/server/RemoteServerPanel.vue";
 
 const tab = ref("local")
 

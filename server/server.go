@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"thingue-launcher/common/config"
 	"time"
 )
 
@@ -31,23 +32,32 @@ func CorsMiddleware() gin.HandlerFunc {
 	}
 }
 
-func Startup(addr string, basePath string) {
+func Startup() {
+	appConfig := config.GetAppConfig()
+	fileInfos, _ := staticFiles.ReadDir(".")
+	fmt.Println("Embedded files:")
+	for _, fileInfo := range fileInfos {
+		fmt.Println(fileInfo.Name())
+	}
 	router := gin.Default()
 	router.Use(CorsMiddleware())
-	group := router.Group(basePath)
+	group := router.Group(appConfig.LocalServer.BasePath)
 	group.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
-	group.Any("/static/*filepath", func(c *gin.Context) {
-		staticServer := http.FileServer(http.FS(staticFiles))
-		staticServer.ServeHTTP(c.Writer, c.Request)
+	group.GET("/static/*filepath", func(c *gin.Context) {
+		fmt.Println(c.Request.URL.Path)
+		fmt.Println(c.Param("filepath"))
+
+		c.Request.URL.Path = "/frontend/dist" + c.Param("filepath")
+		http.FileServer(http.FS(staticFiles)).ServeHTTP(c.Writer, c.Request)
 	})
 	group.GET("/ws/streamer/:id", handleStreamerWebSocket)
 	group.GET("/ws/player/:streamerId", handlePlayerWebSocket)
 	server = http.Server{
-		Addr:    addr,
+		Addr:    appConfig.LocalServer.BindAddr,
 		Handler: router,
 	}
 	serverIsBoot = true
@@ -56,10 +66,6 @@ func Startup(addr string, basePath string) {
 	if err != nil {
 		fmt.Printf("Server start failed: %v\n", err)
 	}
-}
-
-func Start() {
-
 }
 
 func Shutdown() {
@@ -74,6 +80,6 @@ func Shutdown() {
 	}
 }
 
-func GetServerStatus() bool {
+func GetLocalServerStatus() bool {
 	return serverIsBoot
 }

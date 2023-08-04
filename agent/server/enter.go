@@ -20,9 +20,8 @@ func (s *Server) SetContext(ctx context.Context) {
 }
 
 func (s *Server) ServerStart() {
-	appConfig := config.GetAppConfig()
 	runtime.EventsEmit(s.ctx, "local_server_status_update", true)
-	server.Startup(appConfig.LocalServer.BindAddr, appConfig.LocalServer.BasePath)
+	server.Startup()
 	runtime.EventsEmit(s.ctx, "local_server_status_update", false)
 }
 
@@ -31,12 +30,11 @@ func (s *Server) ServerShutdown() {
 }
 
 func (s *Server) GetServerStatus() bool {
-	return server.GetServerStatus()
+	return server.GetLocalServerStatus()
 }
 
 func (s *Server) UpdateLocalServerConfig(localServerConfig config.LocalServer) {
 	appConfig := config.GetAppConfig()
 	appConfig.LocalServer = localServerConfig
-	//config.WriteConfig()
-	// todo
+	config.WriteConfig()
 }

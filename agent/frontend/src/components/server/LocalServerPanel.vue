@@ -1,11 +1,8 @@
 <script setup>
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
-import {
-  GetServerStatus,
-  ServerShutdown,
-  ServerStart,
-  UpdateLocalServerConfig
-} from "@wails/go/server/Server.js";
+import {GetServerStatus, ServerShutdown, ServerStart, UpdateLocalServerConfig} from "@wails/go/server/Server.js";
+import {GetAppConfig} from "@wails/go/app/App.js";
+
 
 const tab = ref("local")
 
@@ -59,38 +56,29 @@ onUnmounted(async () => {
 
 <template>
   <q-card style="width: 300px">
-    <q-card-section class="q-pa-sm q-pl-md">
+    <q-card-section class="q-pa-md q-pb-none">
       <div class="text-h6">本地信令服务配置</div>
     </q-card-section>
-    <q-separator/>
     <q-card-actions vertical class="q-pa-sm">
       <q-list dense>
         <q-item>
-          <q-item-section>
-            <div class="text-subtitle1">
-              绑定地址：
-            </div>
-          </q-item-section>
           <q-item-section avatar>
-            <q-input :readonly="localServerStatus" dense outlined type="text" style="width: 155px"
+            <q-item-label>绑定地址</q-item-label>
+            <q-input :readonly="localServerStatus" dense outlined square type="text"
                      v-model="localServerConfig.bindAddr"/>
           </q-item-section>
         </q-item>
         <q-item>
           <q-item-section>
-            <div class="text-subtitle1">
-              服务路径：
-            </div>
-          </q-item-section>
-          <q-item-section avatar>
-            <q-input :readonly="localServerStatus" dense outlined type="text" style="width: 155px"
+            <q-item-label>服务路径</q-item-label>
+            <q-input :readonly="localServerStatus" dense outlined square type="text"
                      v-model="localServerConfig.basePath"/>
           </q-item-section>
         </q-item>
         <q-item>
-<!--          <q-item-section avatar>-->
-<!--            <q-toggle left-label v-model="localServerConfig.enable" label="启用" :disable="localServerStatus"/>-->
-<!--          </q-item-section>-->
+          <!--          <q-item-section avatar>-->
+          <!--            <q-toggle left-label v-model="localServerConfig.enable" label="启用" :disable="localServerStatus"/>-->
+          <!--          </q-item-section>-->
           <q-item-section avatar>
             <q-checkbox left-label v-model="localServerConfig.autoStart" label="随应用启动"
                         :disable="localServerStatus"/>

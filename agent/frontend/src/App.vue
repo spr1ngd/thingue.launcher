@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue'
-import Server from '@/components/server/Server.vue'
-import Unreal from '@/components/unreal/InstanceList.vue'
+import Server from '@/components/server/Main.vue'
+import Unreal from '@/components/unreal/Main.vue'
 import Setting from "@/components/Setting.vue";
 
 

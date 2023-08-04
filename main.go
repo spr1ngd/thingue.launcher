@@ -10,7 +10,7 @@ import (
 func main() {
 	config.InitConfig()
 	if len(os.Args) > 1 && os.Args[1] == "server" {
-		server.Start()
+		server.Startup()
 	} else {
 		agent.Startup()
 	}

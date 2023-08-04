@@ -19,20 +19,16 @@ func (a *App) SetContext(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) SelectExePath(name string) string {
-	selection, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
-		Title: "选择文件",
+func (a *App) OpenFileDialog(title string, displayName string, pattern string) (string, error) {
+	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: title,
 		Filters: []runtime.FileFilter{
 			{
-				DisplayName: "ThingUE (*.exe)",
-				Pattern:     "*.exe",
+				DisplayName: displayName,
+				Pattern:     pattern,
 			},
 		},
 	})
-	if err != nil {
-		return ""
-	}
-	return selection
 }
 
 func (a *App) GetAppConfig() config.AppConfig {
