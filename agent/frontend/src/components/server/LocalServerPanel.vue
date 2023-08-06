@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
-import {GetServerStatus, ServerShutdown, ServerStart, UpdateLocalServerConfig} from "@wails/go/server/Server.js";
+import {GetLocalServerStatus, LocalServerShutdown, LocalServerStart, UpdateLocalServerConfig} from "@wails/go/server/Server.js";
 import {GetAppConfig} from "@wails/go/app/App.js";
 
 
@@ -16,11 +16,11 @@ const localServerConfig = reactive({
 let localServerStatus = ref(false)
 
 function serverStart() {
-  ServerStart();
+  LocalServerStart();
 }
 
 function serverShutdown() {
-  ServerShutdown()
+  LocalServerShutdown()
 }
 
 onMounted(async () => {
@@ -31,7 +31,7 @@ onMounted(async () => {
   localServerConfig.autoStart = appConfig.LocalServer.AutoStart
   localServerConfig.enable = appConfig.LocalServer.Enable
   // 获取本地server状态
-  let newVar = await GetServerStatus();
+  let newVar = await GetLocalServerStatus();
   console.log(newVar)
   localServerStatus.value = newVar
   //注册事件监听
@@ -39,7 +39,6 @@ onMounted(async () => {
     localServerStatus.value = status
   })
   watch(localServerConfig, async (value, oldValue, onCleanup) => {
-    console.log(oldValue)
     UpdateLocalServerConfig({
       BasePath: localServerConfig.basePath,
       BindAddr: localServerConfig.bindAddr,
@@ -56,13 +55,15 @@ onUnmounted(async () => {
 
 <template>
   <q-card style="width: 300px">
-    <q-card-section class="q-pa-md q-pb-none">
-      <div class="text-h6">本地信令服务配置</div>
+    <q-card-section class="q-pa-sm">
+      <div class="row no-wrap items-center q-pa-sm">
+        <div class="text-h6">本地信令服务配置</div>
+      </div>
     </q-card-section>
-    <q-card-actions vertical class="q-pa-sm">
+    <q-card-section class="q-pa-none q-pt-sm">
       <q-list dense>
         <q-item>
-          <q-item-section avatar>
+          <q-item-section>
             <q-item-label>绑定地址</q-item-label>
             <q-input :readonly="localServerStatus" dense outlined square type="text"
                      v-model="localServerConfig.bindAddr"/>
@@ -76,9 +77,6 @@ onUnmounted(async () => {
           </q-item-section>
         </q-item>
         <q-item>
-          <!--          <q-item-section avatar>-->
-          <!--            <q-toggle left-label v-model="localServerConfig.enable" label="启用" :disable="localServerStatus"/>-->
-          <!--          </q-item-section>-->
           <q-item-section avatar>
             <q-checkbox left-label v-model="localServerConfig.autoStart" label="随应用启动"
                         :disable="localServerStatus"/>
@@ -96,7 +94,7 @@ onUnmounted(async () => {
           </q-item-section>
         </q-item>
       </q-list>
-    </q-card-actions>
+    </q-card-section>
   </q-card>
 </template>
 

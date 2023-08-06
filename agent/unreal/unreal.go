@@ -3,6 +3,7 @@ package unreal
 import (
 	"context"
 	"thingue-launcher/agent/global"
+	"thingue-launcher/agent/model"
 )
 
 type Unreal struct {
@@ -17,14 +18,19 @@ func (u *Unreal) SetContext(ctx context.Context) {
 	u.ctx = ctx
 }
 
-func (u *Unreal) ListInstance() []Instance {
-	var instances []Instance
-	//global.APP_DB.Find(&instances)
+func (u *Unreal) ListInstance() []model.Instance {
+	var instances []model.Instance
+	global.APP_DB.Find(&instances)
 	return instances
 }
 
-func (u *Unreal) AddInstance(instance Instance) uint {
+func (u *Unreal) CreateInstance(instance model.Instance) uint {
 	global.APP_DB.Create(&instance)
+	return instance.ID
+}
+
+func (u *Unreal) SaveInstance(instance model.Instance) uint {
+	global.APP_DB.Save(&instance)
 	return instance.ID
 }
 
@@ -36,19 +42,15 @@ func (u *Unreal) DeleteInstance(id uint) error {
 			return err
 		}
 	} else {
-		global.APP_DB.Delete(&Instance{}, id)
+		global.APP_DB.Delete(&model.Instance{}, id)
 	}
 	return nil
 }
 
-func (u *Unreal) GetInstanceById(id uint) *Instance {
-	instance := Instance{}
+func (u *Unreal) GetInstanceById(id uint) *model.Instance {
+	instance := model.Instance{}
 	global.APP_DB.First(&instance, id)
 	return &instance
-}
-
-func (u *Unreal) UpdateInstance(instance Instance) {
-	global.APP_DB.Save(instance)
 }
 
 func (u *Unreal) StartInstance(id uint) error {

@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"os/exec"
+	"path/filepath"
 	"thingue-launcher/common/config"
 )
 
@@ -29,6 +31,12 @@ func (a *App) OpenFileDialog(title string, displayName string, pattern string) (
 			},
 		},
 	})
+}
+
+func (a *App) OpenExplorer(path string) error {
+	cmd := exec.Command("explorer", filepath.Dir(path))
+	err := cmd.Run()
+	return err
 }
 
 func (a *App) GetAppConfig() config.AppConfig {

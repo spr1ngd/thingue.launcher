@@ -1,12 +1,31 @@
 <script setup>
-import {reactive} from "vue";
+import {onMounted, ref} from "vue";
+import {CreateRemoteServer, DeleteRemoteServer, ListRemoteServer, SaveRemoteServer} from "@wails/go/server/Server.js";
 
-const remoteServerConfig = reactive({
-  addr: "127.0.0.1:8888",
-  enable: false
+const data = ref([])
+
+onMounted(async () => {
+  await list()
 })
 
-const a = [1, 2, 3, 4, 5]
+async function list() {
+  data.value = await ListRemoteServer()
+}
+
+async function save(obj) {
+  await SaveRemoteServer(obj)
+  await list()
+}
+
+async function create() {
+  await CreateRemoteServer({})
+  await list()
+}
+
+async function del(id) {
+  await DeleteRemoteServer(id)
+  await list()
+}
 
 </script>
 
@@ -14,16 +33,16 @@ const a = [1, 2, 3, 4, 5]
   <div class="row no-wrap items-center q-pa-sm">
     <div class="text-subtitle1 q-ml-sm">服务地址列表</div>
     <q-space/>
-    <q-btn dense size="sm" color="primary" round icon="add"/>
+    <q-btn dense size="sm" color="primary" round icon="add" @click="create()"/>
   </div>
   <q-separator/>
   <q-list separator>
-    <q-item v-for="ai in a">
+    <q-item v-for="row in data">
       <q-item-section>
         <q-input dense standout="bg-grey" type="text"
-                 v-model="remoteServerConfig.addr">
+                 v-model="row.Url" @change="save(row)">
           <template v-slot:after>
-            <q-btn class="gt-xs" size="12px" flat dense round icon="sym_o_delete"/>
+            <q-btn class="gt-xs" size="12px" flat dense round icon="sym_o_delete" @click="del(row.ID)"/>
           </template>
         </q-input>
       </q-item-section>

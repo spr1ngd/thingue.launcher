@@ -1,32 +1,41 @@
 <script setup>
-import {defineEmits, onMounted, reactive, ref} from "vue";
-import {ListInstance} from "@wails/go/unreal/Unreal.js";
+import {defineEmits, onMounted, ref} from "vue";
+import {DeleteInstance, ListInstance} from "@wails/go/unreal/Unreal.js";
+import {OpenExplorer} from "@wails/go/app/App.js";
 
 const emit = defineEmits(["openSettingsPanel"])
 
 const rows = ref([])
 
 const columns = [
-  {name: 'name', field: 'name', label: '实例ID:'},
-  {name: 'path', field: 'path', label: '路径:'},
+  {name: 'Name', field: 'Name', label: '实例标识'},
+  {name: 'ExecPath', field: 'ExecPath', label: '启动位置'},
 ]
 
 const options = [
   '本地1', '127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082', '127.0.0.1:8083'
 ]
 
-const selected = ref("")
+const stations = [
+  '宜宾换流站', '延庆换流站', '中都换流站'
+]
+
+const selected = ref(null)
 
 onMounted(async () => {
-  let instances = await ListInstance();
-  // rows.value = instances
+  await list()
 })
+
+async function list() {
+  let instances = await ListInstance();
+  rows.value = instances
+}
 
 function handleNewSettings() {
   emit("openSettingsPanel", {
     type: 'new',
     settings: {
-      params: [
+      LaunchArguments: [
         "-AudioMixer",
         "-RenderOffScreen",
         "-ForceRes",
@@ -45,13 +54,22 @@ function handleEditSettings(row) {
   })
 }
 
+async function handleDelete(id) {
+  await DeleteInstance(id)
+  await list()
+}
+
+async function handleOpenDir(path) {
+  await OpenExplorer(path)
+}
+
 
 </script>
 
 <template>
   <div class="q-pa-sm">
-    <q-table grid title="ThingUE列表" :rows="rows" :columns="columns" v-model="selected"
-             selection="multiple" hide-pagination :pagination="{rowsPerPage:0}">
+    <q-table grid title="实例列表" :rows="rows" :columns="columns" v-model="selected"
+             selection="multiple" hide-pagination :pagination="{rowsPerPage:0}" hide-no-data>
       <template v-slot:top-right>
         <q-select size="sm" dense :options="options" options-dense v-model="selected"/>
         <q-space/>
@@ -62,26 +80,40 @@ function handleEditSettings(row) {
             class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition"
             :style="props.selected ? 'transform: scale(0.95);' : ''"
         >
-          <q-card class="q-pt-md q-pb-sm">
-            <q-list dense>
-              <q-item v-for="col in props.cols" :key="col.name">
-                <q-item-section>
-                  <q-item-label class="ellipsis">{{ col.label }}</q-item-label>
-                  <!--                  <q-item-label caption class="text-no-wrap overflow-auto hide-scrollbar">{{ col.value }}</q-item-label>-->
-                  <q-item-label caption class="ellipsis">{{ col.value }}</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item>
-                <q-item-section>
-                  <div>
-                    <q-btn color="green" flat dense icon="sym_o_play_circle"/>
-                    <q-btn color="red" flat dense icon="sym_o_stop_circle"/>
-                    <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
-                    <q-btn color="grey" flat dense icon="sym_o_delete"/>
-                  </div>
-                </q-item-section>
-              </q-item>
-            </q-list>
+          <q-card>
+            <q-card-section class="q-pt-md q-pa-none">
+              <q-list dense>
+                <q-item>
+                  <q-item-section avatar style="width: 100px">
+                    <q-item-label caption class="ellipsis">标识</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.Name }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section avatar style="width: 70px">
+                    <q-item-label caption class="ellipsis">状态</q-item-label>
+                    <q-item-label class="ellipsis">已启动</q-item-label>
+                  </q-item-section>
+                  <q-item-section>
+<!--                    <q-item-label caption class="ellipsis">Pak资源加载</q-item-label>-->
+<!--                    <q-select v-model="selected" :options="stations" label="Standard" />-->
+                    <q-select dense :options="stations" options-dense clearable label="资源加载" v-model="selected"/>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">启动位置</q-item-label>
+                    <q-item-label class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">{{ props.row.ExecPath }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-card-section>
+            <q-card-actions class="q-pt-none">
+              <div class="q-gutter-md">
+                <q-btn color="green" flat dense icon="sym_o_play_circle"/>
+                <q-btn color="red" flat dense icon="sym_o_stop_circle"/>
+                <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
+                <q-btn color="grey" flat dense icon="sym_o_delete" @click="handleDelete(props.row.ID)"/>
+              </div>
+            </q-card-actions>
           </q-card>
         </div>
       </template>

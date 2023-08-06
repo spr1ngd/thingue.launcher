@@ -4,16 +4,17 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
+	"thingue-launcher/agent/model"
 )
 
 var idMap = map[uint]*Process{}
 
 type Process struct {
-	*Instance
+	*model.Instance
 	process *os.Process
 }
 
-func NewProcess(instance *Instance) *Process {
+func NewProcess(instance *model.Instance) *Process {
 	p := &Process{
 		Instance: instance,
 	}
@@ -26,7 +27,7 @@ func GetProcessById(id uint) *Process {
 }
 
 func (p *Process) start() error {
-	command := exec.Command(p.ExecPath, p.Params...)
+	command := exec.Command(p.ExecPath, p.LaunchArguments...)
 	err := command.Start()
 	p.Pid = command.Process.Pid
 	p.process = command.Process

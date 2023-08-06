@@ -1,9 +1,13 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+)
 
 type RemoteServer struct {
-	gorm.Model
-	Url    string
-	Enable bool
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Url       string
+	Enable    bool
 }

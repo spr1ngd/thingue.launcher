@@ -16,7 +16,7 @@ func InitGorm() {
 	global.APP_DB = db
 	if err = db.AutoMigrate(
 		&model.RemoteServer{},
-		&model.UnrealRunner{},
+		&model.Instance{},
 	); err != nil {
 		fmt.Println(err)
 	}
