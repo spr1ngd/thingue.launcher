@@ -1,7 +1,7 @@
 agent:
-    serverurl: ""
+    serverurl: ws://127.0.0.1:8081
     localserver:
-        basepath: /api
-        bindaddr: 0.0.0.0:8080
+        basepath: /
+        bindaddr: 0.0.0.0:8081
         enable: false
         autostart: true

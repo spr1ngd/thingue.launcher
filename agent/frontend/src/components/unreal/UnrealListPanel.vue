@@ -1,7 +1,8 @@
 <script setup>
 import {defineEmits, onMounted, ref} from "vue";
-import {DeleteInstance, ListInstance} from "@wails/go/unreal/Unreal.js";
-import {OpenExplorer} from "@wails/go/app/App.js";
+import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/unreal/Unreal.js";
+import {GetAppConfig, OpenExplorer} from "@wails/go/app/App.js";
+import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/server/Server";
 
 const emit = defineEmits(["openSettingsPanel"])
 
@@ -12,18 +13,24 @@ const columns = [
   {name: 'ExecPath', field: 'ExecPath', label: '启动位置'},
 ]
 
-const options = [
-  '本地1', '127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082', '127.0.0.1:8083'
-]
+const options = ref([])
 
 const stations = [
   '宜宾换流站', '延庆换流站', '中都换流站'
 ]
 
-const selected = ref(null)
+const currentServer = ref(null)
 
 onMounted(async () => {
   await list()
+  options.value = await GetConnectServerOptions()
+
+  //注册事件监听
+  window.runtime.EventsOn("ServerConnectionClose", () => {
+    currentServer.value = null
+  })
+  let appConfig = await GetAppConfig();
+  currentServer.value = appConfig.ServerUrl;
 })
 
 async function list() {
@@ -63,6 +70,12 @@ async function handleOpenDir(path) {
   await OpenExplorer(path)
 }
 
+async function handleSelectChange() {
+  if (currentServer.value) {
+    await ConnectServer(currentServer.value);
+  }
+}
+
 
 </script>
 
@@ -71,7 +84,8 @@ async function handleOpenDir(path) {
     <q-table grid title="实例列表" :rows="rows" :columns="columns" v-model="selected"
              selection="multiple" hide-pagination :pagination="{rowsPerPage:0}" hide-no-data>
       <template v-slot:top-right>
-        <q-select size="sm" dense :options="options" options-dense v-model="selected"/>
+        <q-select size="sm" dense clearable :options="options" options-dense v-model="currentServer"
+                  @clear="DisconnectServer" @update:model-value="handleSelectChange"/>
         <q-space/>
         <q-btn dense size="sm" color="primary" round icon="add" @click="handleNewSettings"/>
       </template>
@@ -92,24 +106,28 @@ async function handleOpenDir(path) {
                     <q-item-label caption class="ellipsis">状态</q-item-label>
                     <q-item-label class="ellipsis">已启动</q-item-label>
                   </q-item-section>
-                  <q-item-section>
-<!--                    <q-item-label caption class="ellipsis">Pak资源加载</q-item-label>-->
-<!--                    <q-select v-model="selected" :options="stations" label="Standard" />-->
-                    <q-select dense :options="stations" options-dense clearable label="资源加载" v-model="selected"/>
-                  </q-item-section>
+                  <!--                  <q-item-section>-->
+                  <!--                    <q-item-label caption class="ellipsis">Pak资源加载</q-item-label>-->
+                  <!--                    <q-select v-model="selected" :options="stations" label="Standard" />-->
+                  <!--                    <q-select dense :options="stations" options-dense clearable label="资源加载" v-model="selected"/>-->
+                  <!--                  </q-item-section>-->
                 </q-item>
                 <q-item>
                   <q-item-section>
-                    <q-item-label caption class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">启动位置</q-item-label>
-                    <q-item-label class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">{{ props.row.ExecPath }}</q-item-label>
+                    <q-item-label caption class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">
+                      启动位置
+                    </q-item-label>
+                    <q-item-label class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">
+                      {{ props.row.ExecPath }}
+                    </q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>
             </q-card-section>
             <q-card-actions class="q-pt-none">
               <div class="q-gutter-md">
-                <q-btn color="green" flat dense icon="sym_o_play_circle"/>
-                <q-btn color="red" flat dense icon="sym_o_stop_circle"/>
+                <q-btn color="green" flat dense icon="sym_o_play_circle" @click="StartInstance(props.row.ID)"/>
+                <q-btn color="red" flat dense icon="sym_o_stop_circle" @click="StopInstance(props.row.ID)"/>
                 <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
                 <q-btn color="grey" flat dense icon="sym_o_delete" @click="handleDelete(props.row.ID)"/>
               </div>

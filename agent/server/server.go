@@ -2,7 +2,11 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"golang.org/x/net/websocket"
+	"log"
+	"strings"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/model"
 	"thingue-launcher/common/config"
@@ -19,6 +23,17 @@ func NewServer() *Server {
 
 func (s *Server) SetContext(ctx context.Context) {
 	s.ctx = ctx
+	appConfig := config.GetAppConfig()
+	if appConfig.LocalServer.AutoStart {
+		s.LocalServerStart()
+	}
+	if appConfig.ServerUrl != "" {
+		fmt.Println("ServerUrl不是空")
+		s.ConnectServer(appConfig.ServerUrl)
+	} else {
+		fmt.Println("ServerUrl是空")
+	}
+
 }
 
 func (s *Server) LocalServerStart() {
@@ -59,4 +74,54 @@ func (s *Server) SaveRemoteServer(remoteServer model.RemoteServer) uint {
 
 func (s *Server) DeleteRemoteServer(id uint) {
 	global.APP_DB.Delete(&model.RemoteServer{}, id)
+}
+
+func (s *Server) GetConnectServerOptions() []string {
+	var options []string
+	if s.GetLocalServerStatus() {
+		split := strings.Split(config.GetAppConfig().LocalServer.BindAddr, ":")
+		options = append(options, "ws://127.0.0.1:"+split[1])
+	}
+	for _, remoteServer := range s.ListRemoteServer() {
+		options = append(options, remoteServer.Url)
+	}
+	return options
+}
+
+func (s *Server) ConnectServer(url string) {
+	fmt.Printf("正在连接%s\n", url)
+	appConfig := config.GetAppConfig()
+	ws, err := websocket.Dial(url, "", "http://localhost/")
+	if err != nil {
+		fmt.Printf("连接失败：%s\n", err)
+		runtime.EventsEmit(s.ctx, "ServerConnectionClose")
+		global.WS = nil
+		appConfig.ServerUrl = ""
+		config.WriteConfig()
+		return
+	}
+	fmt.Printf("连接成功：%s\n", url)
+	global.WS = ws
+	appConfig.ServerUrl = url
+	config.WriteConfig()
+	for {
+		response := make([]byte, 512)
+		n, err := ws.Read(response)
+		if err != nil {
+			log.Println("接收响应失败：", err)
+			break
+		}
+		fmt.Printf("收到响应：%s\n", response[:n])
+	}
+	global.WS = nil
+	appConfig.ServerUrl = ""
+	config.WriteConfig()
+	ws.Close()
+	runtime.EventsEmit(s.ctx, "ServerConnectionClose")
+}
+
+func (s *Server) DisconnectServer() {
+	if global.WS != nil {
+		global.WS.Close()
+	}
 }

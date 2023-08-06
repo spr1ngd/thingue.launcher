@@ -1,6 +1,7 @@
 package unreal
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
@@ -27,6 +28,7 @@ func GetProcessById(id uint) *Process {
 }
 
 func (p *Process) start() error {
+	fmt.Println(p.LaunchArguments)
 	command := exec.Command(p.ExecPath, p.LaunchArguments...)
 	err := command.Start()
 	p.Pid = command.Process.Pid

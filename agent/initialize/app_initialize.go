@@ -17,7 +17,7 @@ func InitApp(assets embed.FS) {
 	newServer := server.NewServer()
 	newUnreal := unreal.NewUnreal()
 	err := wails.Run(&options.App{
-		Title:  "ThingUE Launcher",
+		Title:  "ThingUE启动器",
 		Width:  800,
 		Height: 480,
 		AssetServer: &assetserver.Options{

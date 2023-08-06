@@ -56,6 +56,7 @@ func Startup() {
 	})
 	group.GET("/ws/streamer/:id", handleStreamerWebSocket)
 	group.GET("/ws/player/:streamerId", handlePlayerWebSocket)
+	group.GET("/", handleWebSocket)
 	server = http.Server{
 		Addr:    appConfig.LocalServer.BindAddr,
 		Handler: router,

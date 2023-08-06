@@ -16,6 +16,27 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func handleWebSocket(c *gin.Context) {
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		fmt.Println("WebSocket upgrade error:", err)
+		return
+	}
+
+	for {
+		// 读取客户端发送的消息
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			fmt.Println("WebSocket read error:", err)
+			break
+		}
+
+		// 处理接收到的消息
+		fmt.Println(string(msg))
+	}
+	conn.Close()
+}
+
 func handleStreamerWebSocket(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {

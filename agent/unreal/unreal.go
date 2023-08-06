@@ -4,6 +4,7 @@ import (
 	"context"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/model"
+	"thingue-launcher/common/config"
 )
 
 type Unreal struct {
@@ -56,6 +57,10 @@ func (u *Unreal) GetInstanceById(id uint) *model.Instance {
 func (u *Unreal) StartInstance(id uint) error {
 	instance := u.GetInstanceById(id)
 	process := NewProcess(instance)
+	appConfig := config.GetAppConfig()
+	if appConfig.ServerUrl != "" {
+		process.LaunchArguments = append(process.LaunchArguments, "-PixelStreamingURL="+appConfig.ServerUrl+"/ws/streamer/"+instance.Name)
+	}
 	err := process.start()
 	if err != nil {
 		instance.Status = 1
