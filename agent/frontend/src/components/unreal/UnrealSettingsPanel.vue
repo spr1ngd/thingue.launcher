@@ -28,7 +28,7 @@ onMounted(async () => {
     scrollBeyondLastLine: false,
   });
   editor.metadataEditor = monaco.editor.create(metadataEditorRef.value, {
-    value: props.data.settings.metadata,
+    value: props.data.settings.Metadata,
     language: 'yaml',
     lineNumbers: 'off',
     theme: 'vs-dark',
@@ -39,7 +39,7 @@ onMounted(async () => {
     scrollBeyondLastLine: false
   });
   editor.paksConfigEditor = monaco.editor.create(paksConfigEditorRef.value, {
-    value: props.data.settings.paksConfigConfig,
+    value: props.data.settings.PaksConfig,
     language: 'yaml',
     lineNumbers: 'off',
     theme: 'vs-dark',
@@ -57,7 +57,7 @@ onMounted(async () => {
     props.data.settings.Metadata = editor.metadataEditor.getValue()
   })
   editor.paksConfigEditor.onDidChangeModelContent((event) => {
-    props.data.settings.PaksConfigConfig = editor.paksConfigEditor.getValue()
+    props.data.settings.PaksConfig = editor.paksConfigEditor.getValue()
   })
 })
 
