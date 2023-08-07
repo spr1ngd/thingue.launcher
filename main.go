@@ -13,5 +13,6 @@ func main() {
 		server.Startup()
 	} else {
 		agent.Startup()
+		agent.Shutdown()
 	}
 }

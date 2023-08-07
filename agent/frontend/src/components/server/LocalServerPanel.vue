@@ -31,9 +31,7 @@ onMounted(async () => {
   localServerConfig.autoStart = appConfig.LocalServer.AutoStart
   localServerConfig.enable = appConfig.LocalServer.Enable
   // 获取本地server状态
-  let newVar = await GetLocalServerStatus();
-  console.log(newVar)
-  localServerStatus.value = newVar
+  localServerStatus.value = await GetLocalServerStatus()
   //注册事件监听
   window.runtime.EventsOn("local_server_status_update", (status) => {
     localServerStatus.value = status

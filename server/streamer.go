@@ -18,6 +18,7 @@ func NewStreamer(id string, conn *websocket.Conn) *Streamer {
 	s := &Streamer{
 		StreamerID: id,
 		conn:       conn,
+		Players:    make([]*Player, 0),
 	}
 	idStreamerMap[id] = s
 	return s

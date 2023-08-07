@@ -2,9 +2,9 @@ package unreal
 
 import (
 	"context"
+	"errors"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/model"
-	"thingue-launcher/common/config"
 )
 
 type Unreal struct {
@@ -25,12 +25,12 @@ func (u *Unreal) ListInstance() []model.Instance {
 	return instances
 }
 
-func (u *Unreal) CreateInstance(instance model.Instance) uint {
+func (u *Unreal) CreateInstance(instance *model.Instance) uint {
 	global.APP_DB.Create(&instance)
 	return instance.ID
 }
 
-func (u *Unreal) SaveInstance(instance model.Instance) uint {
+func (u *Unreal) SaveInstance(instance *model.Instance) uint {
 	global.APP_DB.Save(&instance)
 	return instance.ID
 }
@@ -38,10 +38,7 @@ func (u *Unreal) SaveInstance(instance model.Instance) uint {
 func (u *Unreal) DeleteInstance(id uint) error {
 	process := GetProcessById(id)
 	if process != nil {
-		err := process.stop()
-		if err != nil {
-			return err
-		}
+		return errors.New("实例正在启动，无法删除")
 	} else {
 		global.APP_DB.Delete(&model.Instance{}, id)
 	}
@@ -56,24 +53,31 @@ func (u *Unreal) GetInstanceById(id uint) *model.Instance {
 
 func (u *Unreal) StartInstance(id uint) error {
 	instance := u.GetInstanceById(id)
-	process := NewProcess(instance)
-	appConfig := config.GetAppConfig()
-	if appConfig.ServerUrl != "" {
-		process.LaunchArguments = append(process.LaunchArguments, "-PixelStreamingURL="+appConfig.ServerUrl+"/ws/streamer/"+instance.Name)
+	process := GetProcessById(id)
+	if process == nil {
+		process = NewProcess(instance)
 	}
 	err := process.start()
 	if err != nil {
+		process.destroy()
+	} else {
 		instance.Status = 1
+		u.SaveInstance(instance)
 	}
 	return err
 }
 
 func (u *Unreal) StopInstance(id uint) error {
+	instance := u.GetInstanceById(id)
 	process := GetProcessById(id)
-	err := process.stop()
-	if err != nil {
-		instance := u.GetInstanceById(id)
-		instance.Status = 0
+	if process != nil {
+		err := process.stop()
+		if err == nil {
+			instance.Status = 0
+			u.SaveInstance(instance)
+		}
+		return err
+	} else {
+		return errors.New("实例未启动")
 	}
-	return err
 }

@@ -6,21 +6,19 @@ import Setting from "@/components/Setting.vue";
 
 
 const tab = ref("unreal")
-const splitterModel = ref(10)
 </script>
 
 <template>
   <div>
-    <q-splitter v-model="splitterModel" style="height: 100vh;" :limits="[10,10]">
-      <template v-slot:before>
-        <q-tabs v-model="tab" vertical class="text-primary shadow-2">
+    <div class="row no-wrap">
+      <div style="height: 100vh;border-right: 1px solid rgba(0, 0, 0, 0.12);">
+        <q-tabs v-model="tab" vertical class="text-primary shadow-0">
           <q-tab name="unreal" icon="svguse:ue-logo-white.svg#icon-1" label="unreal"/>
           <q-tab name="server" icon="sym_o_cloud" label="服务"/>
           <q-tab name="settings" icon="sym_o_settings" label="设置"/>
         </q-tabs>
-      </template>
-
-      <template v-slot:after>
+      </div>
+      <div class="col-grow bi-border-left" style="height: 100vh">
         <q-tab-panels
             v-model="tab"
             animated
@@ -30,23 +28,17 @@ const splitterModel = ref(10)
             transition-next="jump-up"
         >
           <q-tab-panel name="unreal" class="q-pa-none">
-            <!--            <div class="text-h4 q-mb-md">Mails</div>-->
             <Unreal/>
           </q-tab-panel>
-
           <q-tab-panel name="server" class="q-pa-none">
-            <!--            <div class="text-h4 q-mb-md">Alarms</div>-->
             <Server/>
           </q-tab-panel>
-
           <q-tab-panel name="settings">
-            <!--            <div class="text-h4 q-mb-md">Movies</div>-->
             <Setting/>
           </q-tab-panel>
         </q-tab-panels>
-      </template>
-
-    </q-splitter>
+      </div>
+    </div>
   </div>
 </template>
 

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var appConfig AppConfig
@@ -20,6 +21,12 @@ type LocalServer struct {
 }
 
 func InitConfig() {
+	_, statErr := os.Stat("config.yaml")
+	if os.IsNotExist(statErr) {
+		fmt.Println("文件不存在")
+		file, _ := os.Create("config.yaml")
+		defer file.Close()
+	}
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")

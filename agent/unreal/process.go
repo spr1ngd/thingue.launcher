@@ -1,11 +1,14 @@
 package unreal
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 	"thingue-launcher/agent/model"
+	"thingue-launcher/common/config"
 )
 
 var idMap = map[uint]*Process{}
@@ -24,29 +27,48 @@ func NewProcess(instance *model.Instance) *Process {
 }
 
 func GetProcessById(id uint) *Process {
-	return idMap[id]
+	value, ok := idMap[id]
+	if ok {
+		return value
+	} else {
+		return nil
+	}
 }
 
 func (p *Process) start() error {
-	fmt.Println(p.LaunchArguments)
-	command := exec.Command(p.ExecPath, p.LaunchArguments...)
+	if p.process != nil {
+		return errors.New("进程已存在")
+	}
+	// 设置PixelStreamingURL
+	var launchArguments []string
+	appConfig := config.GetAppConfig()
+	if appConfig.ServerUrl != "" {
+		if strings.HasSuffix(appConfig.ServerUrl, "/") {
+			launchArguments = append(p.LaunchArguments, "-PixelStreamingURL="+appConfig.ServerUrl+"ws/streamer/"+p.Name)
+		} else {
+			launchArguments = append(p.LaunchArguments, "-PixelStreamingURL="+appConfig.ServerUrl+"/ws/streamer/"+p.Name)
+		}
+	}
+	// 运行
+	fmt.Println(p.ExecPath, launchArguments)
+	command := exec.Command(p.ExecPath, launchArguments...)
 	err := command.Start()
-	p.Pid = command.Process.Pid
-	p.process = command.Process
+	command.Wait()
+	if err == nil {
+		p.Pid = command.Process.Pid
+		p.process = command.Process
+	}
 	return err
 }
 
 func (p *Process) stop() error {
-	// 根据pid获取进程
-	//process, err1 := os.FindProcess(p.Pid)
-	//if err1 != nil {
-	//	return err1
-	//}
+	if p.process == nil {
+		return errors.New("进程不存在")
+	}
 	// 杀死进程
 	err := p.process.Signal(syscall.SIGKILL)
-	if err != nil {
-		delete(idMap, p.ID)
-	}
+	// 重置
+	p.destroy()
 	return err
 }
 
@@ -56,4 +78,10 @@ func (p *Process) restart() error {
 		return stopErr
 	}
 	return p.start()
+}
+
+func (p *Process) destroy() {
+	p.Pid = 0
+	p.process = nil
+	delete(idMap, p.ID)
 }

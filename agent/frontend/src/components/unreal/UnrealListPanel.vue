@@ -3,6 +3,9 @@ import {defineEmits, onMounted, ref} from "vue";
 import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/unreal/Unreal.js";
 import {GetAppConfig, OpenExplorer} from "@wails/go/app/App.js";
 import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/server/Server";
+import {statusCodeToString} from "@/utils";
+
+import {Notify} from "quasar";
 
 const emit = defineEmits(["openSettingsPanel"])
 
@@ -20,6 +23,7 @@ const stations = [
 ]
 
 const currentServer = ref(null)
+const selected = ref(null)
 
 onMounted(async () => {
   await list()
@@ -34,8 +38,7 @@ onMounted(async () => {
 })
 
 async function list() {
-  let instances = await ListInstance();
-  rows.value = instances
+  rows.value = await ListInstance()
 }
 
 function handleNewSettings() {
@@ -48,7 +51,6 @@ function handleNewSettings() {
         "-ForceRes",
         "-ResX=1920",
         "-ResX=1080",
-        "-PixelStreamingURL=ws://127.0.0.1:8080/ws/streamer/abcd",
       ]
     }
   })
@@ -61,19 +63,47 @@ function handleEditSettings(row) {
   })
 }
 
-async function handleDelete(id) {
-  await DeleteInstance(id)
-  await list()
+function handleDelete(id) {
+  DeleteInstance(id).then(() => {
+    list()
+  }).catch(err => {
+    Notify.create(err)
+  })
 }
 
 async function handleOpenDir(path) {
   await OpenExplorer(path)
 }
 
+async function handleOpenPreview(name) {
+  const http = currentServer.value.replace('ws://', 'http://').replace('wss://', 'https://');
+  const url = `${http.endsWith("/") ? http : http + "/"}static/player.html?name=${name}`
+  console.log(url)
+  window.runtime.BrowserOpenURL(url)
+}
+
 async function handleSelectChange() {
   if (currentServer.value) {
     await ConnectServer(currentServer.value);
   }
+}
+
+function handleStartInstance(id) {
+  StartInstance(id).then(() => {
+    Notify.create("操作成功")
+    list()
+  }).catch(err => {
+    Notify.create(err)
+  })
+}
+
+function handleStopInstance(id) {
+  StopInstance(id).then(() => {
+    Notify.create("操作成功")
+    list()
+  }).catch(err => {
+    Notify.create(err)
+  })
 }
 
 
@@ -96,15 +126,20 @@ async function handleSelectChange() {
         >
           <q-card>
             <q-card-section class="q-pt-md q-pa-none">
-              <q-list dense>
+              <q-list>
                 <q-item>
-                  <q-item-section avatar style="width: 100px">
-                    <q-item-label caption class="ellipsis">标识</q-item-label>
-                    <q-item-label class="ellipsis">{{ props.row.Name }}</q-item-label>
+                  <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
+                                  @click="handleOpenPreview(props.row.Name)">
+                    <q-item-label caption class="ellipsis">标识
+                    </q-item-label>
+                    <q-item-label class="ellipsis">{{
+                        props.row.Name
+                      }}
+                    </q-item-label>
                   </q-item-section>
                   <q-item-section avatar style="width: 70px">
                     <q-item-label caption class="ellipsis">状态</q-item-label>
-                    <q-item-label class="ellipsis">已启动</q-item-label>
+                    <q-item-label class="ellipsis">{{ statusCodeToString(props.row.Status) }}</q-item-label>
                   </q-item-section>
                   <!--                  <q-item-section>-->
                   <!--                    <q-item-label caption class="ellipsis">Pak资源加载</q-item-label>-->
@@ -113,11 +148,11 @@ async function handleSelectChange() {
                   <!--                  </q-item-section>-->
                 </q-item>
                 <q-item>
-                  <q-item-section>
-                    <q-item-label caption class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">
+                  <q-item-section @click="handleOpenDir(props.row.ExecPath)">
+                    <q-item-label caption class="ellipsis cursor-pointer">
                       启动位置
                     </q-item-label>
-                    <q-item-label class="ellipsis cursor-pointer" @click="handleOpenDir(props.row.ExecPath)">
+                    <q-item-label class="ellipsis cursor-pointer">
                       {{ props.row.ExecPath }}
                     </q-item-label>
                   </q-item-section>
@@ -126,10 +161,17 @@ async function handleSelectChange() {
             </q-card-section>
             <q-card-actions class="q-pt-none">
               <div class="q-gutter-md">
-                <q-btn color="green" flat dense icon="sym_o_play_circle" @click="StartInstance(props.row.ID)"/>
-                <q-btn color="red" flat dense icon="sym_o_stop_circle" @click="StopInstance(props.row.ID)"/>
+                <q-btn color="green" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.ID)"/>
+                <q-btn color="red" flat dense icon="sym_o_stop_circle" @click="handleStopInstance(props.row.ID)"/>
                 <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
-                <q-btn color="grey" flat dense icon="sym_o_delete" @click="handleDelete(props.row.ID)"/>
+                <q-btn color="grey" flat dense icon="sym_o_delete" push>
+                  <q-menu>
+                    <div class="q-pa-sm">
+                      确定要删除？
+                      <q-btn dense size="sm" label="确认" color="blue" v-close-popup @click="handleDelete(props.row.ID)"/>
+                    </div>
+                  </q-menu>
+                </q-btn>
               </div>
             </q-card-actions>
           </q-card>

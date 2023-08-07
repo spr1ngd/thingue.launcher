@@ -2,6 +2,7 @@ package agent
 
 import (
 	"embed"
+	"fmt"
 	"thingue-launcher/agent/initialize"
 )
 
@@ -16,5 +17,5 @@ func Startup() {
 }
 
 func Shutdown() {
-
+	fmt.Println("agent关闭")
 }

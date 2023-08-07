@@ -79,8 +79,13 @@ func (s *Server) DeleteRemoteServer(id uint) {
 func (s *Server) GetConnectServerOptions() []string {
 	var options []string
 	if s.GetLocalServerStatus() {
-		split := strings.Split(config.GetAppConfig().LocalServer.BindAddr, ":")
-		options = append(options, "ws://127.0.0.1:"+split[1])
+		appConfig := config.GetAppConfig()
+		port := strings.Split(appConfig.LocalServer.BindAddr, ":")[1]
+		if strings.HasSuffix(port+appConfig.LocalServer.BasePath, "/") {
+			options = append(options, "ws://127.0.0.1:"+port+appConfig.LocalServer.BasePath)
+		} else {
+			options = append(options, "ws://127.0.0.1:"+port+appConfig.LocalServer.BasePath+"/")
+		}
 	}
 	for _, remoteServer := range s.ListRemoteServer() {
 		options = append(options, remoteServer.Url)

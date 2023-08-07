@@ -31,5 +31,26 @@ func TestConnect(t *testing.T) {
 		fmt.Printf("收到响应：%s\n", response[:n])
 	}
 	ws.Close()
+}
 
+type T struct {
+	name string
+	Pid  int
+}
+
+func TestMap(t *testing.T) {
+	var idMap = map[uint]*T{}
+	idMap[1] = &T{name: "A"}
+	idMap[3] = &T{name: "F"}
+	idMap[7] = &T{name: "D"}
+	idMap[16] = &T{name: "A"}
+	fmt.Println(idMap)
+	delete(idMap, 16)
+	fmt.Println(idMap)
+	t2, ok := idMap[16]
+	if ok {
+		fmt.Println(t2)
+	} else {
+		fmt.Println("空的")
+	}
 }

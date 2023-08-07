@@ -42,7 +42,14 @@ async function del(id) {
         <q-input dense standout="bg-grey" type="text"
                  v-model="row.Url" @change="save(row)">
           <template v-slot:after>
-            <q-btn class="gt-xs" size="12px" flat dense round icon="sym_o_delete" @click="del(row.ID)"/>
+            <q-btn class="gt-xs" size="12px" flat dense round icon="sym_o_delete">
+              <q-menu>
+                <div class="q-pa-sm">
+                  确定要删除？
+                  <q-btn dense size="sm" label="确认" color="blue" v-close-popup  @click="del(row.ID)"/>
+                </div>
+              </q-menu>
+            </q-btn>
           </template>
         </q-input>
       </q-item-section>
