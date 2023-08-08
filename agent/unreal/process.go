@@ -53,7 +53,6 @@ func (p *Process) start() error {
 	fmt.Println(p.ExecPath, launchArguments)
 	command := exec.Command(p.ExecPath, launchArguments...)
 	err := command.Start()
-	command.Wait()
 	if err == nil {
 		p.Pid = command.Process.Pid
 		p.process = command.Process
