@@ -117,6 +117,7 @@ func (s *Server) ConnectServer(url string) {
 			break
 		}
 		fmt.Printf("收到响应：%s\n", response[:n])
+		MsgReceive(response[:n])
 	}
 	global.WS = nil
 	appConfig.ServerUrl = ""
