@@ -82,9 +82,9 @@ func (s *Server) GetConnectServerOptions() []string {
 		appConfig := config.GetAppConfig()
 		port := strings.Split(appConfig.LocalServer.BindAddr, ":")[1]
 		if strings.HasSuffix(port+appConfig.LocalServer.BasePath, "/") {
-			options = append(options, "ws://127.0.0.1:"+port+appConfig.LocalServer.BasePath)
+			options = append(options, "ws://localhost:"+port+appConfig.LocalServer.BasePath)
 		} else {
-			options = append(options, "ws://127.0.0.1:"+port+appConfig.LocalServer.BasePath+"/")
+			options = append(options, "ws://localhost:"+port+appConfig.LocalServer.BasePath+"/")
 		}
 	}
 	for _, remoteServer := range s.ListRemoteServer() {

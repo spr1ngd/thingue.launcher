@@ -63,7 +63,13 @@ onMounted(async () => {
 
 function select() {
   OpenFileDialog("选择文件", "ThingUE (*.exe)", "*.exe").then(result => {
-    props.data.settings.ExecPath = result
+    if (result) {
+      props.data.settings.ExecPath = result;
+    } else {
+      Notify.create({
+        message: '选择取消'
+      })
+    }
   }).catch(err => {
     Notify.create({
       message: '无法选择文件'
@@ -74,10 +80,17 @@ function select() {
 async function save() {
   if (props.data.type === 'new') {
     await CreateInstance(props.data.settings)
+    emit('openListPanel')
   } else if (props.data.type === 'edit') {
-    await SaveInstance(props.data.settings)
+    try {
+      await SaveInstance(props.data.settings)
+      emit('openListPanel')
+    } catch (err) {
+      Notify.create({
+        message: err
+      })
+    }
   }
-  emit('openListPanel')
 }
 </script>
 
@@ -111,21 +124,33 @@ async function save() {
             </q-input>
           </q-item-section>
         </q-item>
-        <q-expansion-item label="虚幻引擎启动参数配置">
+        <q-expansion-item label="启动参数配置" caption="编辑虚幻引擎的启动参数">
           <q-card class="q-pa-md">
             <div class="editor" ref="launchArgumentsEditorRef"></div>
           </q-card>
         </q-expansion-item>
-        <q-expansion-item label="元数据配置">
+        <q-expansion-item label="元数据配置" caption="设置元数据作为实例的自定义信息">
           <q-card class="q-pa-md">
             <div class="editor" ref="metadataEditorRef"></div>
           </q-card>
         </q-expansion-item>
-        <q-expansion-item label="Pak资源配置">
+        <q-expansion-item label="Pak资源配置" caption="设置壳加载模式下Pak资源选择切换列表">
           <q-card class="q-pa-md">
             <div class="editor" ref="paksConfigEditorRef"></div>
           </q-card>
         </q-expansion-item>
+        <q-separator/>
+        <q-item tag="label" v-ripple>
+          <q-item-section side top>
+            <q-checkbox v-model="props.data.settings.FaultRecover"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>故障恢复</q-item-label>
+            <q-item-label caption>
+              实例非正常退出或心跳异常时尝试通过重新启动从异常状态中恢复
+            </q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-card-section>
   </q-card>

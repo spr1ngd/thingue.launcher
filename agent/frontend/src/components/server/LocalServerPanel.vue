@@ -23,6 +23,11 @@ function serverShutdown() {
   LocalServerShutdown()
 }
 
+function handleOpenExplorer() {
+  const port = localServerConfig.bindAddr.split(":")[1]
+  window.runtime.BrowserOpenURL(`http://localhost:${port}/static/`)
+}
+
 onMounted(async () => {
   // 获取本地server配置
   let appConfig = await GetAppConfig();
@@ -88,7 +93,7 @@ onUnmounted(async () => {
             <q-btn dense label="关闭" color="negative" @click="serverShutdown" :disable="!localServerStatus"></q-btn>
           </q-item-section>
           <q-item-section avatar>
-            <q-btn flat round icon="open_in_new"/>
+            <q-btn flat round icon="open_in_new" @click="handleOpenExplorer"/>
           </q-item-section>
         </q-item>
       </q-list>

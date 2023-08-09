@@ -34,11 +34,6 @@ func CorsMiddleware() gin.HandlerFunc {
 
 func Startup() {
 	appConfig := config.GetAppConfig()
-	fileInfos, _ := staticFiles.ReadDir(".")
-	fmt.Println("Embedded files:")
-	for _, fileInfo := range fileInfos {
-		fmt.Println(fileInfo.Name())
-	}
 	router := gin.Default()
 	router.Use(CorsMiddleware())
 	group := router.Group(appConfig.LocalServer.BasePath)
@@ -54,9 +49,9 @@ func Startup() {
 		c.Request.URL.Path = "/frontend/dist" + c.Param("filepath")
 		http.FileServer(http.FS(staticFiles)).ServeHTTP(c.Writer, c.Request)
 	})
-	group.GET("/ws/streamer/:id", handleStreamerWebSocket)
-	group.GET("/ws/player/:streamerId", handlePlayerWebSocket)
-	group.GET("/", handleWebSocket)
+	group.GET("/ws/streamer/:id", StreamerWebSocketHandler)
+	group.GET("/ws/player/:streamerId", PlayerWebSocketHandler)
+	group.GET("/", AgentWebSocketHandler)
 	server = http.Server{
 		Addr:    appConfig.LocalServer.BindAddr,
 		Handler: router,

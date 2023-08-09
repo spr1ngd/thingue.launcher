@@ -17,32 +17,11 @@ func NewUnreal() *Unreal {
 
 func (u *Unreal) SetContext(ctx context.Context) {
 	u.ctx = ctx
-}
+	instances := u.ListInstance()
 
-func (u *Unreal) ListInstance() []model.Instance {
-	var instances []model.Instance
-	global.APP_DB.Find(&instances)
-	return instances
-}
-
-func (u *Unreal) CreateInstance(instance *model.Instance) uint {
-	global.APP_DB.Create(&instance)
-	return instance.ID
-}
-
-func (u *Unreal) SaveInstance(instance *model.Instance) uint {
-	global.APP_DB.Save(&instance)
-	return instance.ID
-}
-
-func (u *Unreal) DeleteInstance(id uint) error {
-	process := GetProcessById(id)
-	if process != nil {
-		return errors.New("实例正在启动，无法删除")
-	} else {
-		global.APP_DB.Delete(&model.Instance{}, id)
+	for index := range instances {
+		NewRunner(&instances[index])
 	}
-	return nil
 }
 
 func (u *Unreal) GetInstanceById(id uint) *model.Instance {
@@ -51,33 +30,65 @@ func (u *Unreal) GetInstanceById(id uint) *model.Instance {
 	return &instance
 }
 
-func (u *Unreal) StartInstance(id uint) error {
-	instance := u.GetInstanceById(id)
-	process := GetProcessById(id)
-	if process == nil {
-		process = NewProcess(instance)
+func (u *Unreal) ListInstance() []model.Instance {
+	var instances []model.Instance
+	global.APP_DB.Find(&instances)
+	return instances
+}
+
+func (u *Unreal) ListRunner() []*Runner {
+	var runners = make([]*Runner, 0)
+	instances := u.ListInstance()
+	for _, instance := range instances {
+		runners = append(runners, idRunnerMap[instance.ID])
 	}
-	err := process.start()
-	if err != nil {
-		process.destroy()
+	return runners
+}
+
+func (u *Unreal) CreateInstance(instance *model.Instance) uint {
+	global.APP_DB.Create(&instance)
+	NewRunner(instance)
+	return instance.ID
+}
+
+func (u *Unreal) SaveInstance(instance *model.Instance) error {
+	runner := GetRunnerById(instance.ID)
+	if runner.IsRunning {
+		return errors.New("实例运行中无法修改配置")
+	}
+	global.APP_DB.Save(instance)
+	runner.Instance = instance
+	return nil
+}
+
+func (u *Unreal) DeleteInstance(id uint) error {
+	runner := GetRunnerById(id)
+	if runner != nil {
+		if runner.IsRunning {
+			return errors.New("实例正在运行")
+		}
+		err := runner.delete()
+		global.APP_DB.Delete(&model.Instance{}, id)
+		return err
 	} else {
-		instance.Status = 1
-		u.SaveInstance(instance)
+		return errors.New("实例不存在")
 	}
-	return err
+}
+
+func (u *Unreal) StartInstance(id uint) error {
+	runner := GetRunnerById(id)
+	if runner != nil {
+		return runner.start(u.ctx)
+	} else {
+		return errors.New("实例不存在")
+	}
 }
 
 func (u *Unreal) StopInstance(id uint) error {
-	instance := u.GetInstanceById(id)
-	process := GetProcessById(id)
-	if process != nil {
-		err := process.stop()
-		if err == nil {
-			instance.Status = 0
-			u.SaveInstance(instance)
-		}
-		return err
+	runner := GetRunnerById(id)
+	if runner != nil {
+		return runner.stop()
 	} else {
-		return errors.New("实例未启动")
+		return errors.New("实例不存在")
 	}
 }

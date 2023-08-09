@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os/exec"
 	"path/filepath"
@@ -19,6 +20,7 @@ func NewApp() *App {
 
 func (a *App) SetContext(ctx context.Context) {
 	a.ctx = ctx
+	InitRestartTask(ctx)
 }
 
 func (a *App) OpenFileDialog(title string, displayName string, pattern string) (string, error) {
@@ -41,4 +43,26 @@ func (a *App) OpenExplorer(path string) error {
 
 func (a *App) GetAppConfig() config.AppConfig {
 	return *config.GetAppConfig()
+}
+
+func (a *App) ControlRestartTask(enable bool) error {
+	var err error
+	appConfig := config.GetAppConfig()
+	if enable {
+		err = EnableRestartTask()
+	} else {
+		DisableRestartTask()
+	}
+	if err == nil {
+		appConfig.EnableRestartTask = enable
+		config.WriteConfig()
+	}
+	return err
+}
+
+func (a *App) UpdateSystemSettings(systemSettings config.SystemSettings) {
+	fmt.Println(systemSettings)
+	appConfig := config.GetAppConfig()
+	appConfig.SystemSettings = systemSettings
+	config.WriteConfig()
 }

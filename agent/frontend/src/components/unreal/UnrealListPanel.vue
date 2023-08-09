@@ -1,9 +1,8 @@
 <script setup>
 import {defineEmits, onMounted, ref} from "vue";
-import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/unreal/Unreal.js";
+import {DeleteInstance, ListRunner, StartInstance, StopInstance} from "@wails/go/unreal/Unreal.js";
 import {GetAppConfig, OpenExplorer} from "@wails/go/app/App.js";
 import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/server/Server";
-import {statusCodeToString} from "@/utils";
 
 import {Notify} from "quasar";
 
@@ -18,10 +17,6 @@ const columns = [
 
 const options = ref([])
 
-const stations = [
-  '宜宾换流站', '延庆换流站', '中都换流站'
-]
-
 const currentServer = ref(null)
 const selected = ref(null)
 
@@ -33,12 +28,15 @@ onMounted(async () => {
   window.runtime.EventsOn("ServerConnectionClose", () => {
     currentServer.value = null
   })
+  window.runtime.EventsOn("runner_status_update", () => {
+    list()
+  })
   let appConfig = await GetAppConfig();
   currentServer.value = appConfig.ServerUrl;
 })
 
 async function list() {
-  rows.value = await ListInstance()
+  rows.value = await ListRunner()
 }
 
 function handleNewSettings() {
@@ -78,7 +76,6 @@ async function handleOpenDir(path) {
 async function handleOpenPreview(name) {
   const http = currentServer.value.replace('ws://', 'http://').replace('wss://', 'https://');
   const url = `${http.endsWith("/") ? http : http + "/"}static/player.html?name=${name}`
-  console.log(url)
   window.runtime.BrowserOpenURL(url)
 }
 
@@ -91,7 +88,6 @@ async function handleSelectChange() {
 function handleStartInstance(id) {
   StartInstance(id).then(() => {
     Notify.create("操作成功")
-    list()
   }).catch(err => {
     Notify.create(err)
   })
@@ -100,7 +96,6 @@ function handleStartInstance(id) {
 function handleStopInstance(id) {
   StopInstance(id).then(() => {
     Notify.create("操作成功")
-    list()
   }).catch(err => {
     Notify.create(err)
   })
@@ -126,7 +121,7 @@ function handleStopInstance(id) {
         >
           <q-card>
             <q-card-section class="q-pt-md q-pa-none">
-              <q-list>
+              <q-list dense>
                 <q-item>
                   <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
                                   @click="handleOpenPreview(props.row.Name)">
@@ -137,15 +132,10 @@ function handleStopInstance(id) {
                       }}
                     </q-item-label>
                   </q-item-section>
-                  <q-item-section avatar style="width: 70px">
+                  <q-item-section avatar style="width: 100px">
                     <q-item-label caption class="ellipsis">状态</q-item-label>
-                    <q-item-label class="ellipsis">{{ statusCodeToString(props.row.Status) }}</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.IsRunning ? '正在运行' : '停止' }}</q-item-label>
                   </q-item-section>
-                  <!--                  <q-item-section>-->
-                  <!--                    <q-item-label caption class="ellipsis">Pak资源加载</q-item-label>-->
-                  <!--                    <q-select v-model="selected" :options="stations" label="Standard" />-->
-                  <!--                    <q-select dense :options="stations" options-dense clearable label="资源加载" v-model="selected"/>-->
-                  <!--                  </q-item-section>-->
                 </q-item>
                 <q-item>
                   <q-item-section @click="handleOpenDir(props.row.ExecPath)">
@@ -168,7 +158,8 @@ function handleStopInstance(id) {
                   <q-menu>
                     <div class="q-pa-sm">
                       确定要删除？
-                      <q-btn dense size="sm" label="确认" color="blue" v-close-popup @click="handleDelete(props.row.ID)"/>
+                      <q-btn dense size="sm" label="确认" color="blue" v-close-popup
+                             @click="handleDelete(props.row.ID)"/>
                     </div>
                   </q-menu>
                 </q-btn>

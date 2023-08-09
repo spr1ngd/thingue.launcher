@@ -13,6 +13,7 @@ type Instance struct {
 	LaunchArguments StringSlice
 	Metadata        string
 	PaksConfig      string
-	Pid             int
-	Status          int
+	FaultRecover    bool
+	TimeRestart     bool
+	RestartCron     string
 }

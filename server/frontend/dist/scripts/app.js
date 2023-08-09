@@ -6,9 +6,7 @@ function GetQueryString(name) {
 }
 var origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://')
 var path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/"))
-path = path.replaceAll("/static","")
-var playerURL = `${origin}${path}/ws/player/${GetQueryString("name")}`
-
+var playerURL = `${origin}${path}/ws/player/${GetQueryString("id")}`
 // var playerURL = `ws://127.0.0.1:8888${path}/player/${GetQueryString("id")}`
 
 // Copyright Epic Games, Inc. All Rights Reserved.
@@ -22,6 +20,25 @@ var connect_on_load = true;
 var auto_connect_without_interactive = true;
 //add by hzy
 const double_resolution = false;
+// add by spr1ngd
+const block_keycodes = [
+	"F1",
+	"F1",
+	"F2",
+	"F3",
+	"F4",
+	"F5",
+	"F6",
+	"F7",
+	"F8",
+	"F9",
+	"F10",
+	"F11",
+	"F12"
+];
+let is_blocked_keycodes = (keycode) => {
+	return block_keycodes.includes(keycode);
+};
 
 var is_reconnection = false;
 var ws;
@@ -29,6 +46,13 @@ const WS_OPEN_STATE = 1;
 
 var qualityControlOwnershipCheckBox;
 var matchViewportResolution = true;
+
+//use this to control client can change resolution or not in multiuser control mode
+var canResizeViewportResolution = false;
+//cache mouse event
+var cachedMouseEvent = null;
+var is_focused = false;
+
 // TODO: Remove this - workaround because of bug causing UE to crash when switching resolutions too quickly
 var lastTimeResized = new Date().getTime();
 var resizeTimeout;
@@ -245,7 +269,7 @@ function showPlayOverlay() {
 	if (!auto_connect_without_interactive) {
 		var img = document.createElement('img');
 		img.id = 'playButton';
-		img.src = 'images/Play.png';
+		img.src = '/images/Play.png';
 		img.alt = 'Start Streaming';
 		setOverlay('clickableState', img, event => {
 			if (webRtcPlayerObj)
@@ -471,6 +495,11 @@ function setupWebRtcPlayer(htmlElement, config) {
 			let command = JSON.parse(commandAsString);
 			if (command.command === 'onScreenKeyboard') {
 				showOnScreenKeyboard(command);
+			} else if (command.command === "onPlayerChanged") {
+				if (is_focused) {
+					webRtcPlayerObj.video.onmouseleave(cachedMouseEvent);
+					webRtcPlayerObj.video.onmouseenter(cachedMouseEvent);
+				}
 			}
 		} else if (view[0] === ToClientMessageType.FreezeFrame) {
 			freezeFrame.size = (new DataView(view.slice(1, 5).buffer)).getInt32(0, true);
@@ -868,19 +897,30 @@ function setupMouseAndFreezeFrame(playerElement) {
 	resizeFreezeFrameOverlay();
 }
 
+function validateVideoEncodeSize(playerElement) {
+	const NVENC_MIN_ENCODE_RESOLUTION = 32;
+	let width = playerElement.clientWidth;
+	let height = playerElement.clientHeight;
+	if (isNaN(width) || isNaN(height)) {
+		return false;
+	}
+	return (width > NVENC_MIN_ENCODE_RESOLUTION) && (height > NVENC_MIN_ENCODE_RESOLUTION);
+}
+
 function updateVideoStreamSize() {
-	if (!matchViewportResolution) {
+	if (!matchViewportResolution || !canResizeViewportResolution) {
 		return;
 	}
 
 	var now = new Date().getTime();
 	if (now - lastTimeResized > 100) {
 		var playerElement = document.getElementById('player');
-		if (!playerElement)
+		if (!playerElement || !validateVideoEncodeSize(playerElement))
 			return;
 
 		let width = playerElement.clientWidth;
 		let height = playerElement.clientHeight;
+
 		let ratio = height * 1.0 / width;
 		width = Math.min(width, 3840);
 		height = width * ratio;
@@ -965,15 +1005,26 @@ const MessageType = {
 };
 
 // A generic message has a type and a descriptor.
-function emitDescriptor(messageType, descriptor, largeSizeBuffer = false) {
+function emitDescriptor(messageType, descriptor, largeSizeBuffer = true) {
 	// Convert the dscriptor object into a JSON string.
 	let descriptorAsString = JSON.stringify(descriptor);
 
 	// Add the UTF-16 JSON string to the array byte buffer, going two bytes at
 	// a time.
+	if (largeSizeBuffer) {
+		// console.error(`spr1ngd : Inside unreal engine 5, ThingUE do not support large size buffer any more, please use custom websocket server transfer data.`);
+		largeSizeBuffer = false;
+	}
 
 	let bufferSize = largeSizeBuffer ? 4 : 2;
 	let data = new DataView(new ArrayBuffer(1 + bufferSize + 2 * descriptorAsString.length));
+
+	const MAX_BUFFER_SIZE = 65535;
+	if (data.byteLength > MAX_BUFFER_SIZE) {
+		console.error(`spr1ngd : Inside unreal engine 5, message buffer size could not large than 65535, please use custom websocket server transfer data.`);
+		return;
+	}
+
 	let byteIdx = 0;
 	data.setUint8(byteIdx, messageType);
 	byteIdx++;
@@ -1310,6 +1361,8 @@ function registerMouseEnterAndLeaveEvents(playerElement) {
 		Data.setUint8(0, MessageType.MouseEnter);
 		sendInputData(Data.buffer);
 		playerElement.pressMouseButtons(e);
+		cachedMouseEvent = e;
+		is_focused = true;
 	};
 
 	playerElement.onmouseleave = function (e) {
@@ -1320,6 +1373,8 @@ function registerMouseEnterAndLeaveEvents(playerElement) {
 		Data.setUint8(0, MessageType.MouseLeave);
 		sendInputData(Data.buffer);
 		playerElement.releaseMouseButtons(e);
+		cachedMouseEvent = e;
+		is_focused = false;
 	};
 }
 
@@ -1492,50 +1547,101 @@ function registerTouchEvents(playerElement) {
 	if (inputOptions.fakeMouseWithTouches) {
 
 		var finger = undefined;
-
-		playerElement.ontouchstart = function (e) {
-			if (finger === undefined) {
-				let firstTouch = e.changedTouches[0];
-				finger = {
-					id: firstTouch.identifier,
-					x: firstTouch.clientX - playerElementClientRect.left,
-					y: firstTouch.clientY - playerElementClientRect.top
-				};
-				// Hack: Mouse events require an enter and leave so we just
-				// enter and leave manually with each touch as this event
-				// is not fired with a touch device.
-				playerElement.onmouseenter(e);
-				emitMouseDown(MouseButton.MainButton, finger.x, finger.y);
+		var preDistance = 0;
+		var mouseButton = undefined;
+		var e = undefined;
+		playerElement.ontouchstart = function (evt) {
+			if (e != undefined) {
+				e = evt;
+				return;
 			}
-			e.preventDefault();
+			e = evt;
+			setTimeout(function () {
+				if (e.targetTouches.length > 2 || e.targetTouches.length < 1) {
+					return;
+				}
+				if (finger === undefined) {
+					let firstTouch = e.targetTouches[0];
+					finger = {
+						id: firstTouch.identifier,
+						x: firstTouch.clientX - playerElementClientRect.left,
+						y: firstTouch.clientY - playerElementClientRect.top
+					};
+					// Hack: Mouse events require an enter and leave so we just
+					// enter and leave manually with each touch as this event
+					// is not fired with a touch device.
+				}
+				playerElement.onmouseenter(e);
+				if (e.targetTouches.length == 1) {
+					emitMouseDown(MouseButton.MainButton, finger.x, finger.y);
+					mouseButton = MouseButton.MainButton;
+				} else if (e.targetTouches.length == 2) {
+					emitMouseDown(MouseButton.SecondaryButton, finger.x, finger.y);
+					mouseButton = MouseButton.SecondaryButton;
+				}
+				e.preventDefault();
+				e = undefined;
+			}, 10);
 		};
 
 		playerElement.ontouchend = function (e) {
-			for (let t = 0; t < e.changedTouches.length; t++) {
-				let touch = e.changedTouches[t];
-				if (touch.identifier === finger.id) {
-					let x = touch.clientX - playerElementClientRect.left;
-					let y = touch.clientY - playerElementClientRect.top;
-					emitMouseUp(MouseButton.MainButton, x, y);
-					// Hack: Manual mouse leave event.
-					playerElement.onmouseleave(e);
-					finger = undefined;
-					break;
+			setTimeout(function () {
+				for (let t = 0; t < e.changedTouches.length; t++) {
+					let touch = e.changedTouches[t];
+					if (touch.identifier === finger.id) {
+						finger.x = touch.clientX - playerElementClientRect.left;
+						finger.y = touch.clientY - playerElementClientRect.top;
+						break;
+					}
 				}
-			}
-			e.preventDefault();
+				emitMouseUp(mouseButton, finger.x, finger.y);
+				finger = undefined;
+				mouseButton = undefined;
+				playerElement.onmouseleave(e);
+				preDistance = 0;
+				e.preventDefault();
+			}, 10);
 		};
 
 		playerElement.ontouchmove = function (e) {
-			for (let t = 0; t < e.touches.length; t++) {
-				let touch = e.touches[t];
-				if (touch.identifier === finger.id) {
-					let x = touch.clientX - playerElementClientRect.left;
-					let y = touch.clientY - playerElementClientRect.top;
+			if (e.targetTouches.length === 2) {
+				let dx = 0;
+				let dy = 0;
+				let x = 0;
+				let y = 0;
+				for (let t = 0; t < e.targetTouches.length; t++) {
+					let touch = e.targetTouches[t];
+					dx = touch.clientX - dx;
+					dy = touch.clientY - dy;
+					if (touch.identifier === finger.id) {
+						x = touch.clientX - playerElementClientRect.left;
+						y = touch.clientY - playerElementClientRect.top;
+					}
+				}
+				let distance = Math.sqrt(dx * dx + dy * dy);
+				if (preDistance == 0 || Math.abs(distance - preDistance) < 0.5) {
 					emitMouseMove(x, y, x - finger.x, y - finger.y);
 					finger.x = x;
 					finger.y = y;
-					break;
+				} else {
+					emitMouseWheel((distance - preDistance) / 6.0, x, y);
+					finger.x = x;
+					finger.y = y;
+				}
+				preDistance = distance;
+				e.preventDefault();
+			}
+			else if (e.targetTouches.length === 1) {
+				for (let t = 0; t < e.changedTouches.length; t++) {
+					let touch = e.changedTouches[t];
+					if (touch.identifier === finger.id) {
+						let x = touch.clientX - playerElementClientRect.left;
+						let y = touch.clientY - playerElementClientRect.top;
+						emitMouseMove(x, y, x - finger.x, y - finger.y);
+						finger.x = x;
+						finger.y = y;
+						break;
+					}
 				}
 			}
 			e.preventDefault();
@@ -1610,8 +1716,9 @@ function registerKeyboardEvents() {
 		if (print_inputs) {
 			console.log(`key down ${e.keyCode}, repeat = ${e.repeat}`);
 		}
-		if (e.key == "F11" || e.key == "F12") return;
-		
+		// if (e.key == "F11" || e.key == "F12") return;
+		if (is_blocked_keycodes(e.key)) return;
+
 		sendInputData(new Uint8Array([MessageType.KeyDown, getKeyCode(e), e.repeat]).buffer);
 		// Backspace is not considered a keypress in JavaScript but we need it
 		// to be so characters may be deleted in a UE4 text entry field.
@@ -1640,7 +1747,8 @@ function registerKeyboardEvents() {
 		if (print_inputs) {
 			console.log(`key up ${e.keyCode}`);
 		}
-		if (e.key == "F11" || e.key == "F12") return;
+		// if (e.key == "F11" || e.key == "F12") return;
+		if (is_blocked_keycodes(e.key)) return;
 		sendInputData(new Uint8Array([MessageType.KeyUp, getKeyCode(e)]).buffer);
 		if (inputOptions.suppressBrowserKeys && isKeyCodeBrowserKey(e.keyCode)) {
 			e.preventDefault();
@@ -1658,7 +1766,8 @@ function registerKeyboardEvents() {
 		if (print_inputs) {
 			console.log(`key press ${e.charCode}`);
 		}
-		if (e.key == "F11" || e.key == "F12") return;
+		// if (e.key == "F11" || e.key == "F12") return;
+		if (is_blocked_keycodes(e.key)) return;
 		let data = new DataView(new ArrayBuffer(3));
 		data.setUint8(0, MessageType.KeyPress);
 		data.setUint16(1, e.charCode, true);
@@ -1722,9 +1831,15 @@ function connect() {
 		if (msg.type === 'config') {
 			onConfig(msg);
 		} else if (msg.type === 'playerCount') {
+			if (msg.count === 1) {
+				canResizeViewportResolution = true;
+			}
 			updateKickButton(msg.count - 1);
 		} else if (msg.type === 'answer') {
 			onWebRtcAnswer(msg);
+			setTimeout(function () {
+				updateVideoStreamSize();
+			}, 1000);
 		} else if (msg.type === 'iceCandidate') {
 			onWebRtcIce(msg.candidate);
 		} else {

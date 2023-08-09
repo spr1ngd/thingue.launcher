@@ -9,8 +9,10 @@ import (
 var appConfig AppConfig
 
 type AppConfig struct {
-	ServerUrl   string
-	LocalServer LocalServer
+	ServerUrl         string
+	LocalServer       LocalServer
+	SystemSettings    SystemSettings
+	EnableRestartTask bool
 }
 
 type LocalServer struct {
@@ -18,6 +20,10 @@ type LocalServer struct {
 	BindAddr  string
 	Enable    bool
 	AutoStart bool
+}
+
+type SystemSettings struct {
+	RestartTaskCron string
 }
 
 func InitConfig() {

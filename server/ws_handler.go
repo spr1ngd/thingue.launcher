@@ -16,7 +16,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func handleWebSocket(c *gin.Context) {
+func AgentWebSocketHandler(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		fmt.Println("WebSocket upgrade error:", err)
@@ -37,7 +37,7 @@ func handleWebSocket(c *gin.Context) {
 	conn.Close()
 }
 
-func handleStreamerWebSocket(c *gin.Context) {
+func StreamerWebSocketHandler(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		fmt.Println("WebSocket upgrade error:", err)
@@ -68,7 +68,7 @@ func handleStreamerWebSocket(c *gin.Context) {
 	OnStreamerDisconnect(streamer)
 }
 
-func handlePlayerWebSocket(c *gin.Context) {
+func PlayerWebSocketHandler(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		fmt.Println("WebSocket upgrade error:", err)

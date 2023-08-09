@@ -2,8 +2,8 @@ package agent
 
 import (
 	"embed"
-	"fmt"
 	"thingue-launcher/agent/initialize"
+	"thingue-launcher/agent/unreal"
 )
 
 //go:embed all:frontend/dist
@@ -17,5 +17,5 @@ func Startup() {
 }
 
 func Shutdown() {
-	fmt.Println("agent关闭")
+	unreal.CloseAllRunner()
 }

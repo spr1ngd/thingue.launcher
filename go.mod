@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gorilla/websocket v1.5.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.16.0
 	github.com/wailsapp/wails/v2 v2.5.1
 	golang.org/x/net v0.12.0

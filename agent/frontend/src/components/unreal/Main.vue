@@ -19,7 +19,7 @@ function switchListPanel() {
 </script>
 
 <template>
-  <q-tab-panels v-model="currentPanel" animated class="shadow-2 rounded-borders">
+  <q-tab-panels v-model="currentPanel" animated class="shadow-2">
     <q-tab-panel name="list" class="q-pa-none">
       <unreal-list-panel @open-settings-panel="switchSettingsPanel"/>
     </q-tab-panel>

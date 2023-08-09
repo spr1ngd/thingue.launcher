@@ -19,7 +19,7 @@ func InitApp(assets embed.FS) {
 	err := wails.Run(&options.App{
 		Title:  "ThingUE启动器",
 		Width:  820,
-		Height: 480,
+		Height: 500,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
