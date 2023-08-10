@@ -76,10 +76,13 @@ func (r *Runner) start(ctx context.Context) error {
 	var launchArguments []string
 	appConfig := config.GetAppConfig()
 	if appConfig.ServerUrl != "" {
-		if strings.HasSuffix(appConfig.ServerUrl, "/") {
-			launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+appConfig.ServerUrl+"ws/streamer/"+r.Name)
+		httpUrl := appConfig.ServerUrl
+		wsUrl := strings.Replace(httpUrl, "http://", "ws://", 1)
+		wsUrl = strings.Replace(wsUrl, "https://", "wss://", 1)
+		if strings.HasSuffix(wsUrl, "/") {
+			launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"ws/streamer/"+r.Name)
 		} else {
-			launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+appConfig.ServerUrl+"/ws/streamer/"+r.Name)
+			launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/ws/streamer/"+r.Name)
 		}
 	} else {
 		launchArguments = r.LaunchArguments

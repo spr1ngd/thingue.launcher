@@ -1,12 +1,13 @@
 function GetQueryString(name) {
-    const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-    const r = decodeURIComponent(window.location.search).substr(1).match(reg);
-    if (r != null) return unescape(r[2]);
-    return null;
+	const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+	const r = decodeURIComponent(window.location.search).substr(1).match(reg);
+	if (r != null) return unescape(r[2]);
+	return null;
 }
 var origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://')
 var path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/"))
-var playerURL = `${origin}${path}/ws/player/${GetQueryString("id")}`
+path = path.replaceAll("/static","")
+var playerURL = `${origin}${path}/ws/player/${GetQueryString("name")}`
 // var playerURL = `ws://127.0.0.1:8888${path}/player/${GetQueryString("id")}`
 
 // Copyright Epic Games, Inc. All Rights Reserved.

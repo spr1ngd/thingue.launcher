@@ -82,9 +82,9 @@ func (s *Server) GetConnectServerOptions() []string {
 		appConfig := config.GetAppConfig()
 		port := strings.Split(appConfig.LocalServer.BindAddr, ":")[1]
 		if strings.HasSuffix(port+appConfig.LocalServer.BasePath, "/") {
-			options = append(options, "ws://localhost:"+port+appConfig.LocalServer.BasePath)
+			options = append(options, "http://localhost:"+port+appConfig.LocalServer.BasePath)
 		} else {
-			options = append(options, "ws://localhost:"+port+appConfig.LocalServer.BasePath+"/")
+			options = append(options, "http://localhost:"+port+appConfig.LocalServer.BasePath+"/")
 		}
 	}
 	for _, remoteServer := range s.ListRemoteServer() {
@@ -93,10 +93,12 @@ func (s *Server) GetConnectServerOptions() []string {
 	return options
 }
 
-func (s *Server) ConnectServer(url string) {
-	fmt.Printf("正在连接%s\n", url)
+func (s *Server) ConnectServer(httpUrl string) {
+	wsUrl := strings.Replace(httpUrl, "http://", "ws://", 1)
+	wsUrl = strings.Replace(wsUrl, "https://", "wss://", 1)
+	fmt.Printf("正在连接%s\n", wsUrl)
 	appConfig := config.GetAppConfig()
-	ws, err := websocket.Dial(url, "", "http://localhost/")
+	ws, err := websocket.Dial(wsUrl, "", "http://localhost/")
 	if err != nil {
 		fmt.Printf("连接失败：%s\n", err)
 		runtime.EventsEmit(s.ctx, "ServerConnectionClose")
@@ -105,9 +107,9 @@ func (s *Server) ConnectServer(url string) {
 		config.WriteConfig()
 		return
 	}
-	fmt.Printf("连接成功：%s\n", url)
+	fmt.Printf("连接成功：%s\n", wsUrl)
 	global.WS = ws
-	appConfig.ServerUrl = url
+	appConfig.ServerUrl = httpUrl
 	config.WriteConfig()
 	for {
 		response := make([]byte, 512)

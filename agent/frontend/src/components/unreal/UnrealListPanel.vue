@@ -74,7 +74,7 @@ async function handleOpenDir(path) {
 }
 
 async function handleOpenPreview(name) {
-  const http = currentServer.value.replace('ws://', 'http://').replace('wss://', 'https://');
+  const http = currentServer.value;
   const url = `${http.endsWith("/") ? http : http + "/"}static/player.html?name=${name}`
   window.runtime.BrowserOpenURL(url)
 }
@@ -149,7 +149,7 @@ function handleStopInstance(id) {
                 </q-item>
               </q-list>
             </q-card-section>
-            <q-card-actions class="q-pt-none">
+            <q-card-actions class="q-pt-xs">
               <div class="q-gutter-md">
                 <q-btn color="green" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.ID)"/>
                 <q-btn color="red" flat dense icon="sym_o_stop_circle" @click="handleStopInstance(props.row.ID)"/>
