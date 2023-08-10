@@ -25,7 +25,7 @@ onMounted(async () => {
   options.value = await GetConnectServerOptions()
 
   //注册事件监听
-  window.runtime.EventsOn("ServerConnectionClose", () => {
+  window.runtime.EventsOn("remote_server_connection_close", () => {
     currentServer.value = null
   })
   window.runtime.EventsOn("runner_status_update", () => {
@@ -81,7 +81,13 @@ async function handleOpenPreview(name) {
 
 async function handleSelectChange() {
   if (currentServer.value) {
-    await ConnectServer(currentServer.value);
+    try {
+      await ConnectServer(currentServer.value);
+      Notify.create("服务连接成功")
+    } catch (e) {
+      currentServer.value = ""
+      Notify.create(`服务连接失败信息 ${e}`);
+    }
   }
 }
 

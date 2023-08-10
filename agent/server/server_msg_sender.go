@@ -2,20 +2,27 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+	"thingue-launcher/common/app"
+	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
 )
 
-type ResisterAgentRes struct {
-	code int
-	msg  string
-	data bool
-}
+var appConfig = app.GetAppConfig()
 
-func RegisterAgent() {
+func RegisterAgent(httpUrl string) error {
+	fmt.Println("发送请求"+httpUrl, "/api/agent/register")
 	reqData, _ := json.Marshal(GetDeviceInfo())
-	result, err := util.HttpPost("", reqData)
+	result, err := util.HttpPost(httpUrl+"api/agent/register", reqData)
 	if err != nil {
-		res := ResisterAgentRes{}
-		_ = json.Unmarshal(result, &res)
+		res := model.JsonStruct{}
+		err = json.Unmarshal(result, &res)
+		if err != nil {
+			if res.Code != 200 {
+				return errors.New("无法注册")
+			}
+		}
 	}
+	return err
 }

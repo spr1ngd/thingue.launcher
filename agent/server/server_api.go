@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.org/x/net/websocket"
-	"log"
 	"strings"
+	"thingue-launcher/agent/constants"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/model"
 	"thingue-launcher/common/app"
+	"thingue-launcher/common/util"
 	"thingue-launcher/server"
 )
 
@@ -29,7 +30,10 @@ func (s *Server) SetContext(ctx context.Context) {
 	}
 	if appConfig.ServerUrl != "" {
 		fmt.Println("ServerUrl不是空")
-		s.ConnectServer(appConfig.ServerUrl)
+		err := s.ConnectServer(appConfig.ServerUrl)
+		if err != nil {
+
+		}
 	} else {
 		fmt.Println("ServerUrl是空")
 	}
@@ -37,9 +41,9 @@ func (s *Server) SetContext(ctx context.Context) {
 }
 
 func (s *Server) LocalServerStart() {
-	runtime.EventsEmit(s.ctx, "local_server_status_update", true)
+	runtime.EventsEmit(s.ctx, constants.LOCAL_SERVER_STATUS_UPDATE, true)
 	server.Startup()
-	runtime.EventsEmit(s.ctx, "local_server_status_update", false)
+	runtime.EventsEmit(s.ctx, constants.LOCAL_SERVER_STATUS_UPDATE, false)
 }
 
 func (s *Server) LocalServerShutdown() {
@@ -93,46 +97,48 @@ func (s *Server) GetConnectServerOptions() []string {
 	return options
 }
 
-func (s *Server) ConnectServer(httpUrl string) {
-	wsUrl := strings.Replace(httpUrl, "http://", "ws://", 1)
-	wsUrl = strings.Replace(wsUrl, "https://", "wss://", 1)
-	if strings.HasSuffix(wsUrl, "/") {
-		wsUrl = wsUrl + "ws/agent"
-	} else {
-		wsUrl = wsUrl + "/ws/agent"
-	}
-	fmt.Printf("正在连接%s\n", wsUrl)
+func (s *Server) ConnectServer(httpUrl string) error {
+	wsUrl := util.HttpUrlToAgentWsUrl(httpUrl)
+	fmt.Printf("正在连接服务%s===========================================================\n", wsUrl)
 	appConfig := app.GetAppConfig()
 	ws, err := websocket.Dial(wsUrl, "", "http://localhost/")
-	if err != nil {
-		fmt.Printf("连接失败：%s\n", err)
-		runtime.EventsEmit(s.ctx, "ServerConnectionClose")
-		global.WS = nil
-		appConfig.ServerUrl = ""
+	//1.如果连接成功尝试注册
+	if err == nil {
+		fmt.Printf("服务连接成功：%s\n", wsUrl)
+		err = RegisterAgent(httpUrl)
+	}
+	if err == nil {
+		//2.1如果注册成功,保存连接信息
+		global.WS = ws
+		appConfig.ServerUrl = httpUrl
 		app.WriteConfig()
-		return
+		//2.2如果注册成功,启动`消息接收goroutine`
+		go func() {
+			fmt.Println("开启接收消息")
+			for {
+				//接收消息
+				response := make([]byte, 512)
+				n, readErr := ws.Read(response)
+				if readErr != nil {
+					//连接断开
+					fmt.Println("接收响应失败：", err)
+					break
+				}
+				fmt.Printf("收到响应：%s\n", response[:n])
+				MsgReceive(response[:n])
+			}
+			fmt.Println("服务连接断开")
+			global.WS = nil
+			appConfig.ServerUrl = ""
+			app.WriteConfig()
+			runtime.EventsEmit(s.ctx, constants.REMOTE_SERVER_CONNECTION_CLOSE)
+		}()
+	} else {
+		fmt.Printf("服务连接失败：%s\n", wsUrl)
+		runtime.EventsEmit(s.ctx, constants.REMOTE_SERVER_CONNECTION_CLOSE)
+		s.DisconnectServer()
 	}
-	fmt.Printf("连接成功：%s\n", wsUrl)
-	global.WS = ws
-	appConfig.ServerUrl = httpUrl
-	app.WriteConfig()
-	//连接成功后注册
-	RegisterAgent()
-	for {
-		response := make([]byte, 512)
-		n, err := ws.Read(response)
-		if err != nil {
-			log.Println("接收响应失败：", err)
-			break
-		}
-		fmt.Printf("收到响应：%s\n", response[:n])
-		MsgReceive(response[:n])
-	}
-	global.WS = nil
-	appConfig.ServerUrl = ""
-	app.WriteConfig()
-	ws.Close()
-	runtime.EventsEmit(s.ctx, "ServerConnectionClose")
+	return err
 }
 
 func (s *Server) DisconnectServer() {

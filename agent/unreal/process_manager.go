@@ -7,10 +7,11 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
+	"thingue-launcher/agent/constants"
 	"thingue-launcher/agent/model"
 	"thingue-launcher/common/app"
+	"thingue-launcher/common/util"
 )
 
 var idRunnerMap = map[uint]*Runner{}
@@ -76,14 +77,8 @@ func (r *Runner) start(ctx context.Context) error {
 	var launchArguments []string
 	appConfig := app.GetAppConfig()
 	if appConfig.ServerUrl != "" {
-		httpUrl := appConfig.ServerUrl
-		wsUrl := strings.Replace(httpUrl, "http://", "ws://", 1)
-		wsUrl = strings.Replace(wsUrl, "https://", "wss://", 1)
-		if strings.HasSuffix(wsUrl, "/") {
-			launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"ws/streamer/"+r.Name)
-		} else {
-			launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/ws/streamer/"+r.Name)
-		}
+		wsUrl := util.HttpUrlToStreamerWsUrl(appConfig.ServerUrl)
+		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.Name)
 	} else {
 		launchArguments = r.LaunchArguments
 	}
@@ -97,14 +92,14 @@ func (r *Runner) start(ctx context.Context) error {
 	r.Pid = command.Process.Pid
 	r.process = command.Process
 	r.IsRunning = true
-	runtime.EventsEmit(ctx, "runner_status_update")
+	runtime.EventsEmit(ctx, constants.RUNNER_STATUS_UPDATE)
 	go func() {
 		exitCode := command.Wait()
 		//运行后
 		r.Pid = 0
 		r.process = nil
 		r.IsRunning = false
-		runtime.EventsEmit(ctx, "runner_status_update")
+		runtime.EventsEmit(ctx, constants.RUNNER_STATUS_UPDATE)
 		r.exitChannel <- exitCode
 	}()
 	return nil

@@ -2,38 +2,41 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
+	"github.com/mitchellh/mapstructure"
+	"thingue-launcher/common/model"
+	"thingue-launcher/common/model/message"
 )
 
-type Message[T ControlMsg | UpdateMsg | any] struct {
-	Type string
-	Data T
-}
-
-type ControlMsg struct {
-	InstanceName string
-	ControlType  string
-}
-
-type UpdateMsg struct {
-}
-
-func MsgReceive(msgData []byte) {
-	msg := Message[ControlMsg]{}
+func MsgReceive(msgData []byte) error {
+	msg := model.MsgStruct{}
 	err := json.Unmarshal(msgData, &msg)
 	if err != nil {
-		fmt.Println("消息解析失败")
-		return
+		return err
 	}
 	switch msg.Type {
-	case "Control":
-		Control(msg.Data)
+	case "control":
+		var controlMsg message.ControlMsg
+		err = mapstructure.Decode(msg.Data, &controlMsg)
+		if err == nil {
+			Control(controlMsg)
+		}
+	case "update":
+		var updateMsg message.UpdateMsg
+		err = mapstructure.Decode(msg.Data, &updateMsg)
+		if err == nil {
+			Update(updateMsg)
+		}
 	default:
-		return
+		return errors.New("不支持的消息类型")
 	}
-
+	return nil
 }
 
-func Control(msg ControlMsg) {
+func Control(msg message.ControlMsg) {
+	//todo
+}
 
+func Update(msg message.UpdateMsg) {
+	//todo
 }

@@ -25,7 +25,7 @@ function serverShutdown() {
 
 function handleOpenExplorer() {
   const port = localServerConfig.bindAddr.split(":")[1]
-  window.runtime.BrowserOpenURL(`http://localhost:${port}/static/`)
+  window.runtime.BrowserOpenURL(`http://localhost:${port}${localServerConfig.basePath}/static/`)
 }
 
 onMounted(async () => {

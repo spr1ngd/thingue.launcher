@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"thingue-launcher/common/app"
+	"thingue-launcher/common/model/message"
 	"time"
 )
 
@@ -35,21 +36,37 @@ func CorsMiddleware() gin.HandlerFunc {
 func Startup() {
 	appConfig := app.GetAppConfig()
 	router := gin.Default()
+
 	router.Use(CorsMiddleware())
-	group := router.Group(appConfig.LocalServer.BasePath)
-	group.GET("/ping", func(c *gin.Context) {
+	baseGroup := router.Group(appConfig.LocalServer.BasePath)
+
+	//API
+	apiGroup := baseGroup.Group("/api")
+	apiGroup.POST("/agent/register", func(c *gin.Context) {
+		var deviceInfo message.DeviceInfo
+		if err := c.ShouldBindJSON(&deviceInfo); err != nil {
+		}
+		fmt.Printf("服务端收到消息%v\n", deviceInfo)
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
-	group.GET("/static/*filepath", func(c *gin.Context) {
+
+	//静态资源
+	baseGroup.GET("/static/*filepath", func(c *gin.Context) {
 		c.Request.URL.Path = "/frontend/dist" + c.Param("filepath")
 		http.FileServer(http.FS(staticFiles)).ServeHTTP(c.Writer, c.Request)
 	})
-	group.GET("/ws/streamer/:id", StreamerWebSocketHandler)
-	group.GET("/ws/player/:streamerId", PlayerWebSocketHandler)
-	group.GET("/ws/agent", AgentWebSocketHandler)
-	group.GET("/ws/admin", AdminWebSocketHandler)
+
+	//WebSocket
+	wsGroup := baseGroup.Group("/ws")
+	{
+		wsGroup.GET("/streamer/:id", StreamerWebSocketHandler)
+		wsGroup.GET("/player/:streamerId", PlayerWebSocketHandler)
+		wsGroup.GET("/agent", AgentWebSocketHandler)
+		wsGroup.GET("/admin", AdminWebSocketHandler)
+	}
+
 	server = http.Server{
 		Addr:    appConfig.LocalServer.BindAddr,
 		Handler: router,
