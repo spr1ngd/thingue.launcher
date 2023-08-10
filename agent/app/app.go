@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os/exec"
 	"path/filepath"
+	"thingue-launcher/agent/global"
 	"thingue-launcher/common/config"
 )
 
@@ -65,4 +66,12 @@ func (a *App) UpdateSystemSettings(systemSettings config.SystemSettings) {
 	appConfig := config.GetAppConfig()
 	appConfig.SystemSettings = systemSettings
 	config.WriteConfig()
+}
+
+func (a *App) GetVersionInfo() *VersionInfo {
+	return &VersionInfo{
+		Version:   global.APP_VERSION,
+		GitCommit: global.APP_GITCOMMIT,
+		BuildDate: global.APP_BUILDDATE,
+	}
 }

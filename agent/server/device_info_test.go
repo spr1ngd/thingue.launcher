@@ -1,7 +1,11 @@
 package server
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestDeviceInfo(t *testing.T) {
-	sendAgentRegister()
+	info := GetDeviceInfo()
+	fmt.Println(info)
 }

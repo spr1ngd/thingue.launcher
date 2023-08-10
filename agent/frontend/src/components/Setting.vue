@@ -1,7 +1,7 @@
 <script setup>
 
 import {onMounted, reactive, ref, watch} from "vue";
-import {ControlRestartTask, GetAppConfig, UpdateSystemSettings} from "@wails/go/app/App";
+import {ControlRestartTask, GetAppConfig, UpdateSystemSettings, GetVersionInfo} from "@wails/go/app/App";
 import {Notify} from "quasar";
 
 const systemSettings = reactive({
@@ -9,9 +9,11 @@ const systemSettings = reactive({
 })
 
 const enableRestartTask = ref(false)
+const versionInfo = ref({})
 
 onMounted(async () => {
   const appConfig = await GetAppConfig();
+  versionInfo.value = await GetVersionInfo();
   systemSettings.RestartTaskCron = appConfig.SystemSettings.RestartTaskCron
   enableRestartTask.value = appConfig.EnableRestartTask
   watch(systemSettings, async (value, oldValue, onCleanup) => {
@@ -66,18 +68,26 @@ function change() {
           <q-list dense class="q-pl-lg q-pa-sm">
             <q-item>
               <q-item-section side>
-                <q-item-label>版本号</q-item-label>
+                <q-item-label>Version:</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label>v0.0.1</q-item-label>
+                <q-item-label>{{versionInfo.Version}}</q-item-label>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section side>
-                <q-item-label>编译日期</q-item-label>
+                <q-item-label>BuildDate:</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label>2023-08-01</q-item-label>
+                <q-item-label>{{versionInfo.BuildDate}}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section side>
+                <q-item-label>GitCommit:</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-item-label>{{versionInfo.GitCommit}}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
