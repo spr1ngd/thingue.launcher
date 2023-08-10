@@ -10,7 +10,7 @@ import (
 	"strings"
 	"syscall"
 	"thingue-launcher/agent/model"
-	"thingue-launcher/common/config"
+	"thingue-launcher/common/app"
 )
 
 var idRunnerMap = map[uint]*Runner{}
@@ -74,7 +74,7 @@ func (r *Runner) start(ctx context.Context) error {
 	}
 	// 设置PixelStreamingURL
 	var launchArguments []string
-	appConfig := config.GetAppConfig()
+	appConfig := app.GetAppConfig()
 	if appConfig.ServerUrl != "" {
 		httpUrl := appConfig.ServerUrl
 		wsUrl := strings.Replace(httpUrl, "http://", "ws://", 1)

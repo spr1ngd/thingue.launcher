@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/robfig/cron/v3"
 	"thingue-launcher/agent/unreal"
-	"thingue-launcher/common/config"
+	"thingue-launcher/common/app"
 )
 
 var restartCron *cron.Cron
@@ -15,20 +15,20 @@ var ctx context.Context
 func InitRestartTask(context context.Context) {
 	ctx = context
 	restartCron = cron.New()
-	appConfig := config.GetAppConfig()
+	appConfig := app.GetAppConfig()
 	if appConfig.EnableRestartTask {
 		err := EnableRestartTask()
 		if err != nil {
 			// 如果开启失败将设置改为false
 			appConfig.EnableRestartTask = false
-			config.WriteConfig()
+			app.WriteConfig()
 		}
 	}
 }
 
 func EnableRestartTask() error {
 	var err error
-	appConfig := config.GetAppConfig()
+	appConfig := app.GetAppConfig()
 	restartTaskEntryID, err = restartCron.AddFunc(appConfig.SystemSettings.RestartTaskCron, func() {
 		fmt.Println("重启定时任务执行开始")
 		unreal.RestartAllRunner(ctx)

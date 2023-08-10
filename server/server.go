@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"thingue-launcher/common/config"
+	"thingue-launcher/common/app"
 	"time"
 )
 
@@ -33,7 +33,7 @@ func CorsMiddleware() gin.HandlerFunc {
 }
 
 func Startup() {
-	appConfig := config.GetAppConfig()
+	appConfig := app.GetAppConfig()
 	router := gin.Default()
 	router.Use(CorsMiddleware())
 	group := router.Group(appConfig.LocalServer.BasePath)
@@ -43,15 +43,13 @@ func Startup() {
 		})
 	})
 	group.GET("/static/*filepath", func(c *gin.Context) {
-		fmt.Println(c.Request.URL.Path)
-		fmt.Println(c.Param("filepath"))
-
 		c.Request.URL.Path = "/frontend/dist" + c.Param("filepath")
 		http.FileServer(http.FS(staticFiles)).ServeHTTP(c.Writer, c.Request)
 	})
 	group.GET("/ws/streamer/:id", StreamerWebSocketHandler)
 	group.GET("/ws/player/:streamerId", PlayerWebSocketHandler)
-	group.GET("/", AgentWebSocketHandler)
+	group.GET("/ws/agent", AgentWebSocketHandler)
+	group.GET("/ws/admin", AdminWebSocketHandler)
 	server = http.Server{
 		Addr:    appConfig.LocalServer.BindAddr,
 		Handler: router,

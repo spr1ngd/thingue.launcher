@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"thingue-launcher/server/util"
+	"thingue-launcher/common/util"
 )
 
 type Streamer struct {
@@ -61,6 +61,6 @@ func (s *Streamer) SendCloseMsg(code int, msg string) {
 	s.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(code, msg))
 }
 
-func (s *Streamer) close(msg string) {
+func (s *Streamer) close() {
 	s.conn.Close()
 }

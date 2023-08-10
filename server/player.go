@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gorilla/websocket"
-	"thingue-launcher/server/util"
+	"thingue-launcher/common/util"
 )
 
 var playerIdCount = 0

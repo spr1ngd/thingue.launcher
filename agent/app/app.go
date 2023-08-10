@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"thingue-launcher/agent/global"
-	"thingue-launcher/common/config"
+	"thingue-launcher/common/app"
 )
 
 // App struct
@@ -42,13 +42,13 @@ func (a *App) OpenExplorer(path string) error {
 	return err
 }
 
-func (a *App) GetAppConfig() config.AppConfig {
-	return *config.GetAppConfig()
+func (a *App) GetAppConfig() *app.Config {
+	return app.GetAppConfig()
 }
 
 func (a *App) ControlRestartTask(enable bool) error {
 	var err error
-	appConfig := config.GetAppConfig()
+	appConfig := app.GetAppConfig()
 	if enable {
 		err = EnableRestartTask()
 	} else {
@@ -56,16 +56,16 @@ func (a *App) ControlRestartTask(enable bool) error {
 	}
 	if err == nil {
 		appConfig.EnableRestartTask = enable
-		config.WriteConfig()
+		app.WriteConfig()
 	}
 	return err
 }
 
-func (a *App) UpdateSystemSettings(systemSettings config.SystemSettings) {
+func (a *App) UpdateSystemSettings(systemSettings app.SystemSettings) {
 	fmt.Println(systemSettings)
-	appConfig := config.GetAppConfig()
+	appConfig := app.GetAppConfig()
 	appConfig.SystemSettings = systemSettings
-	config.WriteConfig()
+	app.WriteConfig()
 }
 
 func (a *App) GetVersionInfo() *VersionInfo {

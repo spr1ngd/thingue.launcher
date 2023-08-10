@@ -1,4 +1,4 @@
-package config
+package app
 
 import (
 	"fmt"
@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-var appConfig AppConfig
+var appConfig Config
 
-type AppConfig struct {
+type Config struct {
 	ServerUrl         string
 	LocalServer       LocalServer
 	SystemSettings    SystemSettings
@@ -46,7 +46,7 @@ func InitConfig() {
 	}
 }
 
-func GetAppConfig() *AppConfig {
+func GetAppConfig() *Config {
 	return &appConfig
 }
 

@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"thingue-launcher/server/util"
+	"thingue-launcher/common/util"
 )
 
 func StreamerMsgHandler(streamer *Streamer, msgStr string) {
