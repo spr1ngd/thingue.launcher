@@ -7,4 +7,4 @@ agent:
         autostart: true
     systemsettings:
         restarttaskcron: '*/1 * * * *'
-    enablerestarttask: false
+    enablerestarttask: true

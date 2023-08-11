@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"thingue-launcher/common/app"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
@@ -12,8 +11,10 @@ import (
 var appConfig = app.GetAppConfig()
 
 func RegisterAgent(httpUrl string) error {
-	fmt.Println("发送请求"+httpUrl, "/api/agent/register")
-	reqData, _ := json.Marshal(GetDeviceInfo())
+	registerInfo := model.AgentRegisterInfo{
+		DeviceInfo: util.GetDeviceInfo(),
+	}
+	reqData, _ := json.Marshal(registerInfo)
 	result, err := util.HttpPost(httpUrl+"api/agent/register", reqData)
 	if err != nil {
 		res := model.JsonStruct{}

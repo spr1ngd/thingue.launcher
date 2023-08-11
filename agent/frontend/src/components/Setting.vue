@@ -1,7 +1,7 @@
 <script setup>
 
 import {onMounted, reactive, ref, watch} from "vue";
-import {ControlRestartTask, GetAppConfig, UpdateSystemSettings, GetVersionInfo} from "@wails/go/app/App";
+import {ControlRestartTask, GetAppConfig, UpdateSystemSettings, GetVersionInfo} from "@wails/go/api/App";
 import {Notify} from "quasar";
 
 const systemSettings = reactive({

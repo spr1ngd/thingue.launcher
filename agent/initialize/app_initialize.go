@@ -6,15 +6,12 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"thingue-launcher/agent/app"
-	"thingue-launcher/agent/server"
+	"thingue-launcher/agent/api"
 	"thingue-launcher/agent/unreal"
 )
 
 func InitApp(assets embed.FS) {
 	// 初始化wails app
-	newApp := app.NewApp()
-	newServer := server.NewServer()
 	newUnreal := unreal.NewUnreal()
 	err := wails.Run(&options.App{
 		Title:  "ThingUE启动器",
@@ -25,14 +22,14 @@ func InitApp(assets embed.FS) {
 		},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 1},
 		OnStartup: func(ctx context.Context) {
-			newApp.SetContext(ctx)
+			api.AppApi.Init(ctx)
 			newUnreal.SetContext(ctx)
-			newServer.SetContext(ctx)
+			api.ServerManagerApi.Init(ctx)
 		},
 		Bind: []interface{}{
-			newApp,
+			api.AppApi,
 			newUnreal,
-			newServer,
+			api.ServerManagerApi,
 		},
 	})
 	if err != nil {

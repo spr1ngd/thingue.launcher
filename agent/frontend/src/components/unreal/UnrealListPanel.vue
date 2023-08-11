@@ -1,7 +1,7 @@
 <script setup>
 import {defineEmits, onMounted, ref} from "vue";
 import {DeleteInstance, ListRunner, StartInstance, StopInstance} from "@wails/go/unreal/Unreal.js";
-import {GetAppConfig, OpenExplorer} from "@wails/go/app/App.js";
+import {GetAppConfig, OpenExplorer} from "@wails/go/api/App.js";
 import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/server/Server";
 
 import {Notify} from "quasar";
