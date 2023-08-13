@@ -3,7 +3,6 @@ package manager
 import (
 	"fmt"
 	"github.com/robfig/cron/v3"
-	"thingue-launcher/agent/service"
 	"thingue-launcher/common/app"
 )
 
@@ -29,7 +28,7 @@ func (t *RunnerRestartTaskManager) Start() error {
 	appConfig := app.GetAppConfig()
 	t.restartTaskEntryID, err = t.restartCron.AddFunc(appConfig.SystemSettings.RestartTaskCron, func() {
 		fmt.Println("重启定时任务执行开始")
-		service.UeRunnerManager.RestartAllRunner()
+		RunnerManager.RestartAllRunner()
 		fmt.Println("重启定时任务执行结束")
 	})
 	t.restartCron.Start()

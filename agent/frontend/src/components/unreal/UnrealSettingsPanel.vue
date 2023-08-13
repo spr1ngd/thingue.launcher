@@ -2,8 +2,8 @@
 import {defineEmits, onMounted, ref} from "vue";
 import * as monaco from 'monaco-editor'
 import {Notify} from "quasar";
-import {OpenFileDialog} from "@wails/go/api/App.js";
-import {CreateInstance, SaveInstance} from "@wails/go/unreal/Unreal";
+import {OpenFileDialog} from "@wails/go/api/systemApi";
+import {CreateInstance, SaveInstance} from "@wails/go/api/instanceApi";
 
 const emit = defineEmits(['openListPanel'])
 const props = defineProps(['data']);

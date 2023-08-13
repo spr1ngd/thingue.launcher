@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
-import {GetLocalServerStatus, LocalServerShutdown, LocalServerStart, UpdateLocalServerConfig} from "@wails/go/server/Server.js";
-import {GetAppConfig} from "@wails/go/api/App.js";
+import {GetLocalServerStatus, LocalServerShutdown, LocalServerStart, UpdateLocalServerConfig} from "@wails/go/api/serverApi.js";
+import {GetAppConfig} from "@wails/go/api/systemApi";
 
 
 const tab = ref("local")
@@ -15,12 +15,14 @@ const localServerConfig = reactive({
 
 let localServerStatus = ref(false)
 
-function serverStart() {
-  LocalServerStart();
+async function serverStart() {
+  await LocalServerStart();
+  localServerStatus.value = await GetLocalServerStatus()
 }
 
-function serverShutdown() {
-  LocalServerShutdown()
+async function serverShutdown() {
+  await LocalServerShutdown()
+  localServerStatus.value = await GetLocalServerStatus()
 }
 
 function handleOpenExplorer() {
@@ -50,10 +52,6 @@ onMounted(async () => {
     })
   })
 })
-
-onUnmounted(async () => {
-
-});
 </script>
 
 <template>

@@ -7,11 +7,15 @@ import (
 	"thingue-launcher/agent/model"
 )
 
-type RunnerManager struct {
+type runnerManager struct {
 	IdRunnerMap map[uint]*core.Runner
 }
 
-func (m *RunnerManager) NewRunner(instance *model.Instance) error {
+var RunnerManager = runnerManager{
+	IdRunnerMap: make(map[uint]*core.Runner),
+}
+
+func (m *runnerManager) NewRunner(instance *model.Instance) error {
 	if _, ok := m.IdRunnerMap[instance.ID]; ok {
 		return errors.New("无法重复创建")
 	}
@@ -23,7 +27,7 @@ func (m *RunnerManager) NewRunner(instance *model.Instance) error {
 	return nil
 }
 
-func (m *RunnerManager) GetRunnerById(id uint) *core.Runner {
+func (m *runnerManager) GetRunnerById(id uint) *core.Runner {
 	value, ok := m.IdRunnerMap[id]
 	if ok {
 		return value
@@ -32,18 +36,18 @@ func (m *RunnerManager) GetRunnerById(id uint) *core.Runner {
 	}
 }
 
-func (m *RunnerManager) CloseAllRunner() {
+func (m *runnerManager) CloseAllRunner() {
 	fmt.Printf("关闭所有正在运行的实例")
 	for _, runner := range m.IdRunnerMap {
-		if runner.IsRunning {
+		if runner.StateCode == 1 {
 			runner.Stop()
 		}
 	}
 }
 
-func (m *RunnerManager) RestartAllRunner() {
+func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
-		if runner.IsRunning {
+		if runner.StateCode == 1 {
 			_ = runner.Stop()
 			//time.Sleep(3 * time.Second) //kill发出停顿三秒，等待进程关闭
 			err := runner.Start()
@@ -56,10 +60,10 @@ func (m *RunnerManager) RestartAllRunner() {
 	}
 }
 
-func (m *RunnerManager) DeleteRunner(id uint) error {
+func (m *runnerManager) DeleteRunner(id uint) error {
 	runner := m.GetRunnerById(id)
 	if runner != nil {
-		if runner.IsRunning {
+		if runner.StateCode == 1 {
 			return errors.New("实例正在运行，无法删除")
 		}
 		delete(m.IdRunnerMap, runner.ID)

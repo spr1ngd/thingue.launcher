@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {CreateRemoteServer, DeleteRemoteServer, ListRemoteServer, SaveRemoteServer} from "@wails/go/server/Server.js";
+import {CreateRemoteServer, DeleteRemoteServer, ListRemoteServer, SaveRemoteServer} from "@wails/go/api/serverApi";
 
 const data = ref([])
 

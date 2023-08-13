@@ -3,7 +3,7 @@ package agent
 import (
 	"embed"
 	"thingue-launcher/agent/initialize"
-	"thingue-launcher/agent/unreal"
+	"thingue-launcher/agent/service"
 )
 
 //go:embed all:frontend/dist
@@ -17,5 +17,5 @@ func Startup() {
 }
 
 func Shutdown() {
-	unreal.CloseAllRunner()
+	service.UeRunnerManager.CloseAllRunner()
 }

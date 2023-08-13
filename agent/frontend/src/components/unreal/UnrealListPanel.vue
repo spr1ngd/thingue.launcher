@@ -1,10 +1,11 @@
 <script setup>
 import {defineEmits, onMounted, ref} from "vue";
-import {DeleteInstance, ListRunner, StartInstance, StopInstance} from "@wails/go/unreal/Unreal.js";
-import {GetAppConfig, OpenExplorer} from "@wails/go/api/App.js";
-import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/server/Server";
+import {DeleteInstance, ListRunner, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
+import {GetAppConfig, OpenExplorer} from "@wails/go/api/systemApi.js";
+import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/api/serverApi";
 
 import {Notify} from "quasar";
+import {RunnerStateCodeToString} from "@/utils";
 
 const emit = defineEmits(["openSettingsPanel"])
 
@@ -25,10 +26,10 @@ onMounted(async () => {
   options.value = await GetConnectServerOptions()
 
   //注册事件监听
-  window.runtime.EventsOn("remote_server_connection_close", () => {
+  window.runtime.EventsOn("remote_server_conn_close", () => {
     currentServer.value = null
   })
-  window.runtime.EventsOn("runner_status_update", () => {
+  window.runtime.EventsOn("runner_unexpected_exit", () => {
     list()
   })
   let appConfig = await GetAppConfig();
@@ -94,6 +95,7 @@ async function handleSelectChange() {
 function handleStartInstance(id) {
   StartInstance(id).then(() => {
     Notify.create("操作成功")
+    list()
   }).catch(err => {
     Notify.create(err)
   })
@@ -102,6 +104,7 @@ function handleStartInstance(id) {
 function handleStopInstance(id) {
   StopInstance(id).then(() => {
     Notify.create("操作成功")
+    list()
   }).catch(err => {
     Notify.create(err)
   })
@@ -140,7 +143,7 @@ function handleStopInstance(id) {
                   </q-item-section>
                   <q-item-section avatar style="width: 100px">
                     <q-item-label caption class="ellipsis">状态</q-item-label>
-                    <q-item-label class="ellipsis">{{ props.row.IsRunning ? '正在运行' : '停止' }}</q-item-label>
+                    <q-item-label class="ellipsis">{{ RunnerStateCodeToString(props.row.StateCode) }}</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>

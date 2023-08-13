@@ -3,8 +3,8 @@ package service
 import "thingue-launcher/agent/service/manager"
 
 var (
-	ServerManager            = new(manager.ServerManager)
+	ServerConnManager        = new(manager.ServerConnManager)
 	InstanceManager          = new(manager.InstanceManager)
-	UeRunnerManager          = new(manager.RunnerManager)
+	UeRunnerManager          = manager.RunnerManager
 	RunnerRestartTaskManager = new(manager.RunnerRestartTaskManager)
 )

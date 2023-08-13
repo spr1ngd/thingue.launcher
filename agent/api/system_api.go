@@ -11,18 +11,18 @@ import (
 	"thingue-launcher/common/app"
 )
 
-type System struct {
+type systemApi struct {
 	ctx context.Context
 }
 
-var AppApi = new(System)
+var SystemApi = new(systemApi)
 
-func (a *System) Init(ctx context.Context) {
+func (a *systemApi) Init(ctx context.Context) {
 	a.ctx = ctx
 	service.RunnerRestartTaskManager.Init()
 }
 
-func (a *System) OpenFileDialog(title string, displayName string, pattern string) (string, error) {
+func (a *systemApi) OpenFileDialog(title string, displayName string, pattern string) (string, error) {
 	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
 		Title: title,
 		Filters: []runtime.FileFilter{
@@ -34,17 +34,17 @@ func (a *System) OpenFileDialog(title string, displayName string, pattern string
 	})
 }
 
-func (a *System) OpenExplorer(path string) error {
+func (a *systemApi) OpenExplorer(path string) error {
 	cmd := exec.Command("explorer", filepath.Dir(path))
 	err := cmd.Run()
 	return err
 }
 
-func (a *System) GetAppConfig() *app.Config {
+func (a *systemApi) GetAppConfig() *app.Config {
 	return app.GetAppConfig()
 }
 
-func (a *System) ControlRestartTask(enable bool) error {
+func (a *systemApi) ControlRestartTask(enable bool) error {
 	var err error
 	appConfig := app.GetAppConfig()
 	if enable {
@@ -59,13 +59,13 @@ func (a *System) ControlRestartTask(enable bool) error {
 	return err
 }
 
-func (a *System) UpdateSystemSettings(systemSettings app.SystemSettings) {
+func (a *systemApi) UpdateSystemSettings(systemSettings app.SystemSettings) {
 	appConfig := app.GetAppConfig()
 	appConfig.SystemSettings = systemSettings
 	app.WriteConfig()
 }
 
-func (a *System) GetVersionInfo() *system.VersionInfo {
+func (a *systemApi) GetVersionInfo() *system.VersionInfo {
 	return &system.VersionInfo{
 		Version:   global.APP_VERSION,
 		GitCommit: global.APP_GITCOMMIT,

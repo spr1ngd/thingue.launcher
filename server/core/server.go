@@ -12,7 +12,7 @@ import (
 type Server struct {
 	server          http.Server
 	serverIsRunning bool
-	ExitChan        chan bool
+	ExitChan        chan error
 }
 
 var ServerApp = new(Server)
@@ -27,9 +27,8 @@ func (s *Server) Start(staticFiles embed.FS) {
 		err := s.server.ListenAndServe() //运行中阻塞
 		s.serverIsRunning = false
 		if err != nil {
-			fmt.Printf("Server start failed: %v\n", err)
+			fmt.Printf("Server closed: %v\n", err)
 		}
-		s.ExitChan <- true
 	}()
 }
 
