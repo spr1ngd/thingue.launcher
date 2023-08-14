@@ -1,14 +1,14 @@
-package core
+package instance
 
 import (
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
-	"syscall"
-	"thingue-launcher/agent/global"
+	"runtime"
+	"strconv"
 	"thingue-launcher/agent/model"
-	"thingue-launcher/common/app"
+	"thingue-launcher/common/config"
 	"thingue-launcher/common/util"
 	"time"
 )
@@ -17,8 +17,6 @@ type Runner struct {
 	*model.Instance
 	ExitSignalChannel chan error `json:"-"`
 	process           *os.Process
-	Pid               int
-	StateCode         int8
 }
 
 func (r *Runner) Start() error {
@@ -27,7 +25,7 @@ func (r *Runner) Start() error {
 	}
 	// 设置PixelStreamingURL
 	var launchArguments []string
-	appConfig := app.GetAppConfig()
+	appConfig := config.AppConfig
 	if appConfig.ServerUrl != "" {
 		wsUrl := util.HttpUrlToStreamerWsUrl(appConfig.ServerUrl)
 		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.Name)
@@ -56,7 +54,7 @@ func (r *Runner) Start() error {
 			fmt.Println("退出码发送成功")
 		default:
 			r.StateCode = -1
-			global.RunnerUnexpectedExitChanel <- r.ID
+			RunnerManager.RunnerUnexpectedExitChanel <- r.ID
 			fmt.Println("异常退出")
 		}
 	}()
@@ -67,7 +65,16 @@ func (r *Runner) Stop() error {
 	if r.StateCode != 1 {
 		return errors.New("实例未在运行")
 	}
-	err := r.process.Signal(syscall.SIGKILL)
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("taskkill", "/F", "/T", "/PID", strconv.Itoa(r.Pid))
+	} else if runtime.GOOS == "linux" {
+		cmd = exec.Command("kill", "-TERM", strconv.Itoa(r.Pid))
+	} else {
+		return errors.New("不支持的系统")
+	}
+	err := cmd.Run()
+	//err := r.process.Signal(syscall.SIGKILL)
 	exitStatus := <-r.ExitSignalChannel
 	fmt.Printf("%s进程退出%s\n", r.Name, exitStatus)
 	return err

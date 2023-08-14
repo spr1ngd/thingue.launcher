@@ -6,9 +6,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"thingue-launcher/agent/global"
+	"thingue-launcher/agent/model"
 	"thingue-launcher/agent/service"
-	"thingue-launcher/agent/system"
-	"thingue-launcher/common/app"
+	"thingue-launcher/common/config"
 )
 
 type systemApi struct {
@@ -40,13 +40,13 @@ func (a *systemApi) OpenExplorer(path string) error {
 	return err
 }
 
-func (a *systemApi) GetAppConfig() *app.Config {
-	return app.GetAppConfig()
+func (a *systemApi) GetAppConfig() *config.Config {
+	return config.AppConfig
 }
 
 func (a *systemApi) ControlRestartTask(enable bool) error {
 	var err error
-	appConfig := app.GetAppConfig()
+	appConfig := config.AppConfig
 	if enable {
 		err = service.RunnerRestartTaskManager.Start()
 	} else {
@@ -54,19 +54,19 @@ func (a *systemApi) ControlRestartTask(enable bool) error {
 	}
 	if err == nil {
 		appConfig.EnableRestartTask = enable
-		app.WriteConfig()
+		config.WriteConfig()
 	}
 	return err
 }
 
-func (a *systemApi) UpdateSystemSettings(systemSettings app.SystemSettings) {
-	appConfig := app.GetAppConfig()
+func (a *systemApi) UpdateSystemSettings(systemSettings config.SystemSettings) {
+	appConfig := config.AppConfig
 	appConfig.SystemSettings = systemSettings
-	app.WriteConfig()
+	config.WriteConfig()
 }
 
-func (a *systemApi) GetVersionInfo() *system.VersionInfo {
-	return &system.VersionInfo{
+func (a *systemApi) GetVersionInfo() *model.VersionInfo {
+	return &model.VersionInfo{
 		Version:   global.APP_VERSION,
 		GitCommit: global.APP_GITCOMMIT,
 		BuildDate: global.APP_BUILDDATE,

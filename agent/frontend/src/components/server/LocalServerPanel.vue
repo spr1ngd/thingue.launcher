@@ -1,7 +1,13 @@
 <script setup>
-import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
-import {GetLocalServerStatus, LocalServerShutdown, LocalServerStart, UpdateLocalServerConfig} from "@wails/go/api/serverApi.js";
+import {onMounted, reactive, ref, watch} from 'vue'
+import {
+  GetLocalServerStatus,
+  LocalServerShutdown,
+  LocalServerStart,
+  UpdateLocalServerConfig
+} from "@wails/go/api/serverApi.js";
 import {GetAppConfig} from "@wails/go/api/systemApi";
+import {Notify} from "quasar";
 
 
 const tab = ref("local")
@@ -25,9 +31,9 @@ async function serverShutdown() {
   localServerStatus.value = await GetLocalServerStatus()
 }
 
-function handleOpenExplorer() {
+function handleOpenBrowser() {
   const port = localServerConfig.bindAddr.split(":")[1]
-  window.runtime.BrowserOpenURL(`http://localhost:${port}${localServerConfig.basePath}/static/`)
+  window.runtime.BrowserOpenURL(`http://localhost:${port}${localServerConfig.basePath}/static/`);
 }
 
 onMounted(async () => {
@@ -40,8 +46,9 @@ onMounted(async () => {
   // 获取本地server状态
   localServerStatus.value = await GetLocalServerStatus()
   //注册事件监听
-  window.runtime.EventsOn("local_server_status_update", (status) => {
-    localServerStatus.value = status
+  window.runtime.EventsOn("local_server_close", (err) => {
+    localServerStatus.value = false
+    Notify.create(`服务关闭退出信息 ${err}`)
   })
   watch(localServerConfig, async (value, oldValue, onCleanup) => {
     UpdateLocalServerConfig({
@@ -51,6 +58,10 @@ onMounted(async () => {
       AutoStart: localServerConfig.autoStart,
     })
   })
+})
+
+onMounted(() => {
+  window.runtime.EventsOff("local_server_close")
 })
 </script>
 
@@ -91,7 +102,7 @@ onMounted(async () => {
             <q-btn dense label="关闭" color="negative" @click="serverShutdown" :disable="!localServerStatus"></q-btn>
           </q-item-section>
           <q-item-section avatar>
-            <q-btn flat round icon="open_in_new" @click="handleOpenExplorer"/>
+            <q-btn flat round icon="open_in_new" @click="handleOpenBrowser"/>
           </q-item-section>
         </q-item>
       </q-list>

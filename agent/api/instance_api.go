@@ -5,8 +5,6 @@ import (
 	"errors"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"thingue-launcher/agent/constants"
-	"thingue-launcher/agent/core"
-	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/model"
 	"thingue-launcher/agent/service"
 )
@@ -20,68 +18,50 @@ var InstanceApi = new(instanceApi)
 func (u *instanceApi) Init(ctx context.Context) {
 	u.ctx = ctx
 	// 从持久化数据中实例化Runners
-	instances := u.ListInstance()
+	instances := service.InstanceManager.List()
 	for index := range instances {
-		service.UeRunnerManager.NewRunner(&instances[index])
+		service.RunnerManager.NewRunner(&instances[index])
 	}
 	// 启动实例异常退出监听
-	global.RunnerUnexpectedExitChanel = make(chan uint)
+	service.RunnerManager.RunnerUnexpectedExitChanel = make(chan uint)
 	go func() {
 		for {
-			id := <-global.RunnerUnexpectedExitChanel
+			id := <-service.RunnerManager.RunnerUnexpectedExitChanel
 			runtime.EventsEmit(ctx, constants.RUNNER_UNEXPECTED_EXIT, id)
 		}
 	}()
 }
 
 func (u *instanceApi) GetInstanceById(id uint) *model.Instance {
-	instance := model.Instance{}
-	global.APP_DB.First(&instance, id)
-	return &instance
+	return service.InstanceManager.GetById(id)
 }
 
-func (u *instanceApi) ListInstance() []model.Instance {
-	var instances []model.Instance
-	global.APP_DB.Find(&instances)
-	return instances
+func (u *instanceApi) ListInstance() []*model.Instance {
+	return service.RunnerManager.List()
 }
 
-func (u *instanceApi) ListRunner() []*core.Runner {
-	var runners = make([]*core.Runner, 0)
-	instances := u.ListInstance()
-	for _, instance := range instances {
-		runner := service.UeRunnerManager.GetRunnerById(instance.ID)
-		runners = append(runners, runner)
+func (u *instanceApi) CreateInstance(instance *model.Instance) error {
+	err := service.RunnerManager.NewRunner(instance)
+	if err != nil {
+		service.InstanceManager.Create(instance)
 	}
-	return runners
-}
-
-func (u *instanceApi) CreateInstance(instance *model.Instance) uint {
-	global.APP_DB.Create(&instance)
-	service.UeRunnerManager.NewRunner(instance)
-	return instance.ID
+	return err
 }
 
 func (u *instanceApi) SaveInstance(instance *model.Instance) error {
-	runner := service.UeRunnerManager.GetRunnerById(instance.ID)
-	if runner.StateCode == 1 {
-		return errors.New("实例运行中无法修改配置")
-	}
-	global.APP_DB.Save(instance)
-	runner.Instance = instance
-	return nil
+	return service.InstanceManager.Save(instance)
 }
 
 func (u *instanceApi) DeleteInstance(id uint) error {
-	err := service.UeRunnerManager.DeleteRunner(id)
+	err := service.RunnerManager.DeleteRunner(id)
 	if err == nil {
-		global.APP_DB.Delete(&model.Instance{}, id)
+		service.InstanceManager.Delete(id)
 	}
 	return err
 }
 
 func (u *instanceApi) StartInstance(id uint) error {
-	runner := service.UeRunnerManager.GetRunnerById(id)
+	runner := service.RunnerManager.GetRunnerById(id)
 	if runner != nil {
 		return runner.Start()
 	} else {
@@ -90,7 +70,7 @@ func (u *instanceApi) StartInstance(id uint) error {
 }
 
 func (u *instanceApi) StopInstance(id uint) error {
-	runner := service.UeRunnerManager.GetRunnerById(id)
+	runner := service.RunnerManager.GetRunnerById(id)
 	if runner != nil {
 		return runner.Stop()
 	} else {

@@ -1,4 +1,4 @@
-package util
+package server
 
 import (
 	"github.com/jaypipes/ghw"
@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 	"thingue-launcher/common/model"
+	"thingue-launcher/common/util"
 )
 
 func GetDeviceInfo() *model.DeviceInfo {
@@ -43,7 +44,7 @@ func GetDeviceInfo() *model.DeviceInfo {
 	}
 	interfaces, _ := net.Interfaces()
 	for _, iface := range interfaces {
-		if ContainsString(ifaceNames, iface.Name) {
+		if util.ContainsString(ifaceNames, iface.Name) {
 			if iface.Flags&net.FlagLoopback == 0 && iface.Flags&net.FlagUp != 0 {
 				addrs, _ := iface.Addrs()
 				for _, addr := range addrs {

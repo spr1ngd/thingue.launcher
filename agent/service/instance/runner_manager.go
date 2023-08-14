@@ -1,25 +1,34 @@
-package manager
+package instance
 
 import (
 	"errors"
 	"fmt"
-	"thingue-launcher/agent/core"
 	"thingue-launcher/agent/model"
 )
 
 type runnerManager struct {
-	IdRunnerMap map[uint]*core.Runner
+	IdRunnerMap                map[uint]*Runner
+	RunnerUnexpectedExitChanel chan uint
 }
 
 var RunnerManager = runnerManager{
-	IdRunnerMap: make(map[uint]*core.Runner),
+	IdRunnerMap: make(map[uint]*Runner),
+}
+
+func (m *runnerManager) List() []*model.Instance {
+	var instances = make([]*model.Instance, 0)
+	for _, instance := range InstanceManager.List() {
+		runner := m.GetRunnerById(instance.ID)
+		instances = append(instances, runner.Instance)
+	}
+	return instances
 }
 
 func (m *runnerManager) NewRunner(instance *model.Instance) error {
 	if _, ok := m.IdRunnerMap[instance.ID]; ok {
 		return errors.New("无法重复创建")
 	}
-	r := &core.Runner{
+	r := &Runner{
 		Instance:          instance,
 		ExitSignalChannel: make(chan error),
 	}
@@ -27,7 +36,7 @@ func (m *runnerManager) NewRunner(instance *model.Instance) error {
 	return nil
 }
 
-func (m *runnerManager) GetRunnerById(id uint) *core.Runner {
+func (m *runnerManager) GetRunnerById(id uint) *Runner {
 	value, ok := m.IdRunnerMap[id]
 	if ok {
 		return value

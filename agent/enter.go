@@ -17,5 +17,5 @@ func Startup() {
 }
 
 func Shutdown() {
-	service.UeRunnerManager.CloseAllRunner()
+	service.RunnerManager.CloseAllRunner()
 }

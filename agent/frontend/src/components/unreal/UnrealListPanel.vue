@@ -1,6 +1,6 @@
 <script setup>
 import {defineEmits, onMounted, ref} from "vue";
-import {DeleteInstance, ListRunner, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
+import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
 import {GetAppConfig, OpenExplorer} from "@wails/go/api/systemApi.js";
 import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/api/serverApi";
 
@@ -36,8 +36,12 @@ onMounted(async () => {
   currentServer.value = appConfig.ServerUrl;
 })
 
+onMounted(() => {
+  window.runtime.EventsOff("remote_server_conn_close", "runner_unexpected_exit")
+})
+
 async function list() {
-  rows.value = await ListRunner()
+  rows.value = await ListInstance()
 }
 
 function handleNewSettings() {
@@ -103,7 +107,7 @@ function handleStartInstance(id) {
 
 function handleStopInstance(id) {
   StopInstance(id).then(() => {
-    Notify.create("操作成功")
+    Notify.create("进程退出成功")
     list()
   }).catch(err => {
     Notify.create(err)

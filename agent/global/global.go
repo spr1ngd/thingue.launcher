@@ -7,14 +7,12 @@ import (
 )
 
 var (
-	APP_DB                      *gorm.DB
-	APP_VP                      *viper.Viper
-	lock                        sync.RWMutex
-	APP_VERSION                 string
-	APP_GITCOMMIT               string
-	APP_BUILDDATE               string
-	RunnerUnexpectedExitChanel  chan uint
-	RemoteServerConnCloseChanel chan string
+	APP_DB        *gorm.DB
+	APP_VP        *viper.Viper
+	lock          sync.RWMutex
+	APP_VERSION   string
+	APP_GITCOMMIT string
+	APP_BUILDDATE string
 )
 
 func SetAppVersion(version, gitCommit, buildDate string) {

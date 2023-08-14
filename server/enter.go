@@ -8,8 +8,12 @@ import (
 //go:embed all:frontend/dist
 var staticFiles embed.FS
 
+func Init() {
+	core.ServerApp.Init(staticFiles)
+}
+
 func Startup() {
-	core.ServerApp.Start(staticFiles)
+	core.ServerApp.Start()
 }
 
 func Shutdown() {

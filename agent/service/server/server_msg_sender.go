@@ -3,16 +3,15 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"thingue-launcher/common/app"
+	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
 )
 
-var appConfig = app.GetAppConfig()
-
 func RegisterAgent(httpUrl string) error {
 	registerInfo := model.AgentRegisterInfo{
-		DeviceInfo: util.GetDeviceInfo(),
+		DeviceInfo: GetDeviceInfo(),
+		Instances:  instance.RunnerManager.List(),
 	}
 	reqData, _ := json.Marshal(registerInfo)
 	result, err := util.HttpPost(httpUrl+"api/agent/register", reqData)

@@ -1,4 +1,4 @@
-package system
+package model
 
 type VersionInfo struct {
 	Version   string

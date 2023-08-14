@@ -5,30 +5,36 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
-	"thingue-launcher/common/app"
+	"thingue-launcher/common/config"
 	"time"
 )
 
 type Server struct {
-	server          http.Server
-	serverIsRunning bool
-	ExitChan        chan error
+	server            http.Server
+	serverIsRunning   bool
+	CloseReturnChanel chan string
+	staticFiles       embed.FS
 }
 
 var ServerApp = new(Server)
 
-func (s *Server) Start(staticFiles embed.FS) {
+func (s *Server) Init(staticFiles embed.FS) {
+	s.staticFiles = staticFiles
+}
+
+func (s *Server) Start() {
 	s.server = http.Server{
-		Addr:    app.GetAppConfig().LocalServer.BindAddr,
-		Handler: BuildRouter(staticFiles),
+		Addr:    config.AppConfig.LocalServer.BindAddr,
+		Handler: BuildRouter(s.staticFiles),
 	}
 	s.serverIsRunning = true
 	go func() {
 		err := s.server.ListenAndServe() //运行中阻塞
 		s.serverIsRunning = false
-		if err != nil {
-			fmt.Printf("Server closed: %v\n", err)
+		if s.CloseReturnChanel != nil {
+			s.CloseReturnChanel <- err.Error()
 		}
+		fmt.Printf("Server closed: %v\n", err)
 	}()
 }
 

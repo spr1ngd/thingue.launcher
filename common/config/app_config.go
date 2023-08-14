@@ -1,4 +1,4 @@
-package app
+package config
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var appConfig Config
+var AppConfig = new(Config)
 
 type Config struct {
 	ServerUrl         string
@@ -40,18 +40,14 @@ func InitConfig() {
 	viper.SetDefault("agent.localserver.basepath", "/")
 	viper.SetDefault("agent.localserver.enable", true)
 	viper.ReadInConfig()
-	err := viper.UnmarshalKey("agent", &appConfig)
+	err := viper.UnmarshalKey("agent", AppConfig)
 	if err != nil {
 		fmt.Println("配置文件解析失败")
 	}
 }
 
-func GetAppConfig() *Config {
-	return &appConfig
-}
-
 func WriteConfig() {
-	viper.Set("agent", &appConfig)
+	viper.Set("agent", AppConfig)
 	err := viper.WriteConfig()
 	if err != nil {
 		fmt.Println(err.Error())

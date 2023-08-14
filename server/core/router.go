@@ -3,7 +3,7 @@ package core
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/common/app"
+	"thingue-launcher/common/config"
 	"thingue-launcher/server/router"
 )
 
@@ -29,7 +29,7 @@ func BuildRouter(staticFiles embed.FS) *gin.Engine {
 	Router := gin.Default()
 	Router.Use(CorsMiddleware())
 	//初始化base路由组
-	baseGroup := Router.Group(app.GetAppConfig().LocalServer.BasePath)
+	baseGroup := Router.Group(config.AppConfig.LocalServer.BasePath)
 	{
 		//初始化base/ws路由组
 		wsRouter.InitWsRouter(baseGroup)
