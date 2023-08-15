@@ -6,9 +6,9 @@ import (
 	"strings"
 	"thingue-launcher/agent/constants"
 	"thingue-launcher/agent/global"
-	"thingue-launcher/agent/model"
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/config"
+	"thingue-launcher/common/model"
 	"thingue-launcher/server/core"
 )
 
@@ -30,8 +30,6 @@ func (s *serverApi) Init(ctx context.Context) {
 			config.WriteConfig()
 		}
 	}
-	// 监听server连接断开
-	service.ServerConnManager.RemoteServerConnCloseChanel = make(chan string)
 	go func() {
 		for {
 			wsUrl := <-service.ServerConnManager.RemoteServerConnCloseChanel

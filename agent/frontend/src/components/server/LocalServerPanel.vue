@@ -33,7 +33,10 @@ async function serverShutdown() {
 
 function handleOpenBrowser() {
   const port = localServerConfig.bindAddr.split(":")[1]
-  window.runtime.BrowserOpenURL(`http://localhost:${port}${localServerConfig.basePath}/static/`);
+  let url = new URL(`http://localhost:${port}`);
+  url = new URL(localServerConfig.basePath, url);
+  url = new URL("/static/", url);
+  window.runtime.BrowserOpenURL(url);
 }
 
 onMounted(async () => {

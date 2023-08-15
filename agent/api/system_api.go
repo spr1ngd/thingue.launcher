@@ -6,9 +6,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"thingue-launcher/agent/global"
-	"thingue-launcher/agent/model"
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/config"
+	"thingue-launcher/common/model"
 )
 
 type systemApi struct {

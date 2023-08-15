@@ -3,16 +3,20 @@ package instance
 import (
 	"errors"
 	"fmt"
-	"thingue-launcher/agent/model"
+	"thingue-launcher/common/model"
+	"time"
 )
 
 type runnerManager struct {
 	IdRunnerMap                map[uint]*Runner
 	RunnerUnexpectedExitChanel chan uint
+	RunnerStatusUpdateChanel   chan uint
 }
 
 var RunnerManager = runnerManager{
-	IdRunnerMap: make(map[uint]*Runner),
+	IdRunnerMap:                make(map[uint]*Runner),
+	RunnerUnexpectedExitChanel: make(chan uint),
+	RunnerStatusUpdateChanel:   make(chan uint),
 }
 
 func (m *runnerManager) List() []*model.Instance {
@@ -58,7 +62,7 @@ func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
 			_ = runner.Stop()
-			//time.Sleep(3 * time.Second) //kill发出停顿三秒，等待进程关闭
+			time.Sleep(3 * time.Second) //kill发出停顿三秒，等待进程关闭
 			err := runner.Start()
 			if err != nil {
 				fmt.Printf("%s重启失败:%s\n", runner.Name, err)

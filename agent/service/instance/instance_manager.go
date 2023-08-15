@@ -3,7 +3,7 @@ package instance
 import (
 	"errors"
 	"thingue-launcher/agent/global"
-	"thingue-launcher/agent/model"
+	"thingue-launcher/common/model"
 )
 
 type instanceManager struct{}

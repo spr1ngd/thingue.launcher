@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"thingue-launcher/agent/constants"
-	"thingue-launcher/agent/model"
 	"thingue-launcher/agent/service"
+	"thingue-launcher/common/model"
 )
 
 type instanceApi struct {
@@ -23,11 +23,17 @@ func (u *instanceApi) Init(ctx context.Context) {
 		service.RunnerManager.NewRunner(&instances[index])
 	}
 	// 启动实例异常退出监听
-	service.RunnerManager.RunnerUnexpectedExitChanel = make(chan uint)
 	go func() {
 		for {
 			id := <-service.RunnerManager.RunnerUnexpectedExitChanel
 			runtime.EventsEmit(ctx, constants.RUNNER_UNEXPECTED_EXIT, id)
+		}
+	}()
+	// 启动实例状态变化监听
+	go func() {
+		for {
+			id := <-service.RunnerManager.RunnerStatusUpdateChanel
+			runtime.EventsEmit(ctx, constants.RUNNER_STATUS_UPDATE, id)
 		}
 	}()
 }
@@ -41,9 +47,10 @@ func (u *instanceApi) ListInstance() []*model.Instance {
 }
 
 func (u *instanceApi) CreateInstance(instance *model.Instance) error {
+	service.InstanceManager.Create(instance)
 	err := service.RunnerManager.NewRunner(instance)
 	if err != nil {
-		service.InstanceManager.Create(instance)
+		service.InstanceManager.Delete(instance.ID)
 	}
 	return err
 }

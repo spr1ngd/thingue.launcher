@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
-	"thingue-launcher/agent/model"
 	"thingue-launcher/common/config"
+	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
 	"time"
 )
@@ -42,15 +42,18 @@ func (r *Runner) Start() error {
 	r.Pid = command.Process.Pid
 	r.process = command.Process
 	r.StateCode = 1
+	r.LastStartAt = time.Now()
+	RunnerManager.RunnerStatusUpdateChanel <- r.ID
 	go func() {
 		exitCode := command.Wait()
 		time.Sleep(3 * time.Second)
-		//运行后
 		r.Pid = 0
 		r.process = nil
+		r.LastStopAt = time.Now()
 		select {
 		case r.ExitSignalChannel <- exitCode:
 			r.StateCode = 0
+			RunnerManager.RunnerStatusUpdateChanel <- r.ID
 			fmt.Println("退出码发送成功")
 		default:
 			r.StateCode = -1

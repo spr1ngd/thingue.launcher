@@ -16,6 +16,8 @@ type Instance struct {
 	FaultRecover    bool
 	TimeRestart     bool
 	RestartCron     string
+	LastStartAt     time.Time
+	LastStopAt      time.Time
 	Pid             int  `gorm:"-"`
 	StateCode       int8 `gorm:"-"`
 }

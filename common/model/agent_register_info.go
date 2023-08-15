@@ -1,7 +1,7 @@
 package model
 
 import (
-	"thingue-launcher/agent/model"
+	"thingue-launcher/common/model"
 )
 
 type AgentRegisterInfo struct {

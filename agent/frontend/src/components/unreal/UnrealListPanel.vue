@@ -1,11 +1,11 @@
 <script setup>
-import {defineEmits, onMounted, ref} from "vue";
+import {defineEmits, onMounted, onUnmounted, ref} from "vue";
 import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
 import {GetAppConfig, OpenExplorer} from "@wails/go/api/systemApi.js";
 import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/api/serverApi";
 
 import {Notify} from "quasar";
-import {RunnerStateCodeToString} from "@/utils";
+import {RunnerStateCodeToString, GoTimeFormat} from "@/utils";
 
 const emit = defineEmits(["openSettingsPanel"])
 
@@ -32,12 +32,15 @@ onMounted(async () => {
   window.runtime.EventsOn("runner_unexpected_exit", () => {
     list()
   })
+  window.runtime.EventsOn("runner_status_update", () => {
+    list()
+  })
   let appConfig = await GetAppConfig();
   currentServer.value = appConfig.ServerUrl;
 })
 
-onMounted(() => {
-  window.runtime.EventsOff("remote_server_conn_close", "runner_unexpected_exit")
+onUnmounted(() => {
+  window.runtime.EventsOff("remote_server_conn_close", "runner_unexpected_exit", "runner_status_update")
 })
 
 async function list() {
@@ -54,7 +57,8 @@ function handleNewSettings() {
         "-ForceRes",
         "-ResX=1920",
         "-ResX=1080",
-      ]
+      ],
+      FaultRecover: false
     }
   })
 }
@@ -79,9 +83,8 @@ async function handleOpenDir(path) {
 }
 
 async function handleOpenPreview(name) {
-  const http = currentServer.value;
-  const url = `${http.endsWith("/") ? http : http + "/"}static/player.html?name=${name}`
-  window.runtime.BrowserOpenURL(url)
+  const url = new URL(`/static/player.html?name=${name}`, currentServer.value)
+  window.runtime.BrowserOpenURL(url.href)
 }
 
 async function handleSelectChange() {
@@ -99,7 +102,6 @@ async function handleSelectChange() {
 function handleStartInstance(id) {
   StartInstance(id).then(() => {
     Notify.create("操作成功")
-    list()
   }).catch(err => {
     Notify.create(err)
   })
@@ -108,7 +110,6 @@ function handleStartInstance(id) {
 function handleStopInstance(id) {
   StopInstance(id).then(() => {
     Notify.create("进程退出成功")
-    list()
   }).catch(err => {
     Notify.create(err)
   })
@@ -138,16 +139,22 @@ function handleStopInstance(id) {
                 <q-item>
                   <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
                                   @click="handleOpenPreview(props.row.Name)">
-                    <q-item-label caption class="ellipsis">标识
-                    </q-item-label>
-                    <q-item-label class="ellipsis">{{
-                        props.row.Name
-                      }}
+                    <q-item-label caption class="ellipsis">标识</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.Name }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section avatar style="width: 100px">
+                    <q-tooltip anchor="top middle" self="center middle">
+                      最后启动时间：{{ GoTimeFormat(props.row.LastStartAt) }}<br>
+                      最后停止时间：{{ GoTimeFormat(props.row.LastStopAt) }}
+                    </q-tooltip>
+                    <q-item-label caption class="ellipsis">状态</q-item-label>
+                    <q-item-label class="ellipsis">
+                      {{ RunnerStateCodeToString(props.row.StateCode) }}
                     </q-item-label>
                   </q-item-section>
                   <q-item-section avatar style="width: 100px">
-                    <q-item-label caption class="ellipsis">状态</q-item-label>
-                    <q-item-label class="ellipsis">{{ RunnerStateCodeToString(props.row.StateCode) }}</q-item-label>
+                    <q-item-label caption class="ellipsis">进程号</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.Pid }}</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>

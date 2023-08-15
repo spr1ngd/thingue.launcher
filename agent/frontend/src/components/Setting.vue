@@ -60,7 +60,7 @@ function change() {
               <div class="text-subtitle2">定时重启任务CRON表达式(5位)</div>
             </q-item-section>
             <q-item-section side>
-              <q-input dense v-model="systemSettings.RestartTaskCron"/>
+              <q-input :disable="enableRestartTask" dense v-model="systemSettings.RestartTaskCron"/>
             </q-item-section>
           </q-item>
         </q-expansion-item>

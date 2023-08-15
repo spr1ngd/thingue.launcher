@@ -1,4 +1,4 @@
-package initialize
+package core
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 )
 
 func InitGorm() {
-	db, err := gorm.Open(sqlite.Open("config.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("server.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
