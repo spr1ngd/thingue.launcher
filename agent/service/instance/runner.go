@@ -3,6 +3,7 @@ package instance
 import (
 	"errors"
 	"fmt"
+	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
 	"runtime"
@@ -27,7 +28,7 @@ func (r *Runner) Start() error {
 	var launchArguments []string
 	appConfig := config.AppConfig
 	if appConfig.ServerUrl != "" {
-		wsUrl := util.HttpUrlToStreamerWsUrl(appConfig.ServerUrl)
+		wsUrl := util.HttpUrlToWsUrl(appConfig.ServerUrl, "/ws/streamer")
 		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.Name)
 	} else {
 		launchArguments = r.LaunchArguments
@@ -76,7 +77,9 @@ func (r *Runner) Stop() error {
 	} else {
 		return errors.New("不支持的系统")
 	}
-	err := cmd.Run()
+	cmd.SysProcAttr = &windows.SysProcAttr{HideWindow: true}
+	cmd.Stdout = os.Stdout
+	err := cmd.Start()
 	//err := r.process.Signal(syscall.SIGKILL)
 	exitStatus := <-r.ExitSignalChannel
 	fmt.Printf("%s进程退出%s\n", r.Name, exitStatus)

@@ -908,6 +908,7 @@ function validateVideoEncodeSize(playerElement) {
 }
 
 function updateVideoStreamSize() {
+	return;
 	if (!matchViewportResolution || !canResizeViewportResolution) {
 		return;
 	}

@@ -107,11 +107,14 @@ function handleStartInstance(id) {
   })
 }
 
-function handleStopInstance(id) {
-  StopInstance(id).then(() => {
+function handleStopInstance(row) {
+  row.loading = true
+  StopInstance(row.ID).then(() => {
     Notify.create("进程退出成功")
   }).catch(err => {
     Notify.create(err)
+  }).finally(()=>{
+    row.loading = false
   })
 }
 
@@ -171,8 +174,8 @@ function handleStopInstance(id) {
             </q-card-section>
             <q-card-actions class="q-pt-xs">
               <div class="q-gutter-md">
-                <q-btn color="green" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.ID)"/>
-                <q-btn color="red" flat dense icon="sym_o_stop_circle" @click="handleStopInstance(props.row.ID)"/>
+                <q-btn color="green" :loading="false" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.ID)"/>
+                <q-btn color="red" :loading="props.row.loading" flat dense icon="sym_o_stop_circle" @click="handleStopInstance(props.row)"/>
                 <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
                 <q-btn color="grey" flat dense icon="sym_o_delete" push>
                   <q-menu>

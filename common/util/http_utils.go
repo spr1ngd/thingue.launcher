@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"path"
 	"strings"
 )
 
@@ -32,24 +34,10 @@ func HttpPost(url string, data []byte) ([]byte, error) {
 	return result, err
 }
 
-func HttpUrlToAgentWsUrl(httpUrl string) string {
-	wsUrl := strings.Replace(httpUrl, "http://", "ws://", 1)
-	wsUrl = strings.Replace(wsUrl, "https://", "wss://", 1)
-	if strings.HasSuffix(wsUrl, "/") {
-		wsUrl = wsUrl + "ws/agent"
-	} else {
-		wsUrl = wsUrl + "/ws/agent"
-	}
-	return wsUrl
-}
-
-func HttpUrlToStreamerWsUrl(httpUrl string) string {
-	wsUrl := strings.Replace(httpUrl, "http://", "ws://", 1)
-	wsUrl = strings.Replace(wsUrl, "https://", "wss://", 1)
-	if strings.HasSuffix(wsUrl, "/") {
-		wsUrl = wsUrl + "ws/streamer"
-	} else {
-		wsUrl = wsUrl + "/ws/streamer"
-	}
-	return wsUrl
+func HttpUrlToWsUrl(httpBaseUrl string, paths ...string) string {
+	wsBaseUrl := strings.Replace(httpBaseUrl, "http://", "ws://", 1)
+	wsBaseUrl = strings.Replace(wsBaseUrl, "https://", "wss://", 1)
+	parsedURL, _ := url.Parse(wsBaseUrl)
+	parsedURL = parsedURL.ResolveReference(&url.URL{Path: path.Join(paths...)})
+	return parsedURL.String()
 }

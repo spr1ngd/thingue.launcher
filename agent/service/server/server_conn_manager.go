@@ -20,7 +20,7 @@ var ServerConnManager = serverConnManager{
 
 func (m *serverConnManager) Connect(httpUrl string) error {
 	var err error
-	wsUrl := util.HttpUrlToAgentWsUrl(httpUrl)
+	wsUrl := util.HttpUrlToWsUrl(httpUrl, "/ws/agent")
 	appConfig := config.AppConfig
 	m.ws, _, err = websocket.DefaultDialer.Dial(wsUrl, nil)
 	//1.如果连接成功尝试注册
