@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Notify } from 'quasar';
 
 const instance = axios.create({
-  baseURL: './'
+  baseURL: './api'
 });
 
 instance.interceptors.response.use(

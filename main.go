@@ -17,9 +17,8 @@ var (
 func main() {
 	global.SetAppVersion(Version, GitCommit, BuildDate)
 	config.InitConfig()
-	server.Init()
 	if len(os.Args) > 1 && os.Args[1] == "server" {
-		server.Startup()
+		server.App.Serve()
 	} else {
 		agent.Startup()
 		agent.Shutdown()

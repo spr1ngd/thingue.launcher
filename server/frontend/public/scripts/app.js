@@ -6,7 +6,7 @@ function GetQueryString(name) {
 }
 var origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://')
 var path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/"))
-var playerURL = `${origin}${path}/ws/player/${GetQueryString("id")}`
+var playerURL = `${origin}${path}/ws/player/${GetQueryString("name")}`
 // var playerURL = `ws://127.0.0.1:8888${path}/player/${GetQueryString("id")}`
 
 // Copyright Epic Games, Inc. All Rights Reserved.

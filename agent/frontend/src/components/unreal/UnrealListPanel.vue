@@ -12,8 +12,8 @@ const emit = defineEmits(["openSettingsPanel"])
 const rows = ref([])
 
 const columns = [
-  {name: 'Name', field: 'Name', label: '实例标识'},
-  {name: 'ExecPath', field: 'ExecPath', label: '启动位置'},
+  {name: 'Name', field: 'name', label: '实例标识'},
+  {name: 'ExecPath', field: 'execPath', label: '启动位置'},
 ]
 
 const options = ref([])
@@ -109,7 +109,7 @@ function handleStartInstance(id) {
 
 function handleStopInstance(row) {
   row.loading = true
-  StopInstance(row.ID).then(() => {
+  StopInstance(row.id).then(() => {
     Notify.create("进程退出成功")
   }).catch(err => {
     Notify.create(err)
@@ -141,32 +141,32 @@ function handleStopInstance(row) {
               <q-list dense>
                 <q-item>
                   <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
-                                  @click="handleOpenPreview(props.row.Name)">
+                                  @click="handleOpenPreview(props.row.name)">
                     <q-item-label caption class="ellipsis">标识</q-item-label>
-                    <q-item-label class="ellipsis">{{ props.row.Name }}</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.name }}</q-item-label>
                   </q-item-section>
                   <q-item-section avatar style="width: 100px">
                     <q-tooltip anchor="top middle" self="center middle">
-                      最后启动时间：{{ GoTimeFormat(props.row.LastStartAt) }}<br>
-                      最后停止时间：{{ GoTimeFormat(props.row.LastStopAt) }}
+                      最后启动时间：{{ GoTimeFormat(props.row.lastStartAt) }}<br>
+                      最后停止时间：{{ GoTimeFormat(props.row.lastStopAt) }}
                     </q-tooltip>
                     <q-item-label caption class="ellipsis">状态</q-item-label>
                     <q-item-label class="ellipsis">
-                      {{ RunnerStateCodeToString(props.row.StateCode) }}
+                      {{ RunnerStateCodeToString(props.row.stateCode) }}
                     </q-item-label>
                   </q-item-section>
                   <q-item-section avatar style="width: 100px">
                     <q-item-label caption class="ellipsis">进程号</q-item-label>
-                    <q-item-label class="ellipsis">{{ props.row.Pid }}</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.pid }}</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>
-                  <q-item-section @click="handleOpenDir(props.row.ExecPath)">
+                  <q-item-section @click="handleOpenDir(props.row.execPath)">
                     <q-item-label caption class="ellipsis cursor-pointer">
                       启动位置
                     </q-item-label>
                     <q-item-label class="ellipsis cursor-pointer">
-                      {{ props.row.ExecPath }}
+                      {{ props.row.execPath }}
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -174,7 +174,7 @@ function handleStopInstance(row) {
             </q-card-section>
             <q-card-actions class="q-pt-xs">
               <div class="q-gutter-md">
-                <q-btn color="green" :loading="false" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.ID)"/>
+                <q-btn color="green" :loading="false" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.id)"/>
                 <q-btn color="red" :loading="props.row.loading" flat dense icon="sym_o_stop_circle" @click="handleStopInstance(props.row)"/>
                 <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
                 <q-btn color="grey" flat dense icon="sym_o_delete" push>
@@ -182,7 +182,7 @@ function handleStopInstance(row) {
                     <div class="q-pa-sm">
                       确定要删除？
                       <q-btn dense size="sm" label="确认" color="blue" v-close-popup
-                             @click="handleDelete(props.row.ID)"/>
+                             @click="handleDelete(props.row.id)"/>
                     </div>
                   </q-menu>
                 </q-btn>

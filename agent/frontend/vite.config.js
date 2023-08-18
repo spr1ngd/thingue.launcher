@@ -20,7 +20,7 @@ export default defineConfig({
             sassVariables: 'src/quasar-variables.sass'
         }),
         monacoEditorPlugin({
-            languageWorkers: ['editorWorkerService', 'css', 'html', 'json', 'typescript']
+            languageWorkers: []
         })
     ],
     server: {

@@ -17,7 +17,7 @@ const editor = {
 }
 onMounted(async () => {
   editor.launchArgumentsEditor = monaco.editor.create(launchArgumentsEditorRef.value, {
-    value: props.data.settings.LaunchArguments.join('\n'),
+    value: props.data.settings.launchArguments.join('\n'),
     language: 'ini',
     lineNumbers: 'off',
     theme: 'vs-dark',
@@ -28,7 +28,7 @@ onMounted(async () => {
     scrollBeyondLastLine: false,
   });
   editor.metadataEditor = monaco.editor.create(metadataEditorRef.value, {
-    value: props.data.settings.Metadata,
+    value: props.data.settings.metadata,
     language: 'yaml',
     lineNumbers: 'off',
     theme: 'vs-dark',
@@ -39,7 +39,7 @@ onMounted(async () => {
     scrollBeyondLastLine: false
   });
   editor.paksConfigEditor = monaco.editor.create(paksConfigEditorRef.value, {
-    value: props.data.settings.PaksConfig,
+    value: props.data.settings.paksConfig,
     language: 'yaml',
     lineNumbers: 'off',
     theme: 'vs-dark',
@@ -51,28 +51,28 @@ onMounted(async () => {
   });
 
   editor.launchArgumentsEditor.onDidChangeModelContent((event) => {
-    props.data.settings.LaunchArguments = editor.launchArgumentsEditor.getValue().split('\n')
+    props.data.settings.launchArguments = editor.launchArgumentsEditor.getValue().split('\n')
   })
   editor.metadataEditor.onDidChangeModelContent((event) => {
-    props.data.settings.Metadata = editor.metadataEditor.getValue()
+    props.data.settings.metadata = editor.metadataEditor.getValue()
   })
   editor.paksConfigEditor.onDidChangeModelContent((event) => {
-    props.data.settings.PaksConfig = editor.paksConfigEditor.getValue()
+    props.data.settings.paksConfig = editor.paksConfigEditor.getValue()
   })
 })
 
 function select() {
   OpenFileDialog("选择文件", "ThingUE (*.exe)", "*.exe").then(result => {
     if (result) {
-      props.data.settings.ExecPath = result;
+      props.data.settings.execPath = result;
     } else {
       Notify.create({
-        message: '选择取消'
+        message: '文件选择取消'
       })
     }
   }).catch(err => {
     Notify.create({
-      message: '无法选择文件'
+      message: '文件选择出错,' + err
     })
   })
 }
@@ -111,13 +111,13 @@ async function save() {
         <q-item>
           <q-item-section avatar>
             <q-item-label>实例标识</q-item-label>
-            <q-input dense outlined square v-model="props.data.settings.Name"/>
+            <q-input dense outlined square v-model="props.data.settings.name"/>
           </q-item-section>
         </q-item>
         <q-item>
           <q-item-section>
             <q-item-label>启动位置</q-item-label>
-            <q-input dense outlined square v-model="props.data.settings.ExecPath">
+            <q-input dense outlined square v-model="props.data.settings.execPath">
               <template v-slot:append>
                 <q-icon name="sym_o_file_open" @click="select" class="cursor-pointer"/>
               </template>
@@ -142,7 +142,7 @@ async function save() {
         <q-separator/>
         <q-item tag="label" v-ripple>
           <q-item-section side top>
-            <q-checkbox v-model="props.data.settings.FaultRecover"/>
+            <q-checkbox v-model="props.data.settings.faultRecover"/>
           </q-item-section>
           <q-item-section>
             <q-item-label>故障恢复</q-item-label>

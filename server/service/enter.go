@@ -1,5 +1,13 @@
 package service
 
-type ServiceGroup struct{}
+import (
+	"thingue-launcher/server/service/instance"
+	"thingue-launcher/server/service/sdp"
+)
 
-var ServiceGroupApp = new(ServiceGroup)
+var (
+	NodeService     = instance.NodeService
+	InstanceService = instance.Service
+	StreamerManager = sdp.StreamerManager
+	PlayerManager   = sdp.PlayerManager
+)

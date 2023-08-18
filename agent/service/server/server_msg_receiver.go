@@ -1,29 +1,26 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/mitchellh/mapstructure"
-	"thingue-launcher/common/model"
 	"thingue-launcher/common/model/message"
 )
 
-func MsgReceive(msgData []byte) error {
-	msg := model.MsgStruct{}
-	err := json.Unmarshal(msgData, &msg)
-	if err != nil {
-		return err
-	}
-	switch msg.Type {
+func MsgReceive(msg map[string]interface{}) error {
+	var err error
+	switch msg["type"].(string) {
+	case "ConnectCallback":
+		id := msg["data"].(float64)
+		RegisterAgent(uint(id))
 	case "control":
 		var controlMsg message.ControlMsg
-		err = mapstructure.Decode(msg.Data, &controlMsg)
+		err = mapstructure.Decode(msg["data"], &controlMsg)
 		if err == nil {
 			Control(controlMsg)
 		}
 	case "update":
 		var updateMsg message.UpdateMsg
-		err = mapstructure.Decode(msg.Data, &updateMsg)
+		err = mapstructure.Decode(msg["data"], &updateMsg)
 		if err == nil {
 			Update(updateMsg)
 		}

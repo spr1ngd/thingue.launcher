@@ -3,18 +3,22 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"net/url"
 	"thingue-launcher/agent/service/instance"
+	"thingue-launcher/common/config"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
 )
 
-func RegisterAgent(httpUrl string) error {
-	registerInfo := model.AgentRegisterInfo{
+func RegisterAgent(agentId uint) error {
+	registerInfo := model.NodeRegisterInfo{
+		NodeID:     agentId,
 		DeviceInfo: GetDeviceInfo(),
 		Instances:  instance.RunnerManager.List(),
 	}
 	reqData, _ := json.Marshal(registerInfo)
-	result, err := util.HttpPost(httpUrl+"api/agent/register", reqData)
+	parse, _ := url.Parse(config.AppConfig.ServerUrl)
+	result, err := util.HttpPost(parse.JoinPath("/api/instance/nodeRegister").String(), reqData)
 	if err != nil {
 		res := model.JsonStruct{}
 		err = json.Unmarshal(result, &res)

@@ -29,7 +29,6 @@ type SystemSettings struct {
 func InitConfig() {
 	_, statErr := os.Stat("config.yaml")
 	if os.IsNotExist(statErr) {
-		fmt.Println("文件不存在")
 		file, _ := os.Create("config.yaml")
 		defer file.Close()
 	}

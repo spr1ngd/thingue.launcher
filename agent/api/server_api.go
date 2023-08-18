@@ -9,7 +9,7 @@ import (
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/config"
 	"thingue-launcher/common/model"
-	"thingue-launcher/server/core"
+	"thingue-launcher/server"
 )
 
 type serverApi struct {
@@ -37,25 +37,25 @@ func (s *serverApi) Init(ctx context.Context) {
 		}
 	}()
 	// 监听localserver关闭
-	core.ServerApp.CloseReturnChanel = make(chan string)
+	server.App.CloseReturnChanel = make(chan string)
 	go func() {
 		for {
-			closeErr := <-core.ServerApp.CloseReturnChanel
+			closeErr := <-server.App.CloseReturnChanel
 			runtime.EventsEmit(s.ctx, constants.LOCAL_SERVER_CLOSE, closeErr)
 		}
 	}()
 }
 
 func (s *serverApi) LocalServerStart() {
-	core.ServerApp.Start()
+	server.App.Start()
 }
 
 func (s *serverApi) LocalServerShutdown() {
-	core.ServerApp.Stop()
+	server.App.Stop()
 }
 
 func (s *serverApi) GetLocalServerStatus() bool {
-	return core.ServerApp.GetLocalServerStatus()
+	return server.App.IsRunning
 }
 
 func (s *serverApi) UpdateLocalServerConfig(localServerConfig config.LocalServer) {
