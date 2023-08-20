@@ -19,21 +19,21 @@ var RunnerManager = runnerManager{
 	RunnerStatusUpdateChanel:   make(chan uint),
 }
 
-func (m *runnerManager) List() []*model.Instance {
-	var instances = make([]*model.Instance, 0)
+func (m *runnerManager) List() []*model.ClientInstance {
+	var instances = make([]*model.ClientInstance, 0)
 	for _, instance := range InstanceManager.List() {
 		runner := m.GetRunnerById(instance.ID)
-		instances = append(instances, runner.Instance)
+		instances = append(instances, runner.ClientInstance)
 	}
 	return instances
 }
 
-func (m *runnerManager) NewRunner(instance *model.Instance) error {
+func (m *runnerManager) NewRunner(instance *model.ClientInstance) error {
 	if _, ok := m.IdRunnerMap[instance.ID]; ok {
 		return errors.New("无法重复创建")
 	}
 	r := &Runner{
-		Instance:          instance,
+		ClientInstance:    instance,
 		ExitSignalChannel: make(chan error),
 	}
 	m.IdRunnerMap[r.ID] = r

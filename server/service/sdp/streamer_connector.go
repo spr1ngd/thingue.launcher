@@ -11,7 +11,7 @@ type StreamerConnector struct {
 	ID               string
 	PlayerConnectors []*PlayerConnector
 	conn             *websocket.Conn
-	Instance         *model.Instance
+	Instance         *model.ServerInstance
 }
 
 func (s *StreamerConnector) HandleMsg(msgStr string) {

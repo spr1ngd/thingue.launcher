@@ -11,7 +11,7 @@ func MsgReceive(msg map[string]interface{}) error {
 	switch msg["type"].(string) {
 	case "ConnectCallback":
 		id := msg["data"].(float64)
-		RegisterAgent(uint(id))
+		RegisterNode(uint(id))
 	case "control":
 		var controlMsg message.ControlMsg
 		err = mapstructure.Decode(msg["data"], &controlMsg)

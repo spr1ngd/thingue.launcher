@@ -16,7 +16,7 @@ func InitGorm() {
 	global.APP_DB = db
 	if err = db.AutoMigrate(
 		&model.RemoteServer{},
-		&model.Instance{},
+		&model.ClientInstance{},
 	); err != nil {
 		fmt.Println(err)
 	}

@@ -13,6 +13,7 @@ var (
 	APP_VERSION   string
 	APP_GITCOMMIT string
 	APP_BUILDDATE string
+	NODE_ID       uint
 )
 
 func SetAppVersion(version, gitCommit, buildDate string) {

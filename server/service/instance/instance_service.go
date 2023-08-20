@@ -2,7 +2,7 @@ package instance
 
 type instanceService struct{}
 
-var Service = new(instanceService)
+var InstanceService = new(instanceService)
 
 func (s *instanceService) UpdatePlayer(id uint) {
 }

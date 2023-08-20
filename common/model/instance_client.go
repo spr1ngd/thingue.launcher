@@ -1,13 +1,9 @@
 package model
 
-import (
-	"time"
-)
+import "time"
 
-type Instance struct {
+type ClientInstance struct {
 	ID              uint        `gorm:"primarykey" json:"id"`
-	NodeID          uint        `gorm:"primarykey" json:"nodeID"`
-	SID             string      `gorm:"unique;default:gen_random_uuid()"`
 	CreatedAt       time.Time   `json:"createdAt"`
 	UpdatedAt       time.Time   `json:"updatedAt"`
 	Name            string      `json:"name"`
@@ -16,8 +12,6 @@ type Instance struct {
 	Metadata        string      `json:"metadata"`
 	PaksConfig      string      `json:"paksConfig"`
 	FaultRecover    bool        `json:"faultRecover"`
-	TimeRestart     bool        `json:"timeRestart"`
-	RestartCron     string      `json:"restartCron"`
 	LastStartAt     time.Time   `json:"lastStartAt"`
 	LastStopAt      time.Time   `json:"lastStopAt"`
 	Pid             int         `gorm:"-" json:"pid"`

@@ -14,8 +14,11 @@ func (s *instanceRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	{
 		instanceRouter.POST("nodeRegister", handler.InstanceGroup.NodeRegister)
 		instanceRouter.GET("nodeList", handler.InstanceGroup.NodeList)
+		instanceRouter.GET("getInstanceSid", handler.InstanceGroup.GetInstanceSid)
 		instanceRouter.POST("instanceControl", handler.InstanceGroup.ControlInstance)
 		instanceRouter.POST("instanceUpdate", handler.InstanceGroup.UpdateInstance)
+		instanceRouter.POST("getTicketByLabelSelector", handler.InstanceGroup.GetTicketByLabelSelector)
+		instanceRouter.GET("getTicketById", handler.InstanceGroup.GetTicketById)
 	}
 	return instanceRouter
 }

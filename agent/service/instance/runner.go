@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
+	"thingue-launcher/agent/global"
+	"thingue-launcher/agent/http"
 	"thingue-launcher/common/config"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
@@ -15,7 +17,7 @@ import (
 )
 
 type Runner struct {
-	*model.Instance
+	*model.ClientInstance
 	ExitSignalChannel chan error `json:"-"`
 	process           *os.Process
 }
@@ -27,16 +29,17 @@ func (r *Runner) Start() error {
 	// 设置PixelStreamingURL
 	var launchArguments []string
 	appConfig := config.AppConfig
-	if appConfig.ServerUrl != "" {
+	sid, err := http.GetInstanceSid(global.NODE_ID, r.ID)
+	if err == nil {
 		wsUrl := util.HttpUrlToWsUrl(appConfig.ServerUrl, "/ws/streamer")
-		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.Name)
+		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+sid)
 	} else {
 		launchArguments = r.LaunchArguments
 	}
 	// 运行前
 	fmt.Println(r.ExecPath, launchArguments)
 	command := exec.Command(r.ExecPath, launchArguments...)
-	err := command.Start()
+	err = command.Start()
 	if err != nil {
 		return err
 	}

@@ -16,10 +16,10 @@ func InitGorm() {
 	global.SERVER_DB = db
 	if err = db.AutoMigrate(
 		&model.Node{},
-		&model.Instance{},
+		&model.ServerInstance{},
 	); err != nil {
 		fmt.Println(err)
 	}
 	db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Node{})
-	db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Instance{})
+	db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
 }

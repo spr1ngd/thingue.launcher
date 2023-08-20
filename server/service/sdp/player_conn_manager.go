@@ -5,16 +5,16 @@ import (
 	"thingue-launcher/common/util"
 )
 
-type playerManager struct {
+type playerConnManager struct {
 	playerIdCount uint
 	idPlayerMap   map[uint]*PlayerConnector
 }
 
-var PlayerManager = playerManager{
+var PlayerConnManager = playerConnManager{
 	idPlayerMap: make(map[uint]*PlayerConnector),
 }
 
-func (m *playerManager) NewPlayerConnector(conn *websocket.Conn) *PlayerConnector {
+func (m *playerConnManager) NewPlayerConnector(conn *websocket.Conn) *PlayerConnector {
 	m.playerIdCount++
 	p := &PlayerConnector{
 		PlayerId: m.playerIdCount,
@@ -24,7 +24,7 @@ func (m *playerManager) NewPlayerConnector(conn *websocket.Conn) *PlayerConnecto
 	return p
 }
 
-func (m *playerManager) OnPlayerDisConnect(playerConnector *PlayerConnector) {
+func (m *playerConnManager) OnPlayerDisConnect(playerConnector *PlayerConnector) {
 	playerConnector.StreamerConnector.SendMsg(util.MapDataToJsonStr(map[string]interface{}{
 		"type":     "playerDisconnected",
 		"playerId": playerConnector.PlayerId,

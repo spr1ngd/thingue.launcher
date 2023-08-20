@@ -38,15 +38,15 @@ func (u *instanceApi) Init(ctx context.Context) {
 	}()
 }
 
-func (u *instanceApi) GetInstanceById(id uint) *model.Instance {
+func (u *instanceApi) GetInstanceById(id uint) *model.ClientInstance {
 	return service.InstanceManager.GetById(id)
 }
 
-func (u *instanceApi) ListInstance() []*model.Instance {
+func (u *instanceApi) ListInstance() []*model.ClientInstance {
 	return service.RunnerManager.List()
 }
 
-func (u *instanceApi) CreateInstance(instance *model.Instance) error {
+func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	service.InstanceManager.Create(instance)
 	err := service.RunnerManager.NewRunner(instance)
 	if err != nil {
@@ -55,7 +55,7 @@ func (u *instanceApi) CreateInstance(instance *model.Instance) error {
 	return err
 }
 
-func (u *instanceApi) SaveInstance(instance *model.Instance) error {
+func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 	return service.InstanceManager.Save(instance)
 }
 

@@ -10,9 +10,9 @@ import (
 	"thingue-launcher/common/util"
 )
 
-func RegisterAgent(agentId uint) error {
+func RegisterNode(nodeId uint) error {
 	registerInfo := model.NodeRegisterInfo{
-		NodeID:     agentId,
+		NodeID:     nodeId,
 		DeviceInfo: GetDeviceInfo(),
 		Instances:  instance.RunnerManager.List(),
 	}

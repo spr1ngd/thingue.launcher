@@ -46,6 +46,9 @@ func (s *Server) Serve() {
 }
 
 func (s *Server) Start() {
+	if s.IsRunning {
+		return
+	}
 	go func() {
 		s.Serve()
 	}()

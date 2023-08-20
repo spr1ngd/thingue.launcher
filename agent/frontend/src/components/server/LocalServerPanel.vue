@@ -21,9 +21,9 @@ const localServerConfig = reactive({
 
 let localServerStatus = ref(false)
 
-async function serverStart() {
-  await LocalServerStart();
-  localServerStatus.value = await GetLocalServerStatus()
+function serverStart() {
+  localServerStatus.value = true
+  LocalServerStart();
 }
 
 async function serverShutdown() {

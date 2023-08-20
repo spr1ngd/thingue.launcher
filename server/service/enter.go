@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	NodeService     = instance.NodeService
-	InstanceService = instance.Service
-	StreamerManager = sdp.StreamerManager
-	PlayerManager   = sdp.PlayerManager
+	NodeService         = instance.NodeService
+	InstanceService     = instance.InstanceService
+	TicketService       = instance.TicketService
+	StreamerConnManager = sdp.StreamerConnManager
+	PlayerConnManager   = sdp.PlayerConnManager
 )

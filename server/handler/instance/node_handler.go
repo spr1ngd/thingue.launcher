@@ -20,6 +20,12 @@ func (g *HandlerGroup) NodeRegister(c *gin.Context) {
 	response.OkWithMessage("注册成功", c)
 }
 
+func (g *HandlerGroup) GetInstanceSid(c *gin.Context) {
+	nodeId := c.Query("nodeId")
+	instanceId := c.Query("instanceId")
+	service.NodeService.GetInstanceSid(nodeId, instanceId)
+}
+
 func (g *HandlerGroup) NodeList(c *gin.Context) {
 	list := service.NodeService.NodeList()
 	response.OkWithDetailed(response.PageResult{
