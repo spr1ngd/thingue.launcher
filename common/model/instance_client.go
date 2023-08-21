@@ -16,4 +16,5 @@ type ClientInstance struct {
 	LastStopAt      time.Time   `json:"lastStopAt"`
 	Pid             int         `json:"pid" gorm:"-"`
 	StateCode       int8        `json:"stateCode" gorm:"-"`
+	SID             string      `json:"sid" gorm:"-"`
 }

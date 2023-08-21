@@ -66,8 +66,10 @@ func (s *nodeService) RegisterNode(nodeId uint) {
 }
 
 func (s *nodeService) SendProcessState(request *model.ProcessStateUpdate) {
-	reqData, _ := json.Marshal(request)
-	util.HttpPost(s.BaseUrl.JoinPath("/api/instance/updateProcessState").String(), reqData)
+	if s.BaseUrl != nil {
+		reqData, _ := json.Marshal(request)
+		util.HttpPost(s.BaseUrl.JoinPath("/api/instance/updateProcessState").String(), reqData)
+	}
 }
 
 func (s *nodeService) Control(data message.ControlMsg) {

@@ -19,7 +19,6 @@ type Runner struct {
 	*model.ClientInstance
 	ExitSignalChannel chan error `json:"-"`
 	process           *os.Process
-	SID               string
 }
 
 func (r *Runner) Start() error {

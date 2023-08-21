@@ -82,8 +82,8 @@ async function handleOpenDir(path) {
   await OpenExplorer(path)
 }
 
-async function handleOpenPreview(name) {
-  const url = new URL(`/static/player.html?name=${name}`, currentServer.value)
+async function handleOpenPreview(row) {
+  const url = new URL(`/static/player.html?sid=${row.sid}`, currentServer.value)
   window.runtime.BrowserOpenURL(url.href)
 }
 
@@ -141,7 +141,7 @@ function handleStopInstance(row) {
               <q-list dense>
                 <q-item>
                   <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
-                                  @click="handleOpenPreview(props.row.name)">
+                                  @click="handleOpenPreview(props.row)">
                     <q-item-label caption class="ellipsis">标识</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.name }}</q-item-label>
                   </q-item-section>

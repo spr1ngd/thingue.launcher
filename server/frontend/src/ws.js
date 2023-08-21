@@ -1,7 +1,7 @@
 import mitt from "mitt"
 
 const origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://')
-const path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/"))
+const path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/")).replace("/static", "")
 const wsURL = `${origin}${path}/ws/admin`
 
 let socket;
@@ -27,7 +27,7 @@ function connectWebSocket() {
     socket.addEventListener('message', event => {
         console.log('WebSocket message received:', event.data);
         var msg = JSON.parse(event.data);
-		if (msg.type === 'update') {
+        if (msg.type === 'update') {
             emitter.emit("update", "")
         }
     });

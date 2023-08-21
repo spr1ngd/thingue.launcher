@@ -6,7 +6,7 @@ function GetQueryString(name) {
 }
 async function fetchData() {
 	var origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://')
-	var path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/"))
+	var path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/")).replace("/static", "")
 	const response = await fetch("/api/instance/getTicketById?sid=" + GetQueryString("sid"), {
 		method: 'GET',
 	})
