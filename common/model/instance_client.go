@@ -3,7 +3,7 @@ package model
 import "time"
 
 type ClientInstance struct {
-	ID              uint        `gorm:"primarykey" json:"id"`
+	ID              uint        `json:"id" gorm:"primarykey"`
 	CreatedAt       time.Time   `json:"createdAt"`
 	UpdatedAt       time.Time   `json:"updatedAt"`
 	Name            string      `json:"name"`
@@ -14,6 +14,6 @@ type ClientInstance struct {
 	FaultRecover    bool        `json:"faultRecover"`
 	LastStartAt     time.Time   `json:"lastStartAt"`
 	LastStopAt      time.Time   `json:"lastStopAt"`
-	Pid             int         `gorm:"-" json:"pid"`
-	StateCode       int8        `gorm:"-" json:"stateCode"`
+	Pid             int         `json:"pid" gorm:"-"`
+	StateCode       int8        `json:"stateCode" gorm:"-"`
 }

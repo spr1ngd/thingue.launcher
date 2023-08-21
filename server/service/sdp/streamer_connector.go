@@ -8,7 +8,7 @@ import (
 )
 
 type StreamerConnector struct {
-	ID               string
+	SID              string
 	PlayerConnectors []*PlayerConnector
 	conn             *websocket.Conn
 	Instance         *model.ServerInstance
@@ -37,8 +37,10 @@ func (s *StreamerConnector) HandleMsg(msgStr string) {
 			}
 		}
 	} else if msgType == "disconnectPlayer" {
+		// todo
 		fmt.Println(msg)
 	} else if msgType == "state" {
+		// todo
 		fmt.Println(msg)
 	} else {
 		s.SendCloseMsg(1008, "Unsupported message type")

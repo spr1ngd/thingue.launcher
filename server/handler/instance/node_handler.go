@@ -23,7 +23,12 @@ func (g *HandlerGroup) NodeRegister(c *gin.Context) {
 func (g *HandlerGroup) GetInstanceSid(c *gin.Context) {
 	nodeId := c.Query("nodeId")
 	instanceId := c.Query("instanceId")
-	service.NodeService.GetInstanceSid(nodeId, instanceId)
+	sid, err := service.NodeService.GetInstanceSid(nodeId, instanceId)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData(sid, c)
 }
 
 func (g *HandlerGroup) NodeList(c *gin.Context) {
@@ -33,8 +38,15 @@ func (g *HandlerGroup) NodeList(c *gin.Context) {
 	}, "获取成功", c)
 }
 
-func (g *HandlerGroup) UpdateInstance(c *gin.Context) {
-
+func (g *HandlerGroup) UpdateProcessState(c *gin.Context) {
+	var request model.ProcessStateUpdate
+	err := c.ShouldBindJSON(&request)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	service.InstanceService.UpdateProcessState(&request)
+	response.Ok(c)
 }
 
 func (g *HandlerGroup) ControlInstance(c *gin.Context) {

@@ -12,14 +12,12 @@ export function bytesToSize(bytes) {
 }
 
 export function statusToText(val) {
-  if (val === null) {
-    return '未就绪';
-  } else if (val === 'Starting') {
-    return '正在启动';
-  } else if (val === 'Started') {
-    return '已启动';
-  } else if (val === 'Stoped') {
-    return '已停止';
+  if (val === 0) {
+    return '未启动';
+  } else if (val === 1) {
+    return '正在运行';
+  } else if (val === -1) {
+    return '异常退出';
   } else {
     return '未知';
   }

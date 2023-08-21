@@ -4,9 +4,17 @@ function GetQueryString(name) {
 	if (r != null) return unescape(r[2]);
 	return null;
 }
-var origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://')
-var path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/"))
-var playerURL = `${origin}${path}/ws/player/${GetQueryString("name")}`
+async function fetchData() {
+	var origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://')
+	var path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/"))
+	const response = await fetch("/api/instance/getTicketById?sid=" + GetQueryString("sid"), {
+		method: 'GET',
+	})
+	const resjson = await response.json()
+	var playerURL = `${origin}${path}/ws/player/${resjson.data}`
+	return playerURL
+}
+
 // var playerURL = `ws://127.0.0.1:8888${path}/player/${GetQueryString("id")}`
 
 // Copyright Epic Games, Inc. All Rights Reserved.
@@ -1823,60 +1831,63 @@ function connect() {
 		return;
 	}
 
-	// ws = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
-	ws = new WebSocket(playerURL)
+	fetchData().then(playerURL=>{
+		// ws = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
+		ws = new WebSocket(playerURL)
 
-	// 心跳发送，30秒间隔
-	let heartbeatInterval
-	ws.onopen = function () {
-		heartbeatInterval = setInterval(() => {
-			ws.send(JSON.stringify({ type: 'ping', time: new Date() }))
-		}, 30000);
-	}
-
-	ws.onmessage = function (event) {
-		console.log(`<- SS: ${event.data}`);
-		var msg = JSON.parse(event.data);
-		if (msg.type === 'config') {
-			onConfig(msg);
-		} else if (msg.type === 'playerCount') {
-			if (msg.count === 1) {
-				canResizeViewportResolution = true;
+		// 心跳发送，30秒间隔
+		let heartbeatInterval
+		ws.onopen = function () {
+			heartbeatInterval = setInterval(() => {
+				ws.send(JSON.stringify({ type: 'ping', time: new Date() }))
+			}, 30000);
+		}
+	
+		ws.onmessage = function (event) {
+			console.log(`<- SS: ${event.data}`);
+			var msg = JSON.parse(event.data);
+			if (msg.type === 'config') {
+				onConfig(msg);
+			} else if (msg.type === 'playerCount') {
+				if (msg.count === 1) {
+					canResizeViewportResolution = true;
+				}
+				updateKickButton(msg.count - 1);
+			} else if (msg.type === 'answer') {
+				onWebRtcAnswer(msg);
+				setTimeout(function () {
+					updateVideoStreamSize();
+				}, 1000);
+			} else if (msg.type === 'iceCandidate') {
+				onWebRtcIce(msg.candidate);
+			} else {
+				console.log(`invalid SS message type: ${msg.type}`);
 			}
-			updateKickButton(msg.count - 1);
-		} else if (msg.type === 'answer') {
-			onWebRtcAnswer(msg);
-			setTimeout(function () {
-				updateVideoStreamSize();
-			}, 1000);
-		} else if (msg.type === 'iceCandidate') {
-			onWebRtcIce(msg.candidate);
-		} else {
-			console.log(`invalid SS message type: ${msg.type}`);
-		}
-	};
+		};
+	
+		ws.onerror = function (event) {
+			console.log(`WS error: ${JSON.stringify(event)}`);
+		};
+	
+		ws.onclose = function (event) {
+			console.log(`WS closed: ${JSON.stringify(event.code)} - ${event.reason}`);
+			clearInterval(heartbeatInterval)
+			ws = undefined;
+			is_reconnection = true;
+	
+			// destroy `webRtcPlayerObj` if any
+			let playerDiv = document.getElementById('player');
+			if (webRtcPlayerObj) {
+				playerDiv.removeChild(webRtcPlayerObj.video);
+				webRtcPlayerObj.close();
+				webRtcPlayerObj = undefined;
+			}
+	
+			showTextOverlay(`Disconnected: ${event.reason}`);
+			var reclickToStart = setTimeout(start, 4000);
+		};
+	})
 
-	ws.onerror = function (event) {
-		console.log(`WS error: ${JSON.stringify(event)}`);
-	};
-
-	ws.onclose = function (event) {
-		console.log(`WS closed: ${JSON.stringify(event.code)} - ${event.reason}`);
-		clearInterval(heartbeatInterval)
-		ws = undefined;
-		is_reconnection = true;
-
-		// destroy `webRtcPlayerObj` if any
-		let playerDiv = document.getElementById('player');
-		if (webRtcPlayerObj) {
-			playerDiv.removeChild(webRtcPlayerObj.video);
-			webRtcPlayerObj.close();
-			webRtcPlayerObj = undefined;
-		}
-
-		showTextOverlay(`Disconnected: ${event.reason}`);
-		var reclickToStart = setTimeout(start, 4000);
-	};
 }
 
 // Config data received from WebRTC sender via the Cirrus web server

@@ -3,6 +3,8 @@ package server
 import (
 	"errors"
 	"github.com/mitchellh/mapstructure"
+	"thingue-launcher/agent/global"
+	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/model/message"
 )
 
@@ -11,29 +13,22 @@ func MsgReceive(msg map[string]interface{}) error {
 	switch msg["type"].(string) {
 	case "ConnectCallback":
 		id := msg["data"].(float64)
-		RegisterNode(uint(id))
+		global.NODE_ID = uint(id)
+		instance.NodeService.RegisterNode(global.NODE_ID)
 	case "control":
-		var controlMsg message.ControlMsg
-		err = mapstructure.Decode(msg["data"], &controlMsg)
+		var msgData message.ControlMsg
+		err = mapstructure.Decode(msg["data"], &msgData)
 		if err == nil {
-			Control(controlMsg)
+			instance.NodeService.Control(msgData)
 		}
 	case "update":
-		var updateMsg message.UpdateMsg
-		err = mapstructure.Decode(msg["data"], &updateMsg)
+		var msgData message.UpdateMsg
+		err = mapstructure.Decode(msg["data"], &msgData)
 		if err == nil {
-			Update(updateMsg)
+			instance.NodeService.Update(msgData)
 		}
 	default:
 		return errors.New("不支持的消息类型")
 	}
 	return nil
-}
-
-func Control(msg message.ControlMsg) {
-	//todo
-}
-
-func Update(msg message.UpdateMsg) {
-	//todo
 }

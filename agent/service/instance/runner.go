@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"strconv"
 	"thingue-launcher/agent/global"
-	"thingue-launcher/agent/http"
 	"thingue-launcher/common/config"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
@@ -20,6 +19,7 @@ type Runner struct {
 	*model.ClientInstance
 	ExitSignalChannel chan error `json:"-"`
 	process           *os.Process
+	SID               string
 }
 
 func (r *Runner) Start() error {
@@ -29,10 +29,11 @@ func (r *Runner) Start() error {
 	// 设置PixelStreamingURL
 	var launchArguments []string
 	appConfig := config.AppConfig
-	sid, err := http.GetInstanceSid(global.NODE_ID, r.ID)
+	sid, err := NodeService.GetInstanceSid(global.NODE_ID, r.ID)
 	if err == nil {
+		r.SID = sid
 		wsUrl := util.HttpUrlToWsUrl(appConfig.ServerUrl, "/ws/streamer")
-		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+sid)
+		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.SID)
 	} else {
 		launchArguments = r.LaunchArguments
 	}
@@ -45,7 +46,7 @@ func (r *Runner) Start() error {
 	}
 	r.Pid = command.Process.Pid
 	r.process = command.Process
-	r.StateCode = 1
+	r.updateStateCode(1)
 	r.LastStartAt = time.Now()
 	RunnerManager.RunnerStatusUpdateChanel <- r.ID
 	go func() {
@@ -56,11 +57,11 @@ func (r *Runner) Start() error {
 		r.LastStopAt = time.Now()
 		select {
 		case r.ExitSignalChannel <- exitCode:
-			r.StateCode = 0
+			r.updateStateCode(0)
 			RunnerManager.RunnerStatusUpdateChanel <- r.ID
 			fmt.Println("退出码发送成功")
 		default:
-			r.StateCode = -1
+			r.updateStateCode(-1)
 			RunnerManager.RunnerUnexpectedExitChanel <- r.ID
 			fmt.Println("异常退出")
 		}
@@ -87,4 +88,12 @@ func (r *Runner) Stop() error {
 	exitStatus := <-r.ExitSignalChannel
 	fmt.Printf("%s进程退出%s\n", r.Name, exitStatus)
 	return err
+}
+
+func (r *Runner) updateStateCode(stateCode int8) {
+	r.StateCode = stateCode
+	NodeService.SendProcessState(&model.ProcessStateUpdate{
+		SID:       r.SID,
+		StateCode: stateCode,
+	})
 }

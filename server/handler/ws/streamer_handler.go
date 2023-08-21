@@ -14,7 +14,6 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 	}
 	id := c.Param("id")
 	streamer := service.StreamerConnManager.NewStreamerConnector(id, conn)
-	defer service.StreamerConnManager.DeleteStreamerConnector(streamer)
 	streamer.SendConfig()
 
 	for {

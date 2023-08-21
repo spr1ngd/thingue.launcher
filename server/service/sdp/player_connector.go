@@ -42,10 +42,6 @@ func (p *PlayerConnector) HandleMsg(msgStr string) {
 	}
 }
 
-func (p *PlayerConnector) SetStreamer(s *StreamerConnector) {
-	p.StreamerConnector = s
-}
-
 func (p *PlayerConnector) SendMsg(msg string) {
 	p.conn.WriteMessage(websocket.TextMessage, []byte(msg))
 }

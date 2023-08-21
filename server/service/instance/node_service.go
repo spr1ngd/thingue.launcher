@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"thingue-launcher/common/model"
@@ -18,7 +17,6 @@ func (s *nodeService) NodeRegister(registerInfo *model.NodeRegisterInfo) error {
 	deviceInfoMap := make(map[string]interface{})
 	err := mapstructure.Decode(registerInfo.DeviceInfo, &deviceInfoMap)
 	err = mapstructure.Decode(deviceInfoMap, &node.DeviceInfo)
-	fmt.Printf("%+v\n", node)
 	if err != nil {
 		return err
 	}

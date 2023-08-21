@@ -1,6 +1,6 @@
 import request from '@/request';
 
-export function queryAgent(params) {
+export function getNodeList(params) {
   return request({
     url: `/instance/nodeList`,
     method: 'GET'

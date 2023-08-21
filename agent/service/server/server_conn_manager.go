@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/config"
 	"thingue-launcher/common/util"
 )
@@ -28,6 +29,7 @@ func (m *serverConnManager) Connect(httpUrl string) error {
 		//2.1如果连接成功,保存连接信息
 		appConfig.ServerUrl = httpUrl
 		config.WriteConfig()
+		instance.NodeService.SetBaseUrl(httpUrl)
 		//2.2如果连接成功,启动`消息接收goroutine`
 		go func() {
 			for {
