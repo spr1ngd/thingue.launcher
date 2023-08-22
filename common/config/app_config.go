@@ -27,14 +27,18 @@ type SystemSettings struct {
 }
 
 func InitConfig() {
-	_, statErr := os.Stat("config.yaml")
+	_, statErr := os.Stat("./thingue-launcher/config.yaml")
 	if os.IsNotExist(statErr) {
-		file, _ := os.Create("config.yaml")
+		err := os.MkdirAll("./thingue-launcher", 0755)
+		file, err := os.Create("./thingue-launcher/config.yaml")
 		defer file.Close()
+		if err != nil {
+			panic(err)
+		}
 	}
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath("./thingue-launcher")
 	viper.SetDefault("agent.localserver.bindAddr", "0.0.0.0:8080")
 	viper.SetDefault("agent.localserver.basepath", "/")
 	viper.SetDefault("agent.localserver.enable", true)

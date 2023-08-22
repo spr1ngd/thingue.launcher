@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"strings"
 	"thingue-launcher/agent/global"
-	"thingue-launcher/common/model"
+	"thingue-launcher/common/domain"
 	"thingue-launcher/common/util"
 )
 
-func GetDeviceInfo() *model.DeviceInfo {
+func GetDeviceInfo() *domain.DeviceInfo {
 	workdir, _ := os.Getwd()     //工作目录
 	hostname, _ := os.Hostname() //主机名
 	// 处理器
@@ -57,7 +57,7 @@ func GetDeviceInfo() *model.DeviceInfo {
 			}
 		}
 	}
-	return &model.DeviceInfo{
+	return &domain.DeviceInfo{
 		Version:    global.APP_VERSION,
 		Workdir:    workdir,
 		Hostname:   hostname,

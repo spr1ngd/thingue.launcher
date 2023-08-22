@@ -7,6 +7,8 @@ import (
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/labels"
 	"thingue-launcher/common/model"
+	"thingue-launcher/common/request"
+	"thingue-launcher/common/response"
 	"thingue-launcher/server/global"
 	"time"
 )
@@ -19,29 +21,56 @@ var TicketService = ticketService{
 	cache: expirable.NewLRU[string, string](500, nil, time.Second*10),
 }
 
-func (s *ticketService) GetTicketByLabelSelector(selectCond model.SelectCond) (string, error) {
-	selector, err := labels.Parse(selectCond.Selector)
-	if err != nil {
-		return "", err
+func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (response.InstanceTicket, error) {
+	// 数据库查询
+	query := global.SERVER_DB.Where("streamer_connected = ?", true)
+	if selectCond.SID != "" {
+		query = query.Where("s_id = ?", selectCond.SID)
+	}
+	if selectCond.Name != "" {
+		query = query.Where("name = ?", selectCond.Name)
+	}
+	if selectCond.PlayerCount != 0 {
+		query = query.Where("player_count = ?", selectCond.PlayerCount)
 	}
 	var instances []model.ServerInstance
-	global.SERVER_DB.Find(&instances)
-	for _, instance := range instances {
-		var metaData MetaData
-		err := yaml.Unmarshal([]byte(instance.Metadata), &metaData)
-		if err != nil {
-			continue
-		}
-		instance.Labels = labels.Set(metaData.Labels)
-		if selector.Matches(instance.Labels) {
-			//生成ticket
-			ticket, _ := uuid.NewUUID()
+	query.Find(&instances)
+	ticket := response.InstanceTicket{}
+	if len(instances) > 0 {
+		if selectCond.LabelSelector != "" {
+			// label匹配
+			selector, err := labels.Parse(selectCond.LabelSelector)
+			if err != nil {
+				return ticket, err
+			}
+			for _, instance := range instances {
+				var metaData MetaData
+				err := yaml.Unmarshal([]byte(instance.Metadata), &metaData)
+				if err != nil {
+					continue
+				}
+				instance.Labels = labels.Set(metaData.Labels)
+				if selector.Matches(instance.Labels) {
+					//生成ticket
+					ticketId, _ := uuid.NewUUID()
+					//添加缓存
+					s.cache.Add(ticketId.String(), instance.SID)
+					ticket.ServerInstance = &instances[0]
+					ticket.Ticket = ticketId.String()
+					return ticket, nil
+				}
+			}
+		} else {
+			//不需要label匹配，挑选第一个生成ticket
+			ticketId, _ := uuid.NewUUID()
 			//添加缓存
-			s.cache.Add(ticket.String(), instance.SID)
-			return ticket.String(), nil
+			s.cache.Add(ticketId.String(), instances[0].SID)
+			ticket.ServerInstance = &instances[0]
+			ticket.Ticket = ticketId.String()
+			return ticket, nil
 		}
 	}
-	return "", errors.New("找不到合适的实例")
+	return ticket, errors.New("找不到合适的实例")
 }
 
 func (s *ticketService) GetTicketById(sid string) (string, error) {

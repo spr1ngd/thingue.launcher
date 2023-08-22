@@ -1,14 +1,11 @@
 <script setup>
 import { onMounted, ref, reactive, inject } from 'vue';
 import { statusToText } from '@/utils';
-import { getNodeList, sendInstanceControl, sendPakControl } from '@/api';
+import { getNodeList, controlProcess, sendPakControl } from '@/api';
 import { Notify } from 'quasar';
 import { emitter } from "@/ws";
 
-
 const rows = ref([])
-
-// const stompClient = inject('stompClient');
 
 const columns = [
   { name: 'id', label: '节点编号', field: 'id', align: 'left' },
@@ -28,12 +25,12 @@ const subColumns = [
   { name: 'players', label: '连接数', field: (row) => (row.playerIds ? row.playerIds.length : 0), align: 'left' }
 ];
 
-function start(id) {
-  sendInstanceControl(id, 'START');
+function start(sid) {
+  controlProcess(sid, 'START');
 }
 
-function stop(id) {
-  sendInstanceControl(id, 'STOP');
+function stop(sid) {
+  controlProcess(sid, 'STOP');
 }
 
 function handleChange(row) {
@@ -120,7 +117,7 @@ onMounted( () => {
                 <q-th v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.label }}
                 </q-th>
-                <q-th>站点</q-th>
+<!--                <q-th>站点</q-th>-->
                 <q-th auto-width>操作</q-th>
               </q-tr>
             </template>
@@ -135,21 +132,18 @@ onMounted( () => {
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.value }}
                 </q-td>
-                <q-td auto-width>
-                  <div class="q-gutter-md" style="min-width: 135px">
-                    <q-select dense options-dense clearable :options="['宜宾换流站', '雁门关换流站', '延庆换流站', '中都换流站']"
-                      v-model="props.row.pak" @clear="handleClear" @update:model-value="handleChange(props.row)" />
-                  </div>
-                </q-td>
+<!--                <q-td auto-width>-->
+<!--                  <div class="q-gutter-md" style="min-width: 135px">-->
+<!--                    <q-select dense options-dense clearable :options="['宜宾换流站', '雁门关换流站', '延庆换流站', '中都换流站']"-->
+<!--                      v-model="props.row.pak" @clear="handleClear" @update:model-value="handleChange(props.row)" />-->
+<!--                  </div>-->
+<!--                </q-td>-->
                 <q-td auto-width>
                   <div class="q-pa-md q-gutter-sm">
                     <q-btn size="sm" color="primary" round dense icon="settings"
                       @click="$emit('someEvent', props.row, props.row.sessionId, 'instance')"></q-btn>
-                    <q-btn size="sm" color="positive" round dense icon="play_arrow" @click="start(props.row.id)"></q-btn>
-                    <q-btn size="sm" color="negative" round dense icon="stop" @click="stop(props.row.id)"></q-btn>
-                    <q-btn size="sm" color="info" round dense icon="terminal"
-                      :href="`grafana/d/a1e60a7c-f226-4614-9300-4efef0d1c62f/thingue?orgId=1&var-node=${props.row.name}&viewPanel=1`"
-                      target="_blank"></q-btn>
+                    <q-btn size="sm" color="positive" round dense icon="play_arrow" @click="start(props.row.sid)"></q-btn>
+                    <q-btn size="sm" color="negative" round dense icon="stop" @click="stop(props.row.sid)"></q-btn>
                   </div>
                 </q-td>
               </q-tr>

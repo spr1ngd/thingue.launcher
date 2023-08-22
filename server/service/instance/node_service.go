@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"thingue-launcher/common/model"
+	"thingue-launcher/common/request"
 	"thingue-launcher/server/global"
 )
 
@@ -11,15 +12,10 @@ type nodeService struct{}
 
 var NodeService = new(nodeService)
 
-func (s *nodeService) NodeRegister(registerInfo *model.NodeRegisterInfo) error {
+func (s *nodeService) NodeRegister(registerInfo *request.NodeRegisterInfo) error {
 	var node model.Node
 	global.SERVER_DB.Find(&node, registerInfo.NodeID)
-	deviceInfoMap := make(map[string]interface{})
-	err := mapstructure.Decode(registerInfo.DeviceInfo, &deviceInfoMap)
-	err = mapstructure.Decode(deviceInfoMap, &node.DeviceInfo)
-	if err != nil {
-		return err
-	}
+	node.SetDeviceInfo(*registerInfo.DeviceInfo)
 	var serverInstances = make([]*model.ServerInstance, 0)
 	for _, instance := range registerInfo.Instances {
 		var s *model.ServerInstance
@@ -30,7 +26,7 @@ func (s *nodeService) NodeRegister(registerInfo *model.NodeRegisterInfo) error {
 	}
 	node.Instances = serverInstances
 	global.SERVER_DB.Save(&node)
-	return err
+	return nil
 }
 
 func (s *nodeService) NodeList() []model.Node {

@@ -5,7 +5,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/service/instance"
-	"thingue-launcher/common/model/message"
+	"thingue-launcher/common/message"
 )
 
 func MsgReceive(msg map[string]interface{}) error {
@@ -19,13 +19,13 @@ func MsgReceive(msg map[string]interface{}) error {
 		var msgData message.ControlMsg
 		err = mapstructure.Decode(msg["data"], &msgData)
 		if err == nil {
-			instance.NodeService.Control(msgData)
+			instance.NodeService.Control()
 		}
 	case "update":
 		var msgData message.UpdateMsg
 		err = mapstructure.Decode(msg["data"], &msgData)
 		if err == nil {
-			instance.NodeService.Update(msgData)
+			instance.NodeService.Update()
 		}
 	default:
 		return errors.New("不支持的消息类型")

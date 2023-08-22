@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	NodeService           = instance.NodeService
-	InstanceService       = instance.InstanceService
-	TicketService         = instance.TicketService
-	StreamerConnManager   = sdp.StreamerConnManager
-	PlayerConnManager     = sdp.PlayerConnManager
-	AdminBroadcastManager = ws.AdminWsManager
+	NodeService         = instance.NodeService
+	InstanceService     = instance.InstanceService
+	TicketService       = instance.TicketService
+	StreamerConnManager = sdp.StreamerConnManager
+	PlayerConnManager   = sdp.PlayerConnManager
+	AdminWsManager      = ws.AdminWsManager
+	NodeWsManager       = ws.NodeWsManager
 )

@@ -1,8 +1,7 @@
 <script setup>
-import { ref, watch, onMounted, reactive } from 'vue';
+import {onMounted, reactive, ref, watch} from 'vue';
 import * as monaco from 'monaco-editor';
-import { createInstanceConfig, saveInstanceConfig } from '@/api';
-import { Notify } from 'quasar';
+
 const props = defineProps(['row', 'sessionId']);
 const config = reactive({
   name: props.row.name,
@@ -17,6 +16,7 @@ onMounted(() => {
     language: 'ini',
     lineNumbers: 'off',
     theme: 'vs-dark',
+    readOnly: true,
     minimap: {
       enabled: false // 是否启用预览图
     },
@@ -26,24 +26,24 @@ onMounted(() => {
 });
 
 watch(
-  () => props.row.name,
-  async (newValue, oldValue) => {
-    config.name = newValue;
-  }
+    () => props.row.name,
+    async (newValue, oldValue) => {
+      config.name = newValue;
+    }
 );
 
 watch(
-  () => props.row.execPath,
-  async (newValue, oldValue) => {
-    config.execPath = newValue;
-  }
+    () => props.row.execPath,
+    async (newValue, oldValue) => {
+      config.execPath = newValue;
+    }
 );
 
 watch(
-  () => props.row.launchArguments,
-  async (newValue, oldValue) => {
-    editor.setValue(newValue.join('\n'));
-  }
+    () => props.row.launchArguments,
+    async (newValue, oldValue) => {
+      editor.setValue(newValue.join('\n'));
+    }
 );
 
 </script>
@@ -51,12 +51,12 @@ watch(
   <div class="q-pa-md q-gutter-md">
     <div class="text-h5">实例配置</div>
     <div class="text-subtitle2">实例名称</div>
-    <q-input dense filled v-model="config.name" />
+    <q-input dense filled v-model="config.name"/>
     <div class="text-subtitle2">可执行文件路径</div>
-    <q-input dense filled v-model="config.execPath" />
+    <q-input dense filled v-model="config.execPath"/>
     <div class="text-subtitle2">启动参数</div>
     <div class="editor" ref="dom"></div>
-    <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')" />
+    <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')"/>
   </div>
 </template>
 <style scoped>

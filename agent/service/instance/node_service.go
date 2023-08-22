@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"net/url"
 	"thingue-launcher/common/config"
-	"thingue-launcher/common/model"
-	"thingue-launcher/common/model/message"
+	"thingue-launcher/common/message"
+	"thingue-launcher/common/request"
+	"thingue-launcher/common/response"
 	"thingue-launcher/common/util"
 )
 
@@ -31,7 +32,7 @@ func (s *nodeService) GetInstanceSid(nodeId uint, instanceId uint) (string, erro
 	fmt.Println("result", string(result))
 	fmt.Println("err", err)
 	if err == nil {
-		res := model.JsonStruct{}
+		res := response.Response{}
 		err = json.Unmarshal(result, &res)
 
 		if err == nil {
@@ -47,7 +48,7 @@ func (s *nodeService) GetInstanceSid(nodeId uint, instanceId uint) (string, erro
 }
 
 func (s *nodeService) RegisterNode(nodeId uint) {
-	registerInfo := model.NodeRegisterInfo{
+	registerInfo := request.NodeRegisterInfo{
 		NodeID:     nodeId,
 		DeviceInfo: GetDeviceInfo(),
 		Instances:  RunnerManager.List(),
@@ -55,7 +56,7 @@ func (s *nodeService) RegisterNode(nodeId uint) {
 	reqData, _ := json.Marshal(registerInfo)
 	result, err := util.HttpPost(s.BaseUrl.JoinPath("/api/instance/nodeRegister").String(), reqData)
 	if err == nil {
-		res := model.JsonStruct{}
+		res := response.Response{}
 		err = json.Unmarshal(result, &res)
 		if err != nil {
 			if res.Code != 200 {
@@ -65,17 +66,17 @@ func (s *nodeService) RegisterNode(nodeId uint) {
 	}
 }
 
-func (s *nodeService) SendProcessState(request *model.ProcessStateUpdate) {
+func (s *nodeService) SendProcessState(request *message.ProcessStateUpdate) {
 	if s.BaseUrl != nil {
 		reqData, _ := json.Marshal(request)
 		util.HttpPost(s.BaseUrl.JoinPath("/api/instance/updateProcessState").String(), reqData)
 	}
 }
 
-func (s *nodeService) Control(data message.ControlMsg) {
-
+func (s *nodeService) Control() {
+	//todo
 }
 
-func (s *nodeService) Update(data message.UpdateMsg) {
-
+func (s *nodeService) Update() {
+	//todo
 }

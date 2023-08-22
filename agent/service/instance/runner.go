@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/common/config"
+	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
 	"time"
@@ -91,7 +92,7 @@ func (r *Runner) Stop() error {
 
 func (r *Runner) updateStateCode(stateCode int8) {
 	r.StateCode = stateCode
-	NodeService.SendProcessState(&model.ProcessStateUpdate{
+	NodeService.SendProcessState(&message.ProcessStateUpdate{
 		SID:       r.SID,
 		StateCode: stateCode,
 	})

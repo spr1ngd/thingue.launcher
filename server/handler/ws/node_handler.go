@@ -8,6 +8,7 @@ import (
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/global"
+	"thingue-launcher/server/service/ws"
 )
 
 func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
@@ -18,22 +19,26 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 	}
 	node := model.Node{}
 	global.SERVER_DB.Create(&node)
-	str := util.MapDataToJsonStr(map[string]interface{}{
+	str := util.MapDataToJsonStr(map[string]any{
 		"type": "ConnectCallback",
 		"data": node.ID,
 	})
-	conn.WriteMessage(websocket.TextMessage, []byte(str))
-	for {
-		// 读取客户端发送的消息
-		_, msg, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("WebSocket read error:", err)
-			break
+	ws.NodeWsManager.ConnMap[node.ID] = conn
+	err = conn.WriteMessage(websocket.TextMessage, []byte(str))
+	if err != nil {
+		for {
+			// 读取客户端发送的消息
+			_, msg, err := conn.ReadMessage()
+			if err != nil {
+				fmt.Println("WebSocket read error:", err)
+				break
+			}
+			// 处理接收到的消息
+			fmt.Println(string(msg))
 		}
-		// 处理接收到的消息
-		fmt.Println(string(msg))
 	}
 	conn.Close()
+	delete(ws.NodeWsManager.ConnMap, node.ID)
 	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&node.Instances)
 	global.SERVER_DB.Delete(&node)
 }

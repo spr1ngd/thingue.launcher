@@ -3,13 +3,14 @@ package instance
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/common/model"
-	"thingue-launcher/common/model/response"
+	"thingue-launcher/common/message"
+	"thingue-launcher/common/request"
+	"thingue-launcher/common/response"
 	"thingue-launcher/server/service"
 )
 
 func (g *HandlerGroup) NodeRegister(c *gin.Context) {
-	var registerInfo model.NodeRegisterInfo
+	var registerInfo request.NodeRegisterInfo
 	err := c.ShouldBindJSON(&registerInfo)
 	fmt.Printf("%+v\n", registerInfo)
 	err = service.NodeService.NodeRegister(&registerInfo)
@@ -33,13 +34,13 @@ func (g *HandlerGroup) GetInstanceSid(c *gin.Context) {
 
 func (g *HandlerGroup) NodeList(c *gin.Context) {
 	list := service.NodeService.NodeList()
-	response.OkWithDetailed(response.PageResult{
+	response.OkWithData(response.PageResult{
 		List: list,
-	}, "获取成功", c)
+	}, c)
 }
 
 func (g *HandlerGroup) UpdateProcessState(c *gin.Context) {
-	var request model.ProcessStateUpdate
+	var request message.ProcessStateUpdate
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -49,6 +50,13 @@ func (g *HandlerGroup) UpdateProcessState(c *gin.Context) {
 	response.Ok(c)
 }
 
-func (g *HandlerGroup) ControlInstance(c *gin.Context) {
-
+func (g *HandlerGroup) ProcessControl(c *gin.Context) {
+	var req request.ProcessControl
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	service.InstanceService.ProcessControl(req)
+	response.Ok(c)
 }

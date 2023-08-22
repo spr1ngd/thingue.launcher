@@ -9,8 +9,6 @@ type ServerInstance struct {
 	ID                uint          `json:"id" gorm:"primarykey"`
 	NodeID            uint          `json:"nodeID" gorm:"primarykey"`
 	SID               string        `json:"sid" gorm:"unique"`
-	CreatedAt         time.Time     `json:"createdAt"`
-	UpdatedAt         time.Time     `json:"updatedAt"`
 	Name              string        `json:"name"`
 	ExecPath          string        `json:"execPath"`
 	LaunchArguments   StringSlice   `json:"launchArguments"`
@@ -23,5 +21,6 @@ type ServerInstance struct {
 	StateCode         int8          `json:"stateCode"`
 	StreamerConnected bool          `json:"streamerConnected"`
 	PlayerIds         StringSlice   `json:"playerIds"`
+	PlayerCount       uint          `json:"playerCount"`
 	Labels            labels.Labels `json:"labels" gorm:"-"`
 }

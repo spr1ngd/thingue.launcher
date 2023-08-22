@@ -51,14 +51,14 @@ function handleNewSettings() {
   emit("openSettingsPanel", {
     type: 'new',
     settings: {
-      LaunchArguments: [
+      launchArguments: [
         "-AudioMixer",
         "-RenderOffScreen",
         "-ForceRes",
         "-ResX=1920",
         "-ResX=1080",
       ],
-      FaultRecover: false
+      faultRecover: false
     }
   })
 }

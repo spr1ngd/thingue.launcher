@@ -8,7 +8,7 @@ import (
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/config"
-	"thingue-launcher/common/model"
+	"thingue-launcher/common/domain"
 )
 
 type systemApi struct {
@@ -65,8 +65,8 @@ func (a *systemApi) UpdateSystemSettings(systemSettings config.SystemSettings) {
 	config.WriteConfig()
 }
 
-func (a *systemApi) GetVersionInfo() *model.VersionInfo {
-	return &model.VersionInfo{
+func (a *systemApi) GetVersionInfo() *domain.VersionInfo {
+	return &domain.VersionInfo{
 		Version:   global.APP_VERSION,
 		GitCommit: global.APP_GITCOMMIT,
 		BuildDate: global.APP_BUILDDATE,

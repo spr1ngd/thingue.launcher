@@ -1,8 +1,6 @@
 package model
 
-import (
-	"time"
-)
+import "time"
 
 type RemoteServer struct {
 	ID        uint `gorm:"primarykey"`

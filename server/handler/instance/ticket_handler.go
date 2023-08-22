@@ -2,15 +2,15 @@ package instance
 
 import (
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/common/model"
-	"thingue-launcher/common/model/response"
+	"thingue-launcher/common/request"
+	"thingue-launcher/common/response"
 	"thingue-launcher/server/service"
 )
 
-func (g *HandlerGroup) GetTicketByLabelSelector(c *gin.Context) {
-	var selectCond model.SelectCond
+func (g *HandlerGroup) TicketSelect(c *gin.Context) {
+	var selectCond request.TicketSelector
 	err := c.ShouldBindJSON(&selectCond)
-	ticket, err := service.TicketService.GetTicketByLabelSelector(selectCond)
+	ticket, err := service.TicketService.TicketSelect(selectCond)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {

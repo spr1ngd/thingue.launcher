@@ -37,6 +37,7 @@ func (s *Server) Serve() {
 		Handler: s.router,
 	}
 	s.IsRunning = true
+	fmt.Println("thingue server listening at: ", s.server.Addr)
 	err := s.server.ListenAndServe() //运行中阻塞
 	s.IsRunning = false
 	if s.CloseReturnChanel != nil {
