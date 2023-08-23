@@ -40,13 +40,13 @@ func (g *HandlerGroup) NodeList(c *gin.Context) {
 }
 
 func (g *HandlerGroup) UpdateProcessState(c *gin.Context) {
-	var request message.ProcessStateUpdate
-	err := c.ShouldBindJSON(&request)
+	var msg message.NodeProcessStateUpdate
+	err := c.ShouldBindJSON(&msg)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	service.InstanceService.UpdateProcessState(&request)
+	service.InstanceService.UpdateProcessState(&msg)
 	response.Ok(c)
 }
 

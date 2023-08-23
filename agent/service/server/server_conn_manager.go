@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/config"
+	"thingue-launcher/common/message"
 	"thingue-launcher/common/util"
 )
 
@@ -33,12 +34,12 @@ func (m *serverConnManager) Connect(httpUrl string) error {
 		//2.2如果连接成功,启动`消息接收goroutine`
 		go func() {
 			for {
-				var msg = map[string]interface{}{}
+				var msg = message.Message{}
 				readErr := m.ws.ReadJSON(&msg)
 				//接收消息
 				if readErr != nil {
 					//连接断开
-					fmt.Println("无法读取消息：", err)
+					fmt.Println("无法读取消息：", readErr, msg)
 					break
 				}
 				fmt.Printf("收到响应：%v\n", msg)

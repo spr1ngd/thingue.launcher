@@ -7,10 +7,10 @@ import (
 )
 
 type Node struct {
-	ID         uint              `gorm:"primarykey" json:"id"`
+	ID         uint              `json:"id" gorm:"primarykey"`
 	CreatedAt  time.Time         `json:"createdAt"`
 	UpdatedAt  time.Time         `json:"updatedAt"`
-	Instances  []*ServerInstance `gorm:"foreignKey:NodeID" json:"instances"`
+	Instances  []*ServerInstance `json:"instances" gorm:"foreignKey:NodeID"`
 	Version    string            `json:"version"`
 	Workdir    string            `json:"workdir"`
 	Hostname   string            `json:"hostname"`

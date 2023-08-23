@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"github.com/mitchellh/mapstructure"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
@@ -38,22 +37,28 @@ func (s *instanceService) RemovePlayer(sid string, playerId string) {
 func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("streamer_connected", connected)
 	ws.AdminWsManager.Broadcast()
+	instance := model.ServerInstance{}
+	global.SERVER_DB.Where("s_id = ?", sid).First(&instance)
+	updateMsg := message.ServerStreamerConnectedUpdate{
+		CID:       instance.CID,
+		Connected: connected,
+	}
+	ws.NodeWsManager.SendToNode(instance.NodeID, updateMsg.Pack())
 }
 
-func (s *instanceService) UpdateProcessState(request *message.ProcessStateUpdate) {
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", request.SID).Update("state_code", request.StateCode)
+func (s *instanceService) UpdateProcessState(msg *message.NodeProcessStateUpdate) {
+	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Update("state_code", msg.StateCode)
 	ws.AdminWsManager.Broadcast()
 }
 
 func (s *instanceService) ProcessControl(processControl request.ProcessControl) {
 	var instance model.ServerInstance
 	global.SERVER_DB.Where("s_id = ?", processControl.SID).First(&instance)
-	var msg map[string]any
-	mapstructure.Decode(&message.NodeProcessControlMsg{
-		ID:      instance.ID,
+	control := message.ServerProcessControl{
+		CID:     instance.CID,
 		Command: processControl.Command,
-	}, &msg)
-	ws.NodeWsManager.SendToNode(instance.NodeID, msg)
+	}
+	ws.NodeWsManager.SendToNode(instance.NodeID, control.Pack())
 }
 
 func (s *instanceService) PakControl() {

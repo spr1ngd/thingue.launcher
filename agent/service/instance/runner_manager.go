@@ -22,21 +22,21 @@ var RunnerManager = runnerManager{
 func (m *runnerManager) List() []*model.ClientInstance {
 	var instances = make([]*model.ClientInstance, 0)
 	for _, instance := range InstanceManager.List() {
-		runner := m.GetRunnerById(instance.ID)
+		runner := m.GetRunnerById(instance.CID)
 		instances = append(instances, runner.ClientInstance)
 	}
 	return instances
 }
 
 func (m *runnerManager) NewRunner(instance *model.ClientInstance) error {
-	if _, ok := m.IdRunnerMap[instance.ID]; ok {
+	if _, ok := m.IdRunnerMap[instance.CID]; ok {
 		return errors.New("无法重复创建")
 	}
 	r := &Runner{
 		ClientInstance:    instance,
 		ExitSignalChannel: make(chan error),
 	}
-	m.IdRunnerMap[r.ID] = r
+	m.IdRunnerMap[r.CID] = r
 	return nil
 }
 
@@ -58,6 +58,16 @@ func (m *runnerManager) CloseAllRunner() {
 	}
 }
 
+func (m *runnerManager) ExecCommand(id uint, command string) {
+	runner := m.GetRunnerById(id)
+	if runner != nil {
+		if command == "START" {
+			_ = runner.Start()
+		} else if command == "STOP" {
+			_ = runner.Stop()
+		}
+	}
+}
 func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
@@ -79,7 +89,7 @@ func (m *runnerManager) DeleteRunner(id uint) error {
 		if runner.StateCode == 1 {
 			return errors.New("实例正在运行，无法删除")
 		}
-		delete(m.IdRunnerMap, runner.ID)
+		delete(m.IdRunnerMap, runner.CID)
 	} else {
 		return errors.New("找不到实例")
 	}

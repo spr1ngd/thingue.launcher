@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"gorm.io/gorm"
+	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
-	"thingue-launcher/common/util"
 	"thingue-launcher/server/global"
 	"thingue-launcher/server/service/ws"
 )
@@ -19,13 +19,10 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 	}
 	node := model.Node{}
 	global.SERVER_DB.Create(&node)
-	str := util.MapDataToJsonStr(map[string]any{
-		"type": "ConnectCallback",
-		"data": node.ID,
-	})
+	callbackMsg := message.ServerConnectCallback(node.ID)
 	ws.NodeWsManager.ConnMap[node.ID] = conn
-	err = conn.WriteMessage(websocket.TextMessage, []byte(str))
-	if err != nil {
+	err = conn.WriteMessage(websocket.TextMessage, callbackMsg.Pack().GetBytes())
+	if err == nil {
 		for {
 			// 读取客户端发送的消息
 			_, msg, err := conn.ReadMessage()

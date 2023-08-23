@@ -50,7 +50,7 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	service.InstanceManager.Create(instance)
 	err := service.RunnerManager.NewRunner(instance)
 	if err != nil {
-		service.InstanceManager.Delete(instance.ID)
+		service.InstanceManager.Delete(instance.CID)
 	}
 	return err
 }
@@ -59,10 +59,10 @@ func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 	return service.InstanceManager.Save(instance)
 }
 
-func (u *instanceApi) DeleteInstance(id uint) error {
-	err := service.RunnerManager.DeleteRunner(id)
+func (u *instanceApi) DeleteInstance(cid uint) error {
+	err := service.RunnerManager.DeleteRunner(cid)
 	if err == nil {
-		service.InstanceManager.Delete(id)
+		service.InstanceManager.Delete(cid)
 	}
 	return err
 }

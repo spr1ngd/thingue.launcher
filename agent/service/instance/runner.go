@@ -29,7 +29,7 @@ func (r *Runner) Start() error {
 	// 设置PixelStreamingURL
 	var launchArguments []string
 	appConfig := config.AppConfig
-	sid, err := NodeService.GetInstanceSid(global.NODE_ID, r.ID)
+	sid, err := NodeService.GetInstanceSid(global.NODE_ID, r.CID)
 	if err == nil {
 		r.SID = sid
 		wsUrl := util.HttpUrlToWsUrl(appConfig.ServerUrl, "/ws/streamer")
@@ -48,21 +48,20 @@ func (r *Runner) Start() error {
 	r.process = command.Process
 	r.updateStateCode(1)
 	r.LastStartAt = time.Now()
-	RunnerManager.RunnerStatusUpdateChanel <- r.ID
+	RunnerManager.RunnerStatusUpdateChanel <- r.CID
 	go func() {
 		exitCode := command.Wait()
-		time.Sleep(3 * time.Second)
 		r.Pid = 0
 		r.process = nil
 		r.LastStopAt = time.Now()
 		select {
 		case r.ExitSignalChannel <- exitCode:
 			r.updateStateCode(0)
-			RunnerManager.RunnerStatusUpdateChanel <- r.ID
+			RunnerManager.RunnerStatusUpdateChanel <- r.CID
 			fmt.Println("退出码发送成功")
 		default:
 			r.updateStateCode(-1)
-			RunnerManager.RunnerUnexpectedExitChanel <- r.ID
+			RunnerManager.RunnerUnexpectedExitChanel <- r.CID
 			fmt.Println("异常退出")
 		}
 	}()
@@ -92,7 +91,7 @@ func (r *Runner) Stop() error {
 
 func (r *Runner) updateStateCode(stateCode int8) {
 	r.StateCode = stateCode
-	NodeService.SendProcessState(&message.ProcessStateUpdate{
+	NodeService.SendProcessState(&message.NodeProcessStateUpdate{
 		SID:       r.SID,
 		StateCode: stateCode,
 	})

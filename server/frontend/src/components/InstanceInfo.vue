@@ -9,8 +9,10 @@ const config = reactive({
   enableMultiuserControl: props.row.enableMultiuserControl
 });
 const dom = ref();
+const labels = ref([])
 let editor;
 onMounted(() => {
+  getLabels(props.row.labels)
   editor = monaco.editor.create(dom.value, {
     value: props.row.launchArguments.join('\n'),
     language: 'ini',
@@ -33,11 +35,31 @@ watch(
 );
 
 watch(
+    () => props.row.labels,
+    async (newValue, oldValue) => {
+      getLabels(newValue)
+    }
+);
+
+watch(
     () => props.row.execPath,
     async (newValue, oldValue) => {
       config.execPath = newValue;
     }
 );
+
+function getLabels(obj) {
+  if (obj) {
+    labels.value = Object.keys(obj).map(key => {
+      return {
+        key: key,
+        value: obj[key]
+      }
+    });
+  } else {
+    labels.value = []
+  }
+}
 
 watch(
     () => props.row.launchArguments,
@@ -56,6 +78,10 @@ watch(
     <q-input dense filled v-model="config.execPath"/>
     <div class="text-subtitle2">启动参数</div>
     <div class="editor" ref="dom"></div>
+    <div class="text-subtitle2">自定义标签</div>
+    <div class="q-pa-none">
+      <q-chip v-for="label in labels">{{ label.key }}: {{ label.value }}</q-chip>
+    </div>
     <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')"/>
   </div>
 </template>

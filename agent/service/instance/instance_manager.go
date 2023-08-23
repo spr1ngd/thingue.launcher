@@ -18,7 +18,7 @@ func (m *instanceManager) List() []model.ClientInstance {
 
 func (m *instanceManager) Create(instance *model.ClientInstance) uint {
 	global.APP_DB.Create(&instance)
-	return instance.ID
+	return instance.CID
 }
 
 func (m *instanceManager) GetById(id uint) *model.ClientInstance {
@@ -28,7 +28,7 @@ func (m *instanceManager) GetById(id uint) *model.ClientInstance {
 }
 
 func (m *instanceManager) Save(instance *model.ClientInstance) error {
-	runner := RunnerManager.GetRunnerById(instance.ID)
+	runner := RunnerManager.GetRunnerById(instance.CID)
 	if runner.StateCode == 1 {
 		return errors.New("实例运行中无法修改配置")
 	}

@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, reactive, inject } from 'vue';
-import { statusToText } from '@/utils';
+import {getPaksName, processStateToText} from '@/utils';
 import { getNodeList, controlProcess, sendPakControl } from '@/api';
 import { Notify } from 'quasar';
 import { emitter } from "@/ws";
@@ -20,7 +20,7 @@ const columns = [
 ];
 
 const subColumns = [
-  { name: 'status', label: '进程状态', field: (row) => statusToText(row.stateCode), align: 'left' },
+  { name: 'status', label: '进程状态', field: (row) => processStateToText(row.stateCode), align: 'left' },
   { name: 'status', label: 'Streamer状态', field: (row) => row.streamerConnected ? '已连接' : '未连接', align: 'left' },
   { name: 'players', label: '连接数', field: (row) => (row.playerIds ? row.playerIds.length : 0), align: 'left' }
 ];
@@ -37,7 +37,7 @@ function handleChange(row) {
   let newPak = row.pak;
   if (newPak) {
     sendPakControl({
-      nodeName: row.name,
+      sid: row.sid,
       type: "load",
       pakName: newPak
     }).then((r) => {
@@ -47,10 +47,9 @@ function handleChange(row) {
         row.pak = `${newPak}(切换中)`;
       }
     });
-
   } else {
     sendPakControl({
-      nodeName: row.name,
+      sid: row.sid,
       type: "unload"
     }).then((r) => {
       if (r.code === 500) {
@@ -117,14 +116,14 @@ onMounted( () => {
                 <q-th v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.label }}
                 </q-th>
-<!--                <q-th>站点</q-th>-->
+                <q-th>站点</q-th>
                 <q-th auto-width>操作</q-th>
               </q-tr>
             </template>
 
             <template v-slot:body="props">
               <q-tr :props="props">
-                <q-td>{{ props.row.id }}</q-td>
+                <q-td>{{ props.row.cid }}</q-td>
                 <q-td>
                   <q-btn flat no-caps dense color="primary" :href="`player.html?sid=${props.row.sid}`" target="_blank"
                     :label="props.row.name" />
@@ -132,12 +131,12 @@ onMounted( () => {
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.value }}
                 </q-td>
-<!--                <q-td auto-width>-->
-<!--                  <div class="q-gutter-md" style="min-width: 135px">-->
-<!--                    <q-select dense options-dense clearable :options="['宜宾换流站', '雁门关换流站', '延庆换流站', '中都换流站']"-->
-<!--                      v-model="props.row.pak" @clear="handleClear" @update:model-value="handleChange(props.row)" />-->
-<!--                  </div>-->
-<!--                </q-td>-->
+                <q-td auto-width>
+                  <div class="q-gutter-md" style="min-width: 135px">
+                    <q-select dense options-dense clearable :options="getPaksName(props.row.paks)"
+                      v-model="props.row.pak" @clear="handleClear" @update:model-value="handleChange(props.row)" />
+                  </div>
+                </q-td>
                 <q-td auto-width>
                   <div class="q-pa-md q-gutter-sm">
                     <q-btn size="sm" color="primary" round dense icon="settings"

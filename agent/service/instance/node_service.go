@@ -66,17 +66,17 @@ func (s *nodeService) RegisterNode(nodeId uint) {
 	}
 }
 
-func (s *nodeService) SendProcessState(request *message.ProcessStateUpdate) {
+func (s *nodeService) SendProcessState(msg *message.NodeProcessStateUpdate) {
 	if s.BaseUrl != nil {
-		reqData, _ := json.Marshal(request)
+		reqData, _ := json.Marshal(msg)
 		util.HttpPost(s.BaseUrl.JoinPath("/api/instance/updateProcessState").String(), reqData)
 	}
 }
 
-func (s *nodeService) Control() {
-	//todo
-}
-
-func (s *nodeService) Update() {
-	//todo
+func (s *nodeService) UpdateStreamerConnected(msg *message.ServerStreamerConnectedUpdate) {
+	runner := RunnerManager.GetRunnerById(msg.CID)
+	if runner != nil {
+		runner.StreamerConnected = msg.Connected
+		RunnerManager.RunnerStatusUpdateChanel <- msg.CID
+	}
 }

@@ -70,8 +70,8 @@ function handleEditSettings(row) {
   })
 }
 
-function handleDelete(id) {
-  DeleteInstance(id).then(() => {
+function handleDelete(cid) {
+  DeleteInstance(cid).then(() => {
     list()
   }).catch(err => {
     Notify.create(err)
@@ -99,8 +99,8 @@ async function handleSelectChange() {
   }
 }
 
-function handleStartInstance(id) {
-  StartInstance(id).then(() => {
+function handleStartInstance(cid) {
+  StartInstance(cid).then(() => {
     Notify.create("操作成功")
   }).catch(err => {
     Notify.create(err)
@@ -109,7 +109,7 @@ function handleStartInstance(id) {
 
 function handleStopInstance(row) {
   row.loading = true
-  StopInstance(row.id).then(() => {
+  StopInstance(row.cid).then(() => {
     Notify.create("进程退出成功")
   }).catch(err => {
     Notify.create(err)
@@ -156,6 +156,10 @@ function handleStopInstance(row) {
                     </q-item-label>
                   </q-item-section>
                   <q-item-section avatar style="width: 100px">
+                    <q-item-label caption class="ellipsis">Streamer</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.streamerConnected ? "已连接" : "未连接" }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section avatar style="width: 100px">
                     <q-item-label caption class="ellipsis">进程号</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.pid }}</q-item-label>
                   </q-item-section>
@@ -174,7 +178,7 @@ function handleStopInstance(row) {
             </q-card-section>
             <q-card-actions class="q-pt-xs">
               <div class="q-gutter-md">
-                <q-btn color="green" :loading="false" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.id)"/>
+                <q-btn color="green" :loading="false" flat dense icon="sym_o_play_circle" @click="handleStartInstance(props.row.cid)"/>
                 <q-btn color="red" :loading="props.row.loading" flat dense icon="sym_o_stop_circle" @click="handleStopInstance(props.row)"/>
                 <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
                 <q-btn color="grey" flat dense icon="sym_o_delete" push>
@@ -182,7 +186,7 @@ function handleStopInstance(row) {
                     <div class="q-pa-sm">
                       确定要删除？
                       <q-btn dense size="sm" label="确认" color="blue" v-close-popup
-                             @click="handleDelete(props.row.id)"/>
+                             @click="handleDelete(props.row.cid)"/>
                     </div>
                   </q-menu>
                 </q-btn>

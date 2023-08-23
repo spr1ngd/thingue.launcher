@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/hashicorp/golang-lru/v2/expirable"
-	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/labels"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
@@ -33,29 +32,23 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 	if selectCond.PlayerCount != 0 {
 		query = query.Where("player_count = ?", selectCond.PlayerCount)
 	}
-	var instances []model.ServerInstance
-	query.Find(&instances)
+	var serverInstances []model.ServerInstance
+	query.Find(&serverInstances)
 	ticket := response.InstanceTicket{}
-	if len(instances) > 0 {
+	if len(serverInstances) > 0 {
 		if selectCond.LabelSelector != "" {
 			// label匹配
 			selector, err := labels.Parse(selectCond.LabelSelector)
 			if err != nil {
 				return ticket, err
 			}
-			for _, instance := range instances {
-				var metaData MetaData
-				err := yaml.Unmarshal([]byte(instance.Metadata), &metaData)
-				if err != nil {
-					continue
-				}
-				instance.Labels = labels.Set(metaData.Labels)
+			for _, instance := range serverInstances {
 				if selector.Matches(instance.Labels) {
 					//生成ticket
 					ticketId, _ := uuid.NewUUID()
 					//添加缓存
 					s.cache.Add(ticketId.String(), instance.SID)
-					ticket.ServerInstance = &instances[0]
+					ticket.SetInstanceInfo(&instance)
 					ticket.Ticket = ticketId.String()
 					return ticket, nil
 				}
@@ -64,8 +57,8 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 			//不需要label匹配，挑选第一个生成ticket
 			ticketId, _ := uuid.NewUUID()
 			//添加缓存
-			s.cache.Add(ticketId.String(), instances[0].SID)
-			ticket.ServerInstance = &instances[0]
+			s.cache.Add(ticketId.String(), serverInstances[0].SID)
+			ticket.SetInstanceInfo(&serverInstances[0])
 			ticket.Ticket = ticketId.String()
 			return ticket, nil
 		}
@@ -93,8 +86,4 @@ func (s *ticketService) GetSidByTicket(ticket string) (string, error) {
 	} else {
 		return "", errors.New("无效ticket")
 	}
-}
-
-type MetaData struct {
-	Labels map[string]string `yaml:"labels"`
 }
