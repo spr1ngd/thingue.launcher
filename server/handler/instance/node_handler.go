@@ -60,3 +60,18 @@ func (g *HandlerGroup) ProcessControl(c *gin.Context) {
 	service.InstanceService.ProcessControl(req)
 	response.Ok(c)
 }
+
+func (g *HandlerGroup) PakControl(c *gin.Context) {
+	var req request.PakControl
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err = service.InstanceService.PakControl(req)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.Ok(c)
+}

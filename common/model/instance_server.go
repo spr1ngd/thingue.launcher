@@ -25,23 +25,33 @@ type ServerInstance struct {
 	StreamerConnected bool          `json:"streamerConnected"`
 	PlayerIds         StringSlice   `json:"playerIds"`
 	PlayerCount       uint          `json:"playerCount"`
+	CurrentPak        string        `json:"currentPak"`
+	Rendering         bool          `json:"rendering"`
 	Labels            labels.Labels `json:"labels" gorm:"-"`
 	Paks              []domain.Pak  `json:"paks" gorm:"-"`
+	PakName           string        `json:"pakName" gorm:"-"`
 }
 
-func (i *ServerInstance) AfterFind(tx *gorm.DB) (err error) {
-	if i.Metadata != "" {
+func (instance *ServerInstance) AfterFind(tx *gorm.DB) (err error) {
+	if instance.Metadata != "" {
 		var metaData domain.MetaData
-		err := yaml.Unmarshal([]byte(i.Metadata), &metaData)
+		err := yaml.Unmarshal([]byte(instance.Metadata), &metaData)
 		if err == nil {
-			i.Labels = labels.Set(metaData.Labels)
+			instance.Labels = labels.Set(metaData.Labels)
 		}
 	}
-	if i.PaksConfig != "" {
+	if instance.PaksConfig != "" {
 		var paksConfig domain.PakConfig
-		err = yaml.Unmarshal([]byte(i.PaksConfig), &paksConfig)
+		err = yaml.Unmarshal([]byte(instance.PaksConfig), &paksConfig)
 		if err == nil {
-			i.Paks = paksConfig.Paks
+			instance.Paks = paksConfig.Paks
+			if instance.CurrentPak != "" {
+				for _, pak := range paksConfig.Paks {
+					if pak.Value == instance.CurrentPak {
+						instance.PakName = pak.Name
+					}
+				}
+			}
 		}
 	}
 	return

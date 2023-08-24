@@ -1,16 +1,16 @@
 <script setup>
-import { onMounted, ref, reactive, inject } from 'vue';
+import {onMounted, ref, reactive, inject} from 'vue';
 import {getPaksName, processStateToText} from '@/utils';
-import { getNodeList, controlProcess, sendPakControl } from '@/api';
-import { Notify } from 'quasar';
-import { emitter } from "@/ws";
+import {getNodeList, controlProcess, sendPakControl} from '@/api';
+import {Notify} from 'quasar';
+import {emitter} from "@/ws";
 
 const rows = ref([])
 
 const columns = [
-  { name: 'id', label: '节点编号', field: 'id', align: 'left' },
-  { name: 'hostname', label: '主机名', field: 'hostname', align: 'left' },
-  { name: 'ips', label: 'IP地址', field: 'ips', align: 'left' },
+  {name: 'id', label: '节点编号', field: 'id', align: 'left'},
+  {name: 'hostname', label: '主机名', field: 'hostname', align: 'left'},
+  {name: 'ips', label: 'IP地址', field: 'ips', align: 'left'},
   {
     name: 'instanceCount',
     label: '实例数量',
@@ -20,9 +20,9 @@ const columns = [
 ];
 
 const subColumns = [
-  { name: 'status', label: '进程状态', field: (row) => processStateToText(row.stateCode), align: 'left' },
-  { name: 'status', label: 'Streamer状态', field: (row) => row.streamerConnected ? '已连接' : '未连接', align: 'left' },
-  { name: 'players', label: '连接数', field: (row) => (row.playerIds ? row.playerIds.length : 0), align: 'left' }
+  {name: 'status', label: '进程状态', field: (row) => processStateToText(row.stateCode), align: 'left'},
+  {name: 'status', label: 'Streamer状态', field: (row) => row.streamerConnected ? '已连接' : '未连接', align: 'left'},
+  {name: 'players', label: '连接数', field: (row) => (row.playerIds ? row.playerIds.length : 0), align: 'left'}
 ];
 
 function start(sid) {
@@ -34,17 +34,17 @@ function stop(sid) {
 }
 
 function handleChange(row) {
-  let newPak = row.pak;
+  let newPak = row.pakName;
   if (newPak) {
     sendPakControl({
       sid: row.sid,
       type: "load",
-      pakName: newPak
+      pak: row.paks.filter(pak => pak.name === newPak)[0].value
     }).then((r) => {
       if (r.code === 500) {
-        row.pak = '';
+        row.pakName = '';
       } else {
-        row.pak = `${newPak}(切换中)`;
+        row.pakName = `${newPak}(切换中)`;
       }
     });
   } else {
@@ -53,9 +53,9 @@ function handleChange(row) {
       type: "unload"
     }).then((r) => {
       if (r.code === 500) {
-        row.pak = '';
+        row.pakName = '';
       } else {
-        row.pak = `卸载中`;
+        row.pakName = `卸载中`;
       }
     });
   }
@@ -63,7 +63,7 @@ function handleChange(row) {
 
 function handleClear(value) {
   if ('卸载中'.includes(value)) {
-    Notify.create({ type: 'warning', position: 'top', message: '无效操作' });
+    Notify.create({type: 'warning', position: 'top', message: '无效操作'});
   }
   console.log(value);
 }
@@ -73,7 +73,7 @@ async function list() {
   rows.value = data.data.list;
 }
 
-onMounted( () => {
+onMounted(() => {
   list()
   emitter.on('update', (message) => {
     list()
@@ -84,7 +84,7 @@ onMounted( () => {
   <q-table title="节点列表" :rows="rows" :columns="columns" row-key="sessionId">
     <template v-slot:header="props">
       <q-tr :props="props">
-        <q-th auto-width />
+        <q-th auto-width/>
         <q-th v-for="col in props.cols" :key="col.name" :props="props">
           {{ col.label }}
         </q-th>
@@ -95,11 +95,11 @@ onMounted( () => {
       <q-tr :props="props">
         <q-td auto-width>
           <q-btn size="sm" color="primary" round dense @click="props.expand = !props.expand"
-            :icon="props.expand ? 'remove' : 'add'" />
+                 :icon="props.expand ? 'remove' : 'add'"/>
         </q-td>
         <q-td :props="props" :key="props.cols[0].name">
           <q-btn flat dense no-caps color="primary" :label="props.cols[0].value"
-            @click="$emit('someEvent', props.row, props.row.sessionId, 'agent')"></q-btn>
+                 @click="$emit('someEvent', props.row, props.row.sessionId, 'agent')"></q-btn>
         </q-td>
         <q-td v-for="col in props.cols.slice(1)" :key="col.name" :props="props">
           {{ col.value }}
@@ -126,7 +126,7 @@ onMounted( () => {
                 <q-td>{{ props.row.cid }}</q-td>
                 <q-td>
                   <q-btn flat no-caps dense color="primary" :href="`player.html?sid=${props.row.sid}`" target="_blank"
-                    :label="props.row.name" />
+                         :label="props.row.name"/>
                 </q-td>
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.value }}
@@ -134,14 +134,16 @@ onMounted( () => {
                 <q-td auto-width>
                   <div class="q-gutter-md" style="min-width: 135px">
                     <q-select dense options-dense clearable :options="getPaksName(props.row.paks)"
-                      v-model="props.row.pak" @clear="handleClear" @update:model-value="handleChange(props.row)" />
+                              v-model="props.row.pakName" @clear="handleClear"
+                              @update:model-value="handleChange(props.row)"/>
                   </div>
                 </q-td>
                 <q-td auto-width>
                   <div class="q-pa-md q-gutter-sm">
                     <q-btn size="sm" color="primary" round dense icon="settings"
-                      @click="$emit('someEvent', props.row, props.row.sessionId, 'instance')"></q-btn>
-                    <q-btn size="sm" color="positive" round dense icon="play_arrow" @click="start(props.row.sid)"></q-btn>
+                           @click="$emit('someEvent', props.row, props.row.sessionId, 'instance')"></q-btn>
+                    <q-btn size="sm" color="positive" round dense icon="play_arrow"
+                           @click="start(props.row.sid)"></q-btn>
                     <q-btn size="sm" color="negative" round dense icon="stop" @click="stop(props.row.sid)"></q-btn>
                   </div>
                 </q-td>

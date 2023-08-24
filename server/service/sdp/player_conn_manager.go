@@ -42,7 +42,7 @@ func (m *playerConnManager) SetStreamer(playerConnector *PlayerConnector, ticket
 }
 
 func (m *playerConnManager) OnPlayerDisConnect(playerConnector *PlayerConnector) {
-	playerConnector.StreamerConnector.SendMsg(util.MapDataToJsonStr(map[string]interface{}{
+	playerConnector.StreamerConnector.SendMessage(util.MapDataToJson(map[string]interface{}{
 		"type":     "playerDisconnected",
 		"playerId": playerConnector.PlayerId,
 	}))

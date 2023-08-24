@@ -27,7 +27,7 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 				break
 			}
 			// 处理接收到的消息
-			playerConnector.HandleMsg(string(msg))
+			playerConnector.HandleMessage(msg)
 		}
 		playerConnector.Close()
 		service.PlayerConnManager.OnPlayerDisConnect(playerConnector)

@@ -22,3 +22,9 @@ type ProcessControl struct {
 	SID     string `json:"sid"`
 	Command string `json:"command"`
 }
+
+type PakControl struct {
+	SID  string `json:"sid"`
+	Type string `json:"type"`
+	Pak  string `json:"pak"`
+}

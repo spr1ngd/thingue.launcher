@@ -20,6 +20,7 @@ type Runner struct {
 	*model.ClientInstance
 	ExitSignalChannel chan error `json:"-"`
 	process           *os.Process
+	faultCount        uint
 }
 
 func (r *Runner) Start() error {
@@ -59,10 +60,16 @@ func (r *Runner) Start() error {
 			r.updateStateCode(0)
 			RunnerManager.RunnerStatusUpdateChanel <- r.CID
 			fmt.Println("退出码发送成功")
+			r.faultCount = 0
 		default:
 			r.updateStateCode(-1)
 			RunnerManager.RunnerUnexpectedExitChanel <- r.CID
-			fmt.Println("异常退出")
+			fmt.Println("异常退出", r.faultCount)
+			if r.FaultRecover && r.faultCount < 3 {
+				time.Sleep(3 * time.Second)
+				r.Start()
+			}
+			r.faultCount++
 		}
 	}()
 	return nil

@@ -13,7 +13,7 @@ var AdminWsManager = new(adminWsManager)
 
 func (m *adminWsManager) Broadcast() {
 	for _, connection := range m.Connections {
-		str := util.MapDataToJsonStr(map[string]interface{}{
+		str := util.MapDataToJson(map[string]interface{}{
 			"type": "update",
 		})
 		connection.WriteMessage(websocket.TextMessage, []byte(str))

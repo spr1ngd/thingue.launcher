@@ -18,11 +18,11 @@ export function controlProcess(sid, command) {
     });
 }
 
-export function sendPakControl(action) {
+export function sendPakControl(data) {
     return request({
-        url: `/ue/pak/control`,
+        url: `/instance/pakControl`,
         method: 'POST',
-        data: action
+        data
     });
 }
 

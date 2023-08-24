@@ -3,37 +3,61 @@ package sdp
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"thingue-launcher/common/model"
+	"strconv"
 	"thingue-launcher/common/util"
+	"thingue-launcher/server/service/instance"
+	"time"
 )
 
 type StreamerConnector struct {
 	SID              string
 	PlayerConnectors []*PlayerConnector
 	conn             *websocket.Conn
-	Instance         *model.ServerInstance
+	heartbeatTimer   *time.Timer
 }
 
-func (s *StreamerConnector) HandleMsg(msgStr string) {
+func (s *StreamerConnector) HandleMessage(msgStr []byte) {
 	msg := util.JsonStrToMapData(msgStr)
 	msgType := msg["type"].(string)
 	if msgType == "ping" {
-		s.SendMsg(util.MapDataToJsonStr(map[string]interface{}{
+		s.SendMessage(util.MapDataToJson(map[string]interface{}{
 			"type": "pong",
 			"time": msg["time"],
 		}))
 	} else if msgType == "answer" {
-		playerId := uint(msg["playerId"].(float64))
+		var playerId uint
+		f, ok := msg["playerId"].(float64)
+		if ok {
+			playerId = uint(f)
+		} else {
+			parseUint, err := strconv.ParseUint(msg["playerId"].(string), 10, 32)
+			if err != nil {
+				s.SendCloseMsg(1008, "不支持的消息类型")
+				return
+			}
+			playerId = uint(parseUint)
+		}
 		for _, player := range s.PlayerConnectors {
 			if player.PlayerId == playerId {
-				player.SendMsg(msgStr)
+				player.SendMessage(msgStr)
 			}
 		}
 	} else if msgType == "iceCandidate" {
-		playerId := uint(msg["playerId"].(float64))
+		var playerId uint
+		f, ok := msg["playerId"].(float64)
+		if ok {
+			playerId = uint(f)
+		} else {
+			parseUint, err := strconv.ParseUint(msg["playerId"].(string), 10, 32)
+			if err != nil {
+				s.SendCloseMsg(1008, "不支持的消息类型")
+				return
+			}
+			playerId = uint(parseUint)
+		}
 		for _, player := range s.PlayerConnectors {
 			if player.PlayerId == playerId {
-				player.SendMsg(msgStr)
+				player.SendMessage(msgStr)
 			}
 		}
 	} else if msgType == "disconnectPlayer" {
@@ -42,13 +66,19 @@ func (s *StreamerConnector) HandleMsg(msgStr string) {
 	} else if msgType == "state" {
 		// todo
 		fmt.Println(msg)
+	} else if msgType == "rendering" {
+		instance.InstanceService.UpdateRendering(s.SID, msg["value"].(bool))
+	} else if msgType == "hotReloadComplete" {
+		instance.InstanceService.UpdatePak(s.SID, "")
+	} else if msgType == "loadComplete" {
+		instance.InstanceService.UpdatePak(s.SID, msg["bundleName"].(string))
 	} else {
-		s.SendCloseMsg(1008, "Unsupported message type")
+		s.SendCloseMsg(1008, "不支持的消息类型")
 	}
 }
 
 func (s *StreamerConnector) SendConfig() {
-	s.SendMsg(util.MapDataToJsonStr(map[string]interface{}{
+	s.SendMessage(util.MapDataToJson(map[string]interface{}{
 		"type":                  "config",
 		"peerConnectionOptions": map[string]interface{}{},
 	}))
@@ -59,11 +89,16 @@ func (s *StreamerConnector) SendMsg(msg string) {
 	s.conn.WriteMessage(websocket.TextMessage, []byte(msg))
 }
 
+func (s *StreamerConnector) SendMessage(msg []byte) error {
+	err := s.conn.WriteMessage(websocket.TextMessage, msg)
+	return err
+}
+
 func (s *StreamerConnector) AddPlayer(p *PlayerConnector) {
 	s.PlayerConnectors = append(s.PlayerConnectors, p)
 }
 
-func (s *StreamerConnector) DeletePlayer(p *PlayerConnector) {
+func (s *StreamerConnector) removePlayer(p *PlayerConnector) {
 	for indexToDelete, pItem := range s.PlayerConnectors {
 		if p == pItem {
 			s.PlayerConnectors = append(s.PlayerConnectors[:indexToDelete], s.PlayerConnectors[indexToDelete+1:]...)
@@ -78,3 +113,11 @@ func (s *StreamerConnector) SendCloseMsg(code int, msg string) {
 func (s *StreamerConnector) close() {
 	s.conn.Close()
 }
+
+func (s *StreamerConnector) StartTimer() {
+	s.heartbeatTimer = time.NewTimer(10 * time.Second)
+}
+
+func (s *StreamerConnector) StopTimer() {}
+
+func (s *StreamerConnector) ResetTimer() {}

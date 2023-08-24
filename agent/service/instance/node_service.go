@@ -51,7 +51,7 @@ func (s *nodeService) RegisterNode(nodeId uint) {
 	registerInfo := request.NodeRegisterInfo{
 		NodeID:     nodeId,
 		DeviceInfo: GetDeviceInfo(),
-		Instances:  RunnerManager.List(),
+		Instances:  RunnerManager.List(), //todo 去除不必要信息
 	}
 	reqData, _ := json.Marshal(registerInfo)
 	result, err := util.HttpPost(s.BaseUrl.JoinPath("/api/instance/nodeRegister").String(), reqData)

@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-func JsonStrToMapData(jsonStr string) map[string]interface{} {
+func JsonStrToMapData(jsonStr []byte) map[string]interface{} {
 	var data map[string]interface{}
-	err := json.Unmarshal([]byte(jsonStr), &data)
+	err := json.Unmarshal(jsonStr, &data)
 	if err != nil {
 		fmt.Println("JSON解码错误:", err)
 		panic(err)
@@ -15,11 +15,11 @@ func JsonStrToMapData(jsonStr string) map[string]interface{} {
 	return data
 }
 
-func MapDataToJsonStr(data map[string]interface{}) string {
+func MapDataToJson(data map[string]interface{}) []byte {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println("JSON编码错误:", err)
 		panic(err)
 	}
-	return string(jsonBytes)
+	return jsonBytes
 }

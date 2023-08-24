@@ -24,7 +24,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 			break
 		}
 		// 将接收到的消息交给Streamer处理
-		streamer.HandleMsg(string(msg))
+		streamer.HandleMessage(msg)
 	}
 	conn.Close()
 	service.StreamerConnManager.OnStreamerDisconnect(streamer)
