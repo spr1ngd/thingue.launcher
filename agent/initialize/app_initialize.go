@@ -26,7 +26,6 @@ func InitApp(assets embed.FS) {
 			api.InstanceApi.Init(ctx)
 			api.ServerApi.Init(ctx)
 			api.SystemApi.Init(ctx)
-			fmt.Println("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
 		},
 		Logger: myLog,
 		Bind: []interface{}{

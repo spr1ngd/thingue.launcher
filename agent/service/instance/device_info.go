@@ -18,17 +18,25 @@ func GetDeviceInfo() *domain.DeviceInfo {
 	// 处理器
 	var cpus []string
 	cpu, _ := ghw.CPU()
-	for _, processor := range cpu.Processors {
-		cpus = append(cpus, processor.Model)
+	if cpu != nil {
+		for _, processor := range cpu.Processors {
+			cpus = append(cpus, processor.Model)
+		}
 	}
 	//内存
+	var memoryMsg string
 	memory, _ := ghw.Memory()
+	if memory != nil {
+		memoryMsg = memory.String()
+	}
 	//显卡
 	var gpus []string
 	gpu, _ := ghw.GPU()
-	for _, card := range gpu.GraphicsCards {
-		if strings.HasPrefix(card.DeviceInfo.Address, "PCI") {
-			gpus = append(gpus, card.DeviceInfo.Product.Name)
+	if gpu != nil {
+		for _, card := range gpu.GraphicsCards {
+			if strings.HasPrefix(card.DeviceInfo.Address, "PCI") {
+				gpus = append(gpus, card.DeviceInfo.Product.Name)
+			}
 		}
 	}
 	//系统用户
@@ -38,9 +46,11 @@ func GetDeviceInfo() *domain.DeviceInfo {
 	var ips []string
 	network, _ := ghw.Network()
 	var ifaceNames []string
-	for _, c := range network.NICs {
-		if !c.IsVirtual {
-			ifaceNames = append(ifaceNames, strings.Split(c.Name, " - ")[0])
+	if network != nil {
+		for _, c := range network.NICs {
+			if !c.IsVirtual {
+				ifaceNames = append(ifaceNames, strings.Split(c.Name, " - ")[0])
+			}
 		}
 	}
 	interfaces, _ := net.Interfaces()
@@ -61,7 +71,7 @@ func GetDeviceInfo() *domain.DeviceInfo {
 		Version:    global.APP_VERSION,
 		Workdir:    workdir,
 		Hostname:   hostname,
-		Memory:     memory.String(),
+		Memory:     memoryMsg,
 		Cpus:       cpus,
 		Gpus:       gpus,
 		Ips:        ips,
