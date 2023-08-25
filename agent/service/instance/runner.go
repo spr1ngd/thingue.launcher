@@ -29,14 +29,14 @@ func (r *Runner) Start() error {
 	}
 	// 设置PixelStreamingURL
 	var launchArguments []string
-	appConfig := config.AppConfig
 	sid, err := NodeService.GetInstanceSid(global.NODE_ID, r.CID)
 	if err == nil {
 		r.SID = sid
-		wsUrl := util.HttpUrlToWsUrl(appConfig.ServerUrl, "/ws/streamer")
+		wsUrl := util.HttpUrlToWsUrl(config.AppConfig.ServerUrl, "/ws/streamer")
 		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.SID)
 	} else {
-		launchArguments = r.LaunchArguments
+		return errors.New("服务未连接")
+		//launchArguments = r.LaunchArguments
 	}
 	// 运行前
 	fmt.Println(r.ExecPath, launchArguments)
@@ -55,6 +55,7 @@ func (r *Runner) Start() error {
 		r.Pid = 0
 		r.process = nil
 		r.LastStopAt = time.Now()
+		r.StreamerConnected = false
 		select {
 		case r.ExitSignalChannel <- exitCode:
 			r.updateStateCode(0)

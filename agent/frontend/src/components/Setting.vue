@@ -30,11 +30,6 @@ async function updateEnableRestartTask(value, ev) {
   }
 }
 
-function change() {
-  console.log("sss")
-}
-
-
 </script>
 <template>
   <q-card>

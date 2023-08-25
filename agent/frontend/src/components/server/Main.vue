@@ -1,9 +1,21 @@
 <script setup>
-import {ref} from 'vue'
 import LocalServer from "@/components/server/LocalServerPanel.vue";
 import RemoteServer from "@/components/server/RemoteServerPanel.vue";
+import {defineProps, onMounted, ref, watch} from "vue";
 
 const tab = ref("local")
+
+const props = defineProps(['tab']);
+
+const emits = defineEmits(['changeTab']);
+
+onMounted(() => {
+  tab.value = props.tab
+})
+
+watch(tab, () => {
+  emits("changeTab", tab.value)
+})
 
 </script>
 

@@ -61,6 +61,7 @@ func (m *serverConnManager) Connect(httpUrl string) error {
 func (m *serverConnManager) Disconnect() error {
 	if m.ws != nil {
 		err := m.ws.Close()
+		instance.RunnerManager.CloseAllRunner()
 		return err
 	} else {
 		return errors.New("未连接无需断开")

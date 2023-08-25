@@ -23,7 +23,10 @@ func (m *runnerManager) List() []*model.ClientInstance {
 	var instances = make([]*model.ClientInstance, 0)
 	for _, instance := range InstanceManager.List() {
 		runner := m.GetRunnerById(instance.CID)
-		instances = append(instances, runner.ClientInstance)
+		if runner != nil {
+			//todo 排查这里为什么会NullPointerException
+			instances = append(instances, runner.ClientInstance)
+		}
 	}
 	return instances
 }

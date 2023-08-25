@@ -52,16 +52,19 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	if err != nil {
 		service.InstanceManager.Delete(instance.CID)
 	}
+	service.ServerConnManager.Disconnect()
 	return err
 }
 
 func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
+	service.ServerConnManager.Disconnect()
 	return service.InstanceManager.Save(instance)
 }
 
 func (u *instanceApi) DeleteInstance(cid uint) error {
 	err := service.RunnerManager.DeleteRunner(cid)
 	if err == nil {
+		service.ServerConnManager.Disconnect()
 		service.InstanceManager.Delete(cid)
 	}
 	return err

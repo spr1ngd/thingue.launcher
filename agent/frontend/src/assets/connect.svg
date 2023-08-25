@@ -1,0 +1,17 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144.9970338075019 91.40004577636716" width="144.9970338075019" height="91.40004577636716">
+  <!-- svg-source:excalidraw -->
+  
+  <defs>
+    <style class="style-fonts">
+      @font-face {
+        font-family: "Virgil";
+        src: url("https://unpkg.com/revedraw@1.0.0-alpha.7/dist/excalidraw-assets/Virgil.woff2");
+      }
+      @font-face {
+        font-family: "Cascadia";
+        src: url("https://unpkg.com/revedraw@1.0.0-alpha.7/dist/excalidraw-assets/Cascadia.woff2");
+      }
+    </style>
+    
+  </defs>
+  <g stroke-linecap="round"><g transform="translate(94.66668701171886 71.35210979834221) rotate(0 20.16517339789152 -30.676054899171106)"><path d="M0 0 C6.11 -2.89, 30.11 -7.13, 36.67 -17.35 C43.22 -27.58, 38.89 -54.02, 39.33 -61.35 M0 0 C6.11 -2.89, 30.11 -7.13, 36.67 -17.35 C43.22 -27.58, 38.89 -54.02, 39.33 -61.35" stroke="#b8b8b8" stroke-width="2" fill="none"></path></g><g transform="translate(94.66668701171886 71.35210979834221) rotate(0 20.16517339789152 -30.676054899171106)"><path d="M39.33 -61.35 L46.25 -48.04 L33.59 -47.5 L39.33 -61.35" stroke="none" stroke-width="0" fill="#b8b8b8" fill-rule="evenodd"></path><path d="M39.33 -61.35 C41.83 -56.55, 44.32 -51.76, 46.25 -48.04 M39.33 -61.35 C41.75 -56.71, 44.16 -52.06, 46.25 -48.04 M46.25 -48.04 C43.06 -47.91, 39.87 -47.77, 33.59 -47.5 M46.25 -48.04 C42.26 -47.87, 38.27 -47.7, 33.59 -47.5 M33.59 -47.5 C35.52 -52.15, 37.45 -56.81, 39.33 -61.35 M33.59 -47.5 C35.6 -52.35, 37.61 -57.2, 39.33 -61.35 M39.33 -61.35 C39.33 -61.35, 39.33 -61.35, 39.33 -61.35 M39.33 -61.35 C39.33 -61.35, 39.33 -61.35, 39.33 -61.35" stroke="#b8b8b8" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(10 44.60004577636718) rotate(0 40 18.39999999999999)"><text x="0" y="0" font-family="Helvetica, Segoe UI Emoji" font-size="16px" fill="#b8b8b8" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">选择服务器</text><text x="0" y="18.4" font-family="Helvetica, Segoe UI Emoji" font-size="16px" fill="#b8b8b8" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">开始连接</text></g></svg>

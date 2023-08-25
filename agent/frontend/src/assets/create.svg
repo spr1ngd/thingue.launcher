@@ -1,0 +1,17 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 139.333251953125 81.56665649414063" width="139.333251953125" height="81.56665649414063">
+  <!-- svg-source:excalidraw -->
+  
+  <defs>
+    <style class="style-fonts">
+      @font-face {
+        font-family: "Virgil";
+        src: url("https://unpkg.com/revedraw@1.0.0-alpha.7/dist/excalidraw-assets/Virgil.woff2");
+      }
+      @font-face {
+        font-family: "Cascadia";
+        src: url("https://unpkg.com/revedraw@1.0.0-alpha.7/dist/excalidraw-assets/Cascadia.woff2");
+      }
+    </style>
+    
+  </defs>
+  <g transform="translate(33.333251953125 53.166656494140625) rotate(0 48 9.200000000000003)"><text x="0" y="0" font-family="Helvetica, Segoe UI Emoji" font-size="16px" fill="#b8b8b8" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">点击创建实例</text></g><g stroke-linecap="round"><g transform="translate(31.333251953125 65.81630169439717) rotate(0 -10.6666259765625 -27.908150847198584)"><path d="M0 0 C-3.11 -1.86, -15.11 -1.85, -18.67 -11.15 C-22.22 -20.45, -20.89 -48.37, -21.33 -55.82 M0 0 C-3.11 -1.86, -15.11 -1.85, -18.67 -11.15 C-22.22 -20.45, -20.89 -48.37, -21.33 -55.82" stroke="#b8b8b8" stroke-width="2" fill="none"></path></g><g transform="translate(31.333251953125 65.81630169439717) rotate(0 -10.6666259765625 -27.908150847198584)"><path d="M-21.33 -55.82 L-14.87 -42.28 L-27.55 -42.17 L-21.33 -55.82" stroke="none" stroke-width="0" fill="#b8b8b8" fill-rule="evenodd"></path><path d="M-21.33 -55.82 C-18.8 -50.51, -16.27 -45.2, -14.87 -42.28 M-21.33 -55.82 C-19.85 -52.72, -18.38 -49.62, -14.87 -42.28 M-14.87 -42.28 C-19.39 -42.24, -23.9 -42.2, -27.55 -42.17 M-14.87 -42.28 C-19.87 -42.23, -24.86 -42.19, -27.55 -42.17 M-27.55 -42.17 C-25.63 -46.37, -23.72 -50.58, -21.33 -55.82 M-27.55 -42.17 C-25.89 -45.82, -24.22 -49.48, -21.33 -55.82 M-21.33 -55.82 C-21.33 -55.82, -21.33 -55.82, -21.33 -55.82 M-21.33 -55.82 C-21.33 -55.82, -21.33 -55.82, -21.33 -55.82" stroke="#b8b8b8" stroke-width="2" fill="none"></path></g></g><mask></mask></svg>

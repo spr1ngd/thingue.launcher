@@ -135,7 +135,16 @@ onMounted(() => {
                   <div class="q-gutter-md" style="min-width: 135px">
                     <q-select dense options-dense clearable :options="getPaksName(props.row.paks)"
                               v-model="props.row.pakName" @clear="handleClear"
-                              @update:model-value="handleChange(props.row)"/>
+                              @update:model-value="handleChange(props.row)">
+                      <template v-slot:no-option>
+                        <q-item>
+                          <q-item-section class="text-italic text-grey">
+                            <span>当前实例非壳加载模</span>
+                            <span>式 ，没有可用选项</span>
+                          </q-item-section>
+                        </q-item>
+                      </template>
+                    </q-select>
                   </div>
                 </q-td>
                 <q-td auto-width>
