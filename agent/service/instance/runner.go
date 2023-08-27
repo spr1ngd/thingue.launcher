@@ -36,7 +36,10 @@ func (r *Runner) Start() error {
 		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.SID)
 	} else {
 		return errors.New("服务未连接")
-		//launchArguments = r.LaunchArguments
+	}
+	// 设置日志文件名称为实例名称
+	if r.Name != "" {
+		launchArguments = append(r.LaunchArguments, "LOG="+r.Name+".log")
 	}
 	// 运行前
 	fmt.Println(r.ExecPath, launchArguments)
