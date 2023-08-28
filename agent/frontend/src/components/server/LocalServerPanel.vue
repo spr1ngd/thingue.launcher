@@ -79,7 +79,7 @@ onMounted(() => {
       <q-list dense>
         <q-item>
           <q-item-section>
-            <q-item-label>绑定地址</q-item-label>
+            <q-item-label>监听地址</q-item-label>
             <q-input :readonly="localServerStatus" dense outlined square type="text"
                      v-model="localServerConfig.bindAddr"/>
           </q-item-section>

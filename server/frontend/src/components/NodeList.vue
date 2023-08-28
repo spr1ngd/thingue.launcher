@@ -1,29 +1,31 @@
 <script setup>
-import {onMounted, ref, reactive, inject} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {getPaksName, processStateToText} from '@/utils';
-import {getNodeList, controlProcess, sendPakControl} from '@/api';
+import {controlProcess, getNodeList, sendPakControl} from '@/api';
 import {Notify} from 'quasar';
 import {emitter} from "@/ws";
 
 const rows = ref([])
 
 const columns = [
-  {name: 'id', label: '节点编号', field: 'id', align: 'left'},
-  {name: 'hostname', label: '主机名', field: 'hostname', align: 'left'},
-  {name: 'ips', label: 'IP地址', field: 'ips', align: 'left'},
+  {name: 'id', label: '节点编号', field: 'id', align: 'center'},
+  {name: 'hostname', label: '主机名', field: 'hostname', align: 'center'},
+  {name: 'ips', label: 'IP地址', field: 'ips', align: 'center'},
   {
     name: 'instanceCount',
     label: '实例数量',
     field: (row) => row.instances.length,
-    align: 'left'
+    align: 'center'
   }
 ];
 
 const subColumns = [
-  {name: 'status', label: '进程状态', field: (row) => processStateToText(row.stateCode), align: 'left'},
-  {name: 'status', label: 'Streamer状态', field: (row) => row.streamerConnected ? '已连接' : '未连接', align: 'left'},
-  {name: 'players', label: '连接数', field: (row) => (row.playerIds ? row.playerIds.length : 0), align: 'left'}
+  {name: 'status', label: '进程状态', field: (row) => processStateToText(row.stateCode), align: 'center'},
+  {name: 'status', label: 'Streamer状态', field: (row) => row.streamerConnected ? '已连接' : '未连接', align: 'center'},
+  {name: 'players', label: '连接数', field: (row) => (row.playerIds ? row.playerIds.length : 0), align: 'center'}
 ];
+
+const expanded = ref([])
 
 function start(sid) {
   controlProcess(sid, 'START');
@@ -78,31 +80,43 @@ onMounted(() => {
   emitter.on('update', (message) => {
     list()
   })
+  let items = localStorage.getItem("expanded");
+  if (items) {
+    expanded.value = items.split(",").map(item => Number(item))
+  }
+  watch(expanded, () => {
+    console.log(expanded.value)
+    localStorage.setItem("expanded", expanded.value)
+  })
 });
+
+function handleRowClick(evt, row, index) {
+  console.log(evt, row, index)
+}
 </script>
 <template>
-  <q-table title="节点列表" :rows="rows" :columns="columns" row-key="sessionId">
+  <q-table title="节点列表" :rows="rows" :columns="columns" row-key="id" v-model:expanded="expanded">
     <template v-slot:header="props">
       <q-tr :props="props">
-        <q-th auto-width/>
+        <q-th align="center"/>
         <q-th v-for="col in props.cols" :key="col.name" :props="props">
           {{ col.label }}
         </q-th>
+        <q-th align="center"/>
       </q-tr>
     </template>
 
     <template v-slot:body="props">
       <q-tr :props="props">
-        <q-td auto-width>
+        <q-td :align="'center'">
           <q-btn size="sm" color="primary" round dense @click="props.expand = !props.expand"
                  :icon="props.expand ? 'remove' : 'add'"/>
         </q-td>
-        <q-td :props="props" :key="props.cols[0].name">
-          <q-btn flat dense no-caps color="primary" :label="props.cols[0].value"
-                 @click="$emit('someEvent', props.row, props.row.sessionId, 'agent')"></q-btn>
-        </q-td>
-        <q-td v-for="col in props.cols.slice(1)" :key="col.name" :props="props">
+        <q-td v-for="col in props.cols" :key="col.name" :props="props">
           {{ col.value }}
+        </q-td>
+        <q-td :align="'center'">
+          <q-btn size="sm" dense color="primary" @click="$emit('someEvent', props.row, props.row.sessionId, 'agent')">更多信息</q-btn>
         </q-td>
       </q-tr>
       <!-- 子列表 -->
@@ -111,8 +125,8 @@ onMounted(() => {
           <q-table hide-pagination :columns="subColumns" :rows="props.row.instances">
             <template v-slot:header="props">
               <q-tr :props="props">
-                <q-th align="left">实例编号</q-th>
-                <q-th align="left">实例名称</q-th>
+                <q-th align="center">实例编号</q-th>
+                <q-th align="center">实例名称</q-th>
                 <q-th v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.label }}
                 </q-th>
@@ -123,10 +137,10 @@ onMounted(() => {
 
             <template v-slot:body="props">
               <q-tr :props="props">
-                <q-td>{{ props.row.cid }}</q-td>
-                <q-td>
-                  <q-btn flat no-caps dense color="primary" :href="`player.html?sid=${props.row.sid}`" target="_blank"
-                         :label="props.row.name"/>
+                <q-td align="center">{{ props.row.cid }}</q-td>
+                <q-td align="center">
+                  <q-btn padding="none" flat no-caps dense color="primary" :href="`player.html?sid=${props.row.sid}`"
+                         target="_blank" :label="props.row.name"/>
                 </q-td>
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.value }}

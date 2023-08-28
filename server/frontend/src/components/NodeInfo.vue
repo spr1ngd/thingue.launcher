@@ -6,6 +6,8 @@ const props = defineProps(['row']);
 const humanMembers = computed(() => {
   return bytesToSize(props.row.totalmem)
 })
+
+function handleCollectClick() {}
 </script>
 <template>
   <div class="q-pa-md q-gutter-md">
@@ -68,6 +70,7 @@ const humanMembers = computed(() => {
         </q-item-section>
       </q-item>
     </q-list>
+    <q-btn color="white" text-color="primary" label="收集节点日志" @click="handleCollectClick" />
     <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')" />
   </div>
 </template>

@@ -39,7 +39,7 @@ func (r *Runner) Start() error {
 	}
 	// 设置日志文件名称为实例名称
 	if r.Name != "" {
-		launchArguments = append(r.LaunchArguments, "LOG="+r.Name+".log")
+		launchArguments = append(launchArguments, "LOG="+r.Name+".log")
 	}
 	// 运行前
 	fmt.Println(r.ExecPath, launchArguments)

@@ -34,9 +34,9 @@ func (g *HandlerGroup) GetInstanceSid(c *gin.Context) {
 
 func (g *HandlerGroup) NodeList(c *gin.Context) {
 	list := service.NodeService.NodeList()
-	response.OkWithData(response.PageResult{
+	response.OkWithDetailed(response.PageResult{
 		List: list,
-	}, c)
+	}, "", c)
 }
 
 func (g *HandlerGroup) UpdateProcessState(c *gin.Context) {

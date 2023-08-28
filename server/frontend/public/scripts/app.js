@@ -8,6 +8,9 @@ function GetQueryString(name) {
 async function fetchData() {
     const origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://');
     const path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/")).replace("/static", "");
+    if (GetQueryString("ticket")) {
+        return `${origin}${path}/ws/player/${GetQueryString("ticket")}`;
+    }
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     const response = await fetch("/api/instance/ticketSelect", {

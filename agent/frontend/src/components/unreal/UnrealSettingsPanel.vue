@@ -110,7 +110,7 @@ async function save() {
       <q-list>
         <q-item>
           <q-item-section avatar>
-            <q-item-label>实例标识</q-item-label>
+            <q-item-label>实例名称</q-item-label>
             <q-input dense outlined square v-model="props.data.settings.name"/>
           </q-item-section>
         </q-item>
@@ -119,7 +119,8 @@ async function save() {
             <q-item-label>启动位置</q-item-label>
             <q-input dense outlined square v-model="props.data.settings.execPath">
               <template v-slot:append>
-                <q-icon name="sym_o_file_open" @click="select" class="cursor-pointer"/>
+<!--                <q-icon name="sym_o_file_open"  class="cursor-pointer"/>-->
+                <q-btn padding="none" icon="sym_o_file_open" flat dense @click="select"/>
               </template>
             </q-input>
           </q-item-section>

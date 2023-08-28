@@ -4,6 +4,7 @@ import (
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/server/global"
+	"thingue-launcher/server/service/ws"
 )
 
 type nodeService struct{}
@@ -20,6 +21,7 @@ func (s *nodeService) NodeRegister(registerInfo *request.NodeRegisterInfo) error
 	}
 	node.Instances = serverInstances
 	global.SERVER_DB.Save(&node)
+	ws.AdminWsManager.Broadcast()
 	return nil
 }
 
@@ -27,6 +29,16 @@ func (s *nodeService) NodeList() []model.Node {
 	var nodeList []model.Node
 	global.SERVER_DB.Preload("Instances").Find(&nodeList)
 	return nodeList
+}
+
+func (s *nodeService) NodeOnline(node *model.Node) {
+	global.SERVER_DB.Create(&node)
+}
+
+func (s *nodeService) NodeOffline(node *model.Node) {
+	global.SERVER_DB.Delete(&node)
+	global.SERVER_DB.Where("node_id = ?", node.ID).Delete(&model.ServerInstance{})
+	ws.AdminWsManager.Broadcast()
 }
 
 func (s *nodeService) GetInstanceSid(nodeId string, instanceId string) (string, error) {

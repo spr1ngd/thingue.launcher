@@ -173,7 +173,7 @@ function handleGotoServer(tab) {
                 <q-item>
                   <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
                                   @click="handleOpenPreview(props.row)">
-                    <q-item-label caption class="ellipsis">标识</q-item-label>
+                    <q-item-label caption class="ellipsis">名称</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.name }}</q-item-label>
                   </q-item-section>
                   <q-item-section avatar style="width: 100px">
@@ -210,14 +210,21 @@ function handleGotoServer(tab) {
                 </q-item>
               </q-list>
             </q-card-section>
-            <q-card-actions class="q-pt-xs">
+            <q-card-actions class="q-pt-xs q-pl-md">
               <div class="q-gutter-md">
-                <q-btn color="green" :loading="false" flat dense icon="sym_o_play_circle"
-                       @click="handleStartInstance(props.row.cid)"/>
-                <q-btn color="red" :loading="props.row.loading" flat dense icon="sym_o_stop_circle"
-                       @click="handleStopInstance(props.row)"/>
-                <q-btn color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)"/>
-                <q-btn color="grey" flat dense icon="sym_o_delete" push>
+                <q-btn padding="none" color="green" :loading="false" flat dense icon="sym_o_play_circle"
+                       @click="handleStartInstance(props.row.cid)">
+                  <q-tooltip :delay="1000">启动</q-tooltip>
+                </q-btn>
+                <q-btn padding="none" color="red" :loading="props.row.loading" flat dense icon="sym_o_stop_circle"
+                       @click="handleStopInstance(props.row)">
+                  <q-tooltip :delay="1000">停止</q-tooltip>
+                </q-btn>
+                <q-btn padding="none" color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)">
+                  <q-tooltip :delay="1000">编辑或查看设置</q-tooltip>
+                </q-btn>
+                <q-btn padding="none" color="grey" flat dense icon="sym_o_delete" push>
+                  <q-tooltip :delay="1000">删除</q-tooltip>
                   <q-menu>
                     <div class="q-pa-sm">
                       确定要删除？

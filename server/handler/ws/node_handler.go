@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"gorm.io/gorm"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
-	"thingue-launcher/server/global"
+	"thingue-launcher/server/service/instance"
 	"thingue-launcher/server/service/ws"
 )
 
@@ -18,7 +17,7 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 		return
 	}
 	node := model.Node{}
-	global.SERVER_DB.Create(&node)
+	instance.NodeService.NodeOnline(&node)
 	callbackMsg := message.ServerConnectCallback(node.ID)
 	ws.NodeWsManager.ConnMap[node.ID] = conn
 	err = conn.WriteMessage(websocket.TextMessage, callbackMsg.Pack().GetBytes())
@@ -36,6 +35,5 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 	}
 	conn.Close()
 	delete(ws.NodeWsManager.ConnMap, node.ID)
-	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&node.Instances)
-	global.SERVER_DB.Delete(&node)
+	instance.NodeService.NodeOffline(&node)
 }
