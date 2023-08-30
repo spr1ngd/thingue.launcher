@@ -8,18 +8,22 @@ const instance = axios.create({
 
 instance.interceptors.response.use(
     (response) => {
-        if (response.data.code && response.data.msg) {
-            if (response.data.code === 200) {
-                Notify.create({type: 'positive', position: 'top', message: response.data.msg});
-            } else {
-                Notify.create({type: 'warning', position: 'top', message: response.data.msg});
+        if (response.config.responseType === "blob") {
+            return response
+        } else {
+            if (response.data.code && response.data.msg) {
+                if (response.data.code === 200) {
+                    Notify.create({type: 'positive', position: 'top', message: response.data.msg});
+                } else {
+                    Notify.create({type: 'warning', position: 'top', message: response.data.msg});
+                }
             }
+            return response.data;
         }
-        return response.data;
     },
-    (err) => {
+    (error) => {
         Notify.create({type: 'negative', position: 'top', message: '接口请求失败'});
-        return Promise.reject(err);
+        return Promise.reject(error);
     }
 );
 

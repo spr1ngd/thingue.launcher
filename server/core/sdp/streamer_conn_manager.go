@@ -2,8 +2,8 @@ package sdp
 
 import (
 	"github.com/gorilla/websocket"
-	"thingue-launcher/server/service/instance"
-	"thingue-launcher/server/service/sdp/provider"
+	"thingue-launcher/server/core/provider"
+	"thingue-launcher/server/core/service"
 )
 
 type streamerConnManager struct {
@@ -24,7 +24,7 @@ func (m *streamerConnManager) NewStreamerConnector(sid string, conn *websocket.C
 	}
 	m.idStreamerMap[sid] = connector
 	provider.StreamerConnProvider.AddConn(connector.SID, conn)
-	instance.InstanceService.UpdateStreamerConnected(sid, true)
+	service.InstanceService.UpdateStreamerConnected(sid, true)
 	return connector
 }
 
@@ -38,5 +38,5 @@ func (m *streamerConnManager) OnStreamerDisconnect(connector *StreamerConnector)
 	}
 	delete(m.idStreamerMap, connector.SID)
 	provider.StreamerConnProvider.RemoveConn(connector.SID)
-	instance.InstanceService.UpdateStreamerConnected(connector.SID, false)
+	service.InstanceService.UpdateStreamerConnected(connector.SID, false)
 }

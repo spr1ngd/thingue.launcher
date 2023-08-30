@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/server/handler"
+	"thingue-launcher/server/web/handler"
 )
 
 type wsRouter struct{}

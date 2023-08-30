@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { Quasar, Notify } from 'quasar'
+import { Quasar, Notify, Dialog } from 'quasar'
 import quasarLang from 'quasar/lang/zh-CN'
 import { connectWebSocket } from "@/ws";
 
@@ -18,7 +18,8 @@ const myApp = createApp(App)
 
 myApp.use(Quasar, {
   plugins: {
-    Notify
+    Notify,
+    Dialog
   }, // import Quasar plugins and add here
   lang: quasarLang,
 })

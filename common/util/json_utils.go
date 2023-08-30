@@ -15,7 +15,7 @@ func JsonStrToMapData(jsonStr []byte) map[string]interface{} {
 	return data
 }
 
-func MapDataToJson(data map[string]interface{}) []byte {
+func MapToJson(data map[string]interface{}) []byte {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println("JSON编码错误:", err)

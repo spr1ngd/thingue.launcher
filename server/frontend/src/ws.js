@@ -9,6 +9,7 @@ let reconnectInterval = 1000; // 初始重连间隔，单位毫秒
 const maxReconnectInterval = 60000; // 最大重连间隔，单位毫秒
 let reconnectTimer;
 const emitter = mitt();
+let wsId;
 
 function connectWebSocket() {
     socket = new WebSocket(wsURL); // 连接到WebSocket服务器
@@ -26,9 +27,13 @@ function connectWebSocket() {
 
     socket.addEventListener('message', event => {
         console.log('WebSocket message received:', event.data);
-        var msg = JSON.parse(event.data);
-        if (msg.type === 'update') {
+        const msg = JSON.parse(event.data);
+        if(msg.type === 'config') {
+            wsId = msg.data
+        } else if (msg.type === 'update') {
             emitter.emit("update", "")
+        } else if (msg.type === 'downloadComplete') {
+            emitter.emit("downloadComplete")
         }
     });
 
@@ -47,5 +52,5 @@ function reconnect() {
 }
 
 export {
-    connectWebSocket, emitter
+    connectWebSocket, emitter, wsId
 }

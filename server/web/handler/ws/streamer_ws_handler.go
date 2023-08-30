@@ -3,7 +3,7 @@ package ws
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/server/service"
+	"thingue-launcher/server/core"
 )
 
 func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
@@ -13,7 +13,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	streamer := service.StreamerConnManager.NewStreamerConnector(id, conn)
+	streamer := core.StreamerConnManager.NewStreamerConnector(id, conn)
 	streamer.SendConfig()
 
 	for {
@@ -27,5 +27,5 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 		streamer.HandleMessage(msg)
 	}
 	conn.Close()
-	service.StreamerConnManager.OnStreamerDisconnect(streamer)
+	core.StreamerConnManager.OnStreamerDisconnect(streamer)
 }

@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/server/handler"
+	"thingue-launcher/server/web/handler"
 )
 
 type instanceRouter struct{}
@@ -20,6 +20,9 @@ func (s *instanceRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		instanceRouter.POST("ticketSelect", handler.InstanceGroup.TicketSelect)
 		instanceRouter.GET("getTicketById", handler.InstanceGroup.GetTicketById)
 		instanceRouter.POST("updateProcessState", handler.InstanceGroup.UpdateProcessState)
+		instanceRouter.POST("collectLogs", handler.InstanceGroup.CollectLogs)
+		instanceRouter.POST("uploadLogs", handler.InstanceGroup.UploadLogs)
+		instanceRouter.GET("downloadLogs", handler.InstanceGroup.DownloadLogs)
 	}
 	return instanceRouter
 }

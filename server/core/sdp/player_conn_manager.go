@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"strconv"
 	"thingue-launcher/common/util"
-	"thingue-launcher/server/service/instance"
+	"thingue-launcher/server/core/service"
 )
 
 type playerConnManager struct {
@@ -28,12 +28,12 @@ func (m *playerConnManager) NewConnector(conn *websocket.Conn) *PlayerConnector 
 }
 
 func (m *playerConnManager) SetStreamer(playerConnector *PlayerConnector, ticket string) error {
-	sid, err := instance.TicketService.GetSidByTicket(ticket)
+	sid, err := service.TicketService.GetSidByTicket(ticket)
 	if err == nil {
 		streamerConnector := StreamerConnManager.GetConnectorById(sid)
 		if streamerConnector != nil {
 			playerConnector.StreamerConnector = streamerConnector
-			instance.InstanceService.AddPlayer(sid, strconv.Itoa(int(playerConnector.PlayerId)))
+			service.InstanceService.AddPlayer(sid, strconv.Itoa(int(playerConnector.PlayerId)))
 		} else {
 			err = errors.New("streamer已离线")
 		}
@@ -42,11 +42,11 @@ func (m *playerConnManager) SetStreamer(playerConnector *PlayerConnector, ticket
 }
 
 func (m *playerConnManager) OnPlayerDisConnect(playerConnector *PlayerConnector) {
-	playerConnector.StreamerConnector.SendMessage(util.MapDataToJson(map[string]interface{}{
+	playerConnector.StreamerConnector.SendMessage(util.MapToJson(map[string]interface{}{
 		"type":     "playerDisconnected",
 		"playerId": playerConnector.PlayerId,
 	}))
-	instance.InstanceService.RemovePlayer(
+	service.InstanceService.RemovePlayer(
 		playerConnector.StreamerConnector.SID,
 		strconv.Itoa(int(playerConnector.PlayerId)),
 	)

@@ -1,13 +1,69 @@
 <script setup>
-import { computed } from 'vue'
-import { bytesToSize } from '@/utils';
+import {collectLogs, downloadLogs} from "@/api";
+import {Notify, useQuasar} from "quasar";
+import {v4 as uuidv4} from 'uuid';
+import {emitter, wsId} from "@/ws";
+
 const props = defineProps(['row']);
+const $q = useQuasar();
 
-const humanMembers = computed(() => {
-  return bytesToSize(props.row.totalmem)
-})
+async function handleCollectClick() {
+  const traceId = uuidv4()
+  let res = await collectLogs({
+    wsId: wsId,
+    nodeId: props.row.id,
+    traceId
+  });
+  if (res.code === 200) {
+    const dialog = $q.dialog({
+      title: '提示',
+      message: '正在收集，请稍等',
+      progress: true,
+      persistent: true,
+      ok: false
+    })
+    emitter.on('downloadComplete', () => {
+      dialog.update({
+        message: '收集完成，请在60秒内完成下载',
+        progress: false,
+        ok: true
+      }).onOk(() => {
+        doLogsDownload(traceId);
+      })
+    })
+  }
+}
 
-function handleCollectClick() {}
+function doLogsDownload(traceId) {
+  downloadLogs(traceId).then((response) => {
+    console.log(response)
+    if (response.data.type === 'application/zip') {
+      let filename = 'logs.zip'; // 默认文件名
+      const contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition) {
+        const regex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = regex.exec(contentDisposition);
+        if (matches != null && matches[1]) {
+          filename = decodeURIComponent(matches[1].replace(/['"]/g, ''));
+        }
+      }
+      const blob = new Blob([response.data], {type: 'application/octet-stream'});
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+    } else {
+      response.data.text().then(data => {
+        let json = JSON.parse(data);
+        Notify.create({type: 'warning', position: 'top', message: json.msg});
+      })
+    }
+  }).catch((error) => {
+    console.error('文件下载失败：', error);
+  });
+}
 </script>
 <template>
   <div class="q-pa-md q-gutter-md">
@@ -70,7 +126,7 @@ function handleCollectClick() {}
         </q-item-section>
       </q-item>
     </q-list>
-    <q-btn color="white" text-color="primary" label="收集节点日志" @click="handleCollectClick" />
-    <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')" />
+    <q-btn color="white" text-color="primary" label="收集节点日志" @click="handleCollectClick"/>
+    <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')"/>
   </div>
 </template>

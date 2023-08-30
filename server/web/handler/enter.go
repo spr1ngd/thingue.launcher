@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"thingue-launcher/server/handler/instance"
-	"thingue-launcher/server/handler/ws"
+	"thingue-launcher/server/web/handler/instance"
+	"thingue-launcher/server/web/handler/ws"
 )
 
 var (

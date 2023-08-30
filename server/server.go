@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"thingue-launcher/common/config"
 	"thingue-launcher/server/initialize"
-	"thingue-launcher/server/router"
+	"thingue-launcher/server/web/router"
 	"time"
 )
 

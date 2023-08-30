@@ -28,3 +28,9 @@ type PakControl struct {
 	Type string `json:"type"`
 	Pak  string `json:"pak"`
 }
+
+type LogsCollect struct {
+	WsId    int    `json:"wsId"`
+	TraceId string `json:"traceId"`
+	NodeId  uint   `json:"nodeId"`
+}

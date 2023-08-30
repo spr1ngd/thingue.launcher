@@ -1,13 +1,12 @@
-package instance
+package service
 
 import (
 	"errors"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
+	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/global"
-	"thingue-launcher/server/service/sdp/provider"
-	"thingue-launcher/server/service/ws"
 )
 
 type instanceService struct{}
@@ -25,7 +24,7 @@ func (s *instanceService) AddPlayer(sid string, playerId string) {
 	instance.PlayerIds = append(instance.PlayerIds, playerId)
 	instance.PlayerCount = instance.PlayerCount + 1
 	global.SERVER_DB.Save(&instance)
-	ws.AdminWsManager.Broadcast()
+	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) RemovePlayer(sid string, playerId string) {
@@ -37,24 +36,24 @@ func (s *instanceService) RemovePlayer(sid string, playerId string) {
 	}
 	instance.PlayerCount = instance.PlayerCount - 1
 	global.SERVER_DB.Save(&instance)
-	ws.AdminWsManager.Broadcast()
+	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("streamer_connected", connected)
-	ws.AdminWsManager.Broadcast()
+	provider.AdminConnProvider.BroadcastUpdate()
 	instance := model.ServerInstance{}
 	global.SERVER_DB.Where("s_id = ?", sid).First(&instance)
 	updateMsg := message.ServerStreamerConnectedUpdate{
 		CID:       instance.CID,
 		Connected: connected,
 	}
-	ws.NodeWsManager.SendToNode(instance.NodeID, updateMsg.Pack())
+	provider.NodeConnProvider.SendToNode(instance.NodeID, updateMsg.Pack())
 }
 
 func (s *instanceService) UpdateProcessState(msg *message.NodeProcessStateUpdate) {
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Update("state_code", msg.StateCode)
-	ws.AdminWsManager.Broadcast()
+	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) UpdateRendering(sid string, rendering bool) {
@@ -63,7 +62,7 @@ func (s *instanceService) UpdateRendering(sid string, rendering bool) {
 
 func (s *instanceService) UpdatePak(sid string, pak string) {
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("current_pak", pak)
-	ws.AdminWsManager.Broadcast()
+	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) ProcessControl(processControl request.ProcessControl) {
@@ -73,7 +72,7 @@ func (s *instanceService) ProcessControl(processControl request.ProcessControl) 
 		CID:     instance.CID,
 		Command: processControl.Command,
 	}
-	ws.NodeWsManager.SendToNode(instance.NodeID, control.Pack())
+	provider.NodeConnProvider.SendToNode(instance.NodeID, control.Pack())
 }
 
 func (s *instanceService) PakControl(control request.PakControl) error {

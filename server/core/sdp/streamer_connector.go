@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"strconv"
 	"thingue-launcher/common/util"
-	"thingue-launcher/server/service/instance"
+	"thingue-launcher/server/core/service"
 	"time"
 )
 
@@ -20,7 +20,7 @@ func (s *StreamerConnector) HandleMessage(msgStr []byte) {
 	msg := util.JsonStrToMapData(msgStr)
 	msgType := msg["type"].(string)
 	if msgType == "ping" {
-		s.SendMessage(util.MapDataToJson(map[string]interface{}{
+		s.SendMessage(util.MapToJson(map[string]interface{}{
 			"type": "pong",
 			"time": msg["time"],
 		}))
@@ -67,18 +67,18 @@ func (s *StreamerConnector) HandleMessage(msgStr []byte) {
 		// todo
 		fmt.Println(msg)
 	} else if msgType == "rendering" {
-		instance.InstanceService.UpdateRendering(s.SID, msg["value"].(bool))
+		service.InstanceService.UpdateRendering(s.SID, msg["value"].(bool))
 	} else if msgType == "hotReloadComplete" {
-		instance.InstanceService.UpdatePak(s.SID, "")
+		service.InstanceService.UpdatePak(s.SID, "")
 	} else if msgType == "loadComplete" {
-		instance.InstanceService.UpdatePak(s.SID, msg["bundleName"].(string))
+		service.InstanceService.UpdatePak(s.SID, msg["bundleName"].(string))
 	} else {
 		s.SendCloseMsg(1008, "不支持的消息类型")
 	}
 }
 
 func (s *StreamerConnector) SendConfig() {
-	s.SendMessage(util.MapDataToJson(map[string]interface{}{
+	s.SendMessage(util.MapToJson(map[string]interface{}{
 		"type":                  "config",
 		"peerConnectionOptions": map[string]interface{}{},
 	}))

@@ -3,7 +3,7 @@ package ws
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/server/service"
+	"thingue-launcher/server/core"
 )
 
 func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
@@ -13,10 +13,10 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 		return
 	}
 
-	playerConnector := service.PlayerConnManager.NewConnector(conn)
+	playerConnector := core.PlayerConnManager.NewConnector(conn)
 	// 关联Streamer
 	ticket := c.Param("ticket")
-	err = service.PlayerConnManager.SetStreamer(playerConnector, ticket)
+	err = core.PlayerConnManager.SetStreamer(playerConnector, ticket)
 	if err == nil {
 		playerConnector.SendConfig()
 		for {
@@ -30,7 +30,7 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 			playerConnector.HandleMessage(msg)
 		}
 		playerConnector.Close()
-		service.PlayerConnManager.OnPlayerDisConnect(playerConnector)
+		core.PlayerConnManager.OnPlayerDisConnect(playerConnector)
 	} else {
 		playerConnector.Close()
 	}

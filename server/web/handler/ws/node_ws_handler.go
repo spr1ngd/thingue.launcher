@@ -6,8 +6,8 @@ import (
 	"github.com/gorilla/websocket"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
-	"thingue-launcher/server/service/instance"
-	"thingue-launcher/server/service/ws"
+	"thingue-launcher/server/core"
+	"thingue-launcher/server/core/provider"
 )
 
 func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
@@ -17,9 +17,9 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 		return
 	}
 	node := model.Node{}
-	instance.NodeService.NodeOnline(&node)
+	core.NodeService.NodeOnline(&node)
 	callbackMsg := message.ServerConnectCallback(node.ID)
-	ws.NodeWsManager.ConnMap[node.ID] = conn
+	provider.NodeConnProvider.ConnMap[node.ID] = conn
 	err = conn.WriteMessage(websocket.TextMessage, callbackMsg.Pack().GetBytes())
 	if err == nil {
 		for {
@@ -34,6 +34,6 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 		}
 	}
 	conn.Close()
-	delete(ws.NodeWsManager.ConnMap, node.ID)
-	instance.NodeService.NodeOffline(&node)
+	delete(provider.NodeConnProvider.ConnMap, node.ID)
+	core.NodeService.NodeOffline(&node)
 }

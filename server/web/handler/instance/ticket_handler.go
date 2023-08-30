@@ -4,13 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
-	"thingue-launcher/server/service"
+	"thingue-launcher/server/core"
 )
 
 func (g *HandlerGroup) TicketSelect(c *gin.Context) {
 	var selectCond request.TicketSelector
 	err := c.ShouldBindJSON(&selectCond)
-	ticket, err := service.TicketService.TicketSelect(selectCond)
+	ticket, err := core.TicketService.TicketSelect(selectCond)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
@@ -19,7 +19,7 @@ func (g *HandlerGroup) TicketSelect(c *gin.Context) {
 }
 
 func (g *HandlerGroup) GetTicketById(c *gin.Context) {
-	ticket, err := service.TicketService.GetTicketById(c.Query("sid"))
+	ticket, err := core.TicketService.GetTicketById(c.Query("sid"))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {

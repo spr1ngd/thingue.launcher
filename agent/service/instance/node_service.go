@@ -1,9 +1,12 @@
 package instance
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"thingue-launcher/common/config"
 	"thingue-launcher/common/message"
@@ -78,5 +81,33 @@ func (s *nodeService) UpdateStreamerConnected(msg *message.ServerStreamerConnect
 	if runner != nil {
 		runner.StreamerConnected = msg.Connected
 		RunnerManager.RunnerStatusUpdateChanel <- msg.CID
+	}
+}
+
+func (s *nodeService) CollectLogs(traceId string) {
+	fmt.Println("traceId", traceId)
+	var filesToCompress []string
+	instances := InstanceManager.List()
+	for _, instance := range instances {
+		filesToCompress = append(filesToCompress, getLogFiles(&instance)...)
+	}
+
+	var buf bytes.Buffer
+	zipWriter := zip.NewWriter(&buf)
+	for _, filePath := range filesToCompress {
+		fmt.Println(filePath)
+		_ = util.AddFileToZip(zipWriter, filePath)
+	}
+	_ = zipWriter.Close()
+
+	apiUrl := s.BaseUrl.JoinPath("/api/instance/uploadLogs").String()
+	req, _ := http.NewRequest("POST", apiUrl, &buf)
+	req.Header.Set("traceId", traceId)
+	client := http.Client{}
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
 	}
 }

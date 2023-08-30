@@ -22,11 +22,9 @@ func MsgReceive(msg message.Message) error {
 	case types.ServerStreamerConnectedUpdate:
 		update := msg.RecvServerStreamerConnectedUpdate()
 		instance.NodeService.UpdateStreamerConnected(update)
-		//var msgData message.UpdateMsg
-		//err = mapstructure.Decode(msg["data"], &msgData)
-		//if err == nil {
-		//	instance.NodeService.Update()
-		//}
+	case types.ServerCollectNodeLogs:
+		traceId := msg.Data.(string)
+		instance.NodeService.CollectLogs(traceId)
 	default:
 		return errors.New("不支持的消息类型")
 	}

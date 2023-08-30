@@ -26,10 +26,18 @@ export function sendPakControl(data) {
     });
 }
 
-export function saveInstanceConfig(config) {
+export function collectLogs(data) {
     return request({
-        url: `/ue/instance/config/save`,
+        url: `/instance/collectLogs`,
         method: 'POST',
-        data: config
+        data
+    });
+}
+
+export function downloadLogs(id) {
+    return request({
+        url: `/instance/downloadLogs?traceId=${id}`,
+        method: 'GET',
+        responseType: "blob"
     });
 }

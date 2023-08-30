@@ -12,7 +12,7 @@ type PlayerConnector struct {
 }
 
 func (p *PlayerConnector) SendConfig() {
-	p.SendMessage(util.MapDataToJson(map[string]interface{}{
+	p.SendMessage(util.MapToJson(map[string]interface{}{
 		"type":                  "config",
 		"peerConnectionOptions": map[string]interface{}{},
 	}))
@@ -22,7 +22,7 @@ func (p *PlayerConnector) HandleMessage(msgStr []byte) {
 	msg := util.JsonStrToMapData(msgStr)
 	msgType := msg["type"].(string)
 	if msgType == "ping" {
-		p.SendMessage(util.MapDataToJson(map[string]interface{}{
+		p.SendMessage(util.MapToJson(map[string]interface{}{
 			"type": "pong",
 			"time": msg["time"],
 		}))
@@ -30,10 +30,10 @@ func (p *PlayerConnector) HandleMessage(msgStr []byte) {
 		streamer := p.StreamerConnector
 		streamer.AddPlayer(p)
 		msg["playerId"] = p.PlayerId
-		streamer.SendMessage(util.MapDataToJson(msg))
+		streamer.SendMessage(util.MapToJson(msg))
 	} else if msgType == "iceCandidate" {
 		msg["playerId"] = p.PlayerId
-		p.StreamerConnector.SendMessage(util.MapDataToJson(msg))
+		p.StreamerConnector.SendMessage(util.MapToJson(msg))
 	} else if msgType == "stats" {
 	} else if msgType == "kick" {
 		p.KickOthers()
@@ -61,7 +61,7 @@ func (p *PlayerConnector) SendPlayersCount() {
 		"count": len(players),
 	}
 	for _, player := range players {
-		player.SendMessage(util.MapDataToJson(msg))
+		player.SendMessage(util.MapToJson(msg))
 	}
 }
 
