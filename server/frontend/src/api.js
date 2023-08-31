@@ -1,6 +1,6 @@
 import request from '@/request';
 
-export function getNodeList(params) {
+export function getNodeList() {
     return request({
         url: `/instance/nodeList`,
         method: 'GET'

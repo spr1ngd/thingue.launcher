@@ -3,7 +3,7 @@ package instance
 import (
 	"fmt"
 	"github.com/robfig/cron/v3"
-	"thingue-launcher/common/config"
+	"thingue-launcher/common/provider"
 )
 
 type RunnerRestartTaskManager struct {
@@ -13,19 +13,19 @@ type RunnerRestartTaskManager struct {
 
 func (t *RunnerRestartTaskManager) Init() {
 	t.restartCron = cron.New()
-	if config.AppConfig.EnableRestartTask {
+	if provider.AppConfig.EnableRestartTask {
 		err := t.Start()
 		if err != nil {
 			// 如果开启失败将设置改为false
-			config.AppConfig.EnableRestartTask = false
-			config.WriteConfig()
+			provider.AppConfig.EnableRestartTask = false
+			provider.WriteConfig()
 		}
 	}
 }
 
 func (t *RunnerRestartTaskManager) Start() error {
 	var err error
-	appConfig := config.AppConfig
+	appConfig := provider.AppConfig
 	t.restartTaskEntryID, err = t.restartCron.AddFunc(appConfig.SystemSettings.RestartTaskCron, func() {
 		fmt.Println("重启定时任务执行开始")
 		RunnerManager.RestartAllRunner()

@@ -7,9 +7,9 @@ import (
 	"thingue-launcher/agent/constants"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/service"
-	"thingue-launcher/common/config"
 	"thingue-launcher/common/model"
-	"thingue-launcher/server"
+	"thingue-launcher/common/provider"
+	"thingue-launcher/server/initialize"
 )
 
 type serverApi struct {
@@ -20,14 +20,14 @@ var ServerApi = new(serverApi)
 
 func (s *serverApi) Init(ctx context.Context) {
 	s.ctx = ctx
-	if config.AppConfig.LocalServer.AutoStart {
+	if provider.AppConfig.LocalServer.AutoStart {
 		s.LocalServerStart()
 	}
-	if config.AppConfig.ServerUrl != "" {
-		err := s.ConnectServer(config.AppConfig.ServerUrl)
+	if provider.AppConfig.ServerUrl != "" {
+		err := s.ConnectServer(provider.AppConfig.ServerUrl)
 		if err != nil {
-			config.AppConfig.ServerUrl = ""
-			config.WriteConfig()
+			provider.AppConfig.ServerUrl = ""
+			provider.WriteConfig()
 		}
 	}
 	go func() {
@@ -37,31 +37,31 @@ func (s *serverApi) Init(ctx context.Context) {
 		}
 	}()
 	// 监听localserver关闭
-	server.App.CloseReturnChanel = make(chan string)
+	initialize.Server.CloseReturnChanel = make(chan string)
 	go func() {
 		for {
-			closeErr := <-server.App.CloseReturnChanel
+			closeErr := <-initialize.Server.CloseReturnChanel
 			runtime.EventsEmit(s.ctx, constants.LOCAL_SERVER_CLOSE, closeErr)
 		}
 	}()
 }
 
 func (s *serverApi) LocalServerStart() {
-	server.App.Start()
+	initialize.Server.Start()
 }
 
 func (s *serverApi) LocalServerShutdown() {
-	server.App.Stop()
+	initialize.Server.Stop()
 }
 
 func (s *serverApi) GetLocalServerStatus() bool {
-	return server.App.IsRunning
+	return initialize.Server.IsRunning
 }
 
-func (s *serverApi) UpdateLocalServerConfig(localServerConfig config.LocalServer) {
-	appConfig := config.AppConfig
+func (s *serverApi) UpdateLocalServerConfig(localServerConfig provider.LocalServer) {
+	appConfig := provider.AppConfig
 	appConfig.LocalServer = localServerConfig
-	config.WriteConfig()
+	provider.WriteConfig()
 }
 
 func (s *serverApi) ListRemoteServer() []model.RemoteServer {
@@ -87,7 +87,7 @@ func (s *serverApi) DeleteRemoteServer(id uint) {
 func (s *serverApi) GetConnectServerOptions() []string {
 	var options []string
 	if s.GetLocalServerStatus() {
-		appConfig := config.AppConfig
+		appConfig := provider.AppConfig
 		port := strings.Split(appConfig.LocalServer.BindAddr, ":")[1]
 		if strings.HasSuffix(port+appConfig.LocalServer.BasePath, "/") {
 			options = append(options, "http://localhost:"+port+appConfig.LocalServer.BasePath)

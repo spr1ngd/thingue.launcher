@@ -1,9 +1,9 @@
 package initialize
 
-import "thingue-launcher/common/config"
+import "thingue-launcher/common/provider"
 
 func InitConn() {
-	appConfig := config.AppConfig
+	appConfig := provider.AppConfig
 	if appConfig.ServerUrl != "" {
 
 	}

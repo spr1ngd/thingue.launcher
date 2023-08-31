@@ -1,26 +1,22 @@
 package main
 
 import (
-	"os"
+	"embed"
 	"thingue-launcher/agent"
-	"thingue-launcher/agent/global"
-	"thingue-launcher/common/config"
-	"thingue-launcher/server"
+	"thingue-launcher/common/provider"
 )
 
 var (
-	Version   = "0.0.1"
 	GitCommit string
 	BuildDate string
+	//go:embed all:server/frontend/dist
+	staticFiles embed.FS
 )
 
 func main() {
-	global.SetAppVersion(Version, GitCommit, BuildDate)
-	config.InitConfig()
-	if len(os.Args) > 1 && os.Args[1] == "server" {
-		server.App.Serve()
-	} else {
-		agent.Startup()
-		agent.Shutdown()
-	}
+	provider.SetVersionBuildInfo(GitCommit, BuildDate)
+	provider.InitConfig()
+	provider.SetWebStatic("server/frontend/dist", staticFiles)
+	agent.Startup()
+	agent.Shutdown()
 }

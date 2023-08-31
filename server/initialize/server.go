@@ -1,40 +1,34 @@
-package server
+package initialize
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"thingue-launcher/common/config"
-	"thingue-launcher/server/initialize"
+	"thingue-launcher/common/provider"
 	"thingue-launcher/server/web/router"
 	"time"
 )
 
-type Server struct {
+type server struct {
 	server            http.Server
 	IsRunning         bool
 	CloseReturnChanel chan string
-	staticFiles       embed.FS
 	router            *gin.Engine
 	isInitialized     bool
 }
 
-//go:embed all:frontend/dist
-var staticFiles embed.FS
+var Server = new(server)
 
-var App = Server{staticFiles: staticFiles}
-
-func (s *Server) Serve() {
+func (s *server) Serve() {
 	if !s.isInitialized { //如果是第一次没有初始化
-		s.router = router.BuildRouter(s.staticFiles) //构建路由
-		initialize.InitGorm()                        // 初始化gorm
+		//s.router = router.BuildRouter(s.StaticFiles) //构建路由
+		InitGorm() // 初始化gorm
 		s.isInitialized = true
 	}
 	s.server = http.Server{
-		Addr:    config.AppConfig.LocalServer.BindAddr,
-		Handler: s.router,
+		Addr:    provider.AppConfig.LocalServer.BindAddr,
+		Handler: router.BuildRouter(),
 	}
 	s.IsRunning = true
 	fmt.Println("thingue server listening at: ", s.server.Addr)
@@ -43,10 +37,10 @@ func (s *Server) Serve() {
 	if s.CloseReturnChanel != nil {
 		s.CloseReturnChanel <- err.Error()
 	}
-	fmt.Printf("Server closed: %v\n", err)
+	fmt.Printf("server closed: %v\n", err)
 }
 
-func (s *Server) Start() {
+func (s *server) Start() {
 	if s.IsRunning {
 		return
 	}
@@ -55,13 +49,13 @@ func (s *Server) Start() {
 	}()
 }
 
-func (s *Server) Stop() {
+func (s *server) Stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	err := s.server.Shutdown(ctx)
 	if err != nil {
-		fmt.Printf("Server shutdown failed: %v\n", err)
+		fmt.Printf("server shutdown failed: %v\n", err)
 	} else {
-		fmt.Println("Server gracefully stopped.")
+		fmt.Println("server gracefully stopped.")
 	}
 }

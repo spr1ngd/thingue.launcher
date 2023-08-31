@@ -5,10 +5,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os/exec"
 	"path/filepath"
-	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/service"
-	"thingue-launcher/common/config"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/provider"
 )
 
 type systemApi struct {
@@ -40,13 +39,13 @@ func (a *systemApi) OpenExplorer(path string) error {
 	return err
 }
 
-func (a *systemApi) GetAppConfig() *config.Config {
-	return config.AppConfig
+func (a *systemApi) GetAppConfig() *provider.Config {
+	return provider.AppConfig
 }
 
 func (a *systemApi) ControlRestartTask(enable bool) error {
 	var err error
-	appConfig := config.AppConfig
+	appConfig := provider.AppConfig
 	if enable {
 		err = service.RunnerRestartTaskManager.Start()
 	} else {
@@ -54,21 +53,17 @@ func (a *systemApi) ControlRestartTask(enable bool) error {
 	}
 	if err == nil {
 		appConfig.EnableRestartTask = enable
-		config.WriteConfig()
+		provider.WriteConfig()
 	}
 	return err
 }
 
-func (a *systemApi) UpdateSystemSettings(systemSettings config.SystemSettings) {
-	appConfig := config.AppConfig
+func (a *systemApi) UpdateSystemSettings(systemSettings provider.SystemSettings) {
+	appConfig := provider.AppConfig
 	appConfig.SystemSettings = systemSettings
-	config.WriteConfig()
+	provider.WriteConfig()
 }
 
 func (a *systemApi) GetVersionInfo() *domain.VersionInfo {
-	return &domain.VersionInfo{
-		Version:   global.APP_VERSION,
-		GitCommit: global.APP_GITCOMMIT,
-		BuildDate: global.APP_BUILDDATE,
-	}
+	return provider.VersionInfo
 }

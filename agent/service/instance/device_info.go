@@ -7,8 +7,8 @@ import (
 	"os/user"
 	"runtime"
 	"strings"
-	"thingue-launcher/agent/global"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 )
 
@@ -68,7 +68,7 @@ func GetDeviceInfo() *domain.DeviceInfo {
 		}
 	}
 	return &domain.DeviceInfo{
-		Version:    global.APP_VERSION,
+		Version:    provider.VersionInfo.Version,
 		Workdir:    workdir,
 		Hostname:   hostname,
 		Memory:     memoryMsg,

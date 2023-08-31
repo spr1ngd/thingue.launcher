@@ -16,13 +16,11 @@ import (
 )
 
 type nodeService struct {
-	//BufferCache map[string]*bytes.Buffer
 	WsIdMap     map[string]int
 	BufferCache gcache.Cache
 }
 
 var NodeService = nodeService{
-	//BufferCache: make(map[string]*bytes.Buffer),
 	WsIdMap:     make(map[string]int),
 	BufferCache: gcache.New(math.MaxInt64).LRU().Build(),
 }
@@ -76,7 +74,7 @@ func (s *nodeService) CollectLogs(req request.LogsCollect) error {
 }
 
 func (s *nodeService) UploadLogs(traceId string, buf *bytes.Buffer) error {
-	err := s.BufferCache.SetWithExpire(traceId, buf, time.Second*6)
+	err := s.BufferCache.SetWithExpire(traceId, buf, time.Second*60)
 	if err != nil {
 		fmt.Println(err)
 		return err

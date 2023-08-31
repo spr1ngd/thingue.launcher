@@ -2,9 +2,10 @@ package service
 
 import (
 	"errors"
+	"github.com/bluele/gcache"
 	"github.com/google/uuid"
-	"github.com/hashicorp/golang-lru/v2/expirable"
 	"k8s.io/apimachinery/pkg/labels"
+	"math"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
@@ -13,11 +14,11 @@ import (
 )
 
 type ticketService struct {
-	cache *expirable.LRU[string, string]
+	cache gcache.Cache
 }
 
 var TicketService = ticketService{
-	cache: expirable.NewLRU[string, string](500, nil, time.Second*10),
+	cache: gcache.New(math.MaxInt64).LRU().Build(),
 }
 
 func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (response.InstanceTicket, error) {
@@ -47,7 +48,7 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 					//生成ticket
 					ticketId, _ := uuid.NewUUID()
 					//添加缓存
-					s.cache.Add(ticketId.String(), instance.SID)
+					s.cache.SetWithExpire(ticketId.String(), instance.SID, 10*time.Second)
 					ticket.SetInstanceInfo(&instance)
 					ticket.Ticket = ticketId.String()
 					return ticket, nil
@@ -57,7 +58,7 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 			//不需要label匹配，挑选第一个生成ticket
 			ticketId, _ := uuid.NewUUID()
 			//添加缓存
-			s.cache.Add(ticketId.String(), serverInstances[0].SID)
+			s.cache.SetWithExpire(ticketId.String(), serverInstances[0].SID, 10*time.Second)
 			ticket.SetInstanceInfo(&serverInstances[0])
 			ticket.Ticket = ticketId.String()
 			return ticket, nil
@@ -72,18 +73,19 @@ func (s *ticketService) GetTicketById(sid string) (string, error) {
 	if err == nil {
 		ticket, _ := uuid.NewUUID()
 		//添加缓存
-		s.cache.Add(ticket.String(), instance.SID)
-		return ticket.String(), err
-	} else {
-		return "", err
+		err = s.cache.SetWithExpire(ticket.String(), instance.SID, 10*time.Second)
+		if err == nil {
+			return ticket.String(), err
+		}
 	}
+	return "", err
 }
 
 func (s *ticketService) GetSidByTicket(ticket string) (string, error) {
-	sid, ok := s.cache.Get(ticket)
-	if ok {
-		return sid, nil
+	sid, err := s.cache.Get(ticket)
+	if err == nil {
+		return sid.(string), nil
 	} else {
-		return "", errors.New("无效ticket")
+		return "", errors.New("ticket无效或过期")
 	}
 }

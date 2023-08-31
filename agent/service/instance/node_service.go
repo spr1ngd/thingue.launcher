@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"thingue-launcher/common/config"
 	"thingue-launcher/common/message"
+	"thingue-launcher/common/provider"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
 	"thingue-launcher/common/util"
@@ -26,10 +26,10 @@ func (s *nodeService) SetBaseUrl(baseurl string) {
 }
 
 func (s *nodeService) GetInstanceSid(nodeId uint, instanceId uint) (string, error) {
-	if config.AppConfig.ServerUrl == "" {
+	if provider.AppConfig.ServerUrl == "" {
 		return "", errors.New("服务未连接")
 	}
-	parse, _ := url.Parse(config.AppConfig.ServerUrl)
+	parse, _ := url.Parse(provider.AppConfig.ServerUrl)
 	result, err := util.HttpGet(parse.JoinPath("/api/instance/getInstanceSid").String() +
 		fmt.Sprintf("?nodeId=%d&instanceId=%d", nodeId, instanceId))
 	fmt.Println("result", string(result))

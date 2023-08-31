@@ -1,21 +1,20 @@
 package router
 
 import (
-	"embed"
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/common/config"
+	"thingue-launcher/common/provider"
 )
 
-func BuildRouter(staticFiles embed.FS) *gin.Engine {
+func BuildRouter() *gin.Engine {
 	Router := gin.Default()
 	Router.Use(CorsMiddleware())
 	//初始化base路由组
-	baseGroup := Router.Group(config.AppConfig.LocalServer.BasePath)
+	baseGroup := Router.Group(provider.AppConfig.LocalServer.BasePath)
 	{
 		//初始化base/ws路由组
 		WsRouter.BuildRouter(baseGroup)
 		//初始化base/static路由
-		StaticRouter.BuildRouter(baseGroup, staticFiles)
+		StaticRouter.BuildRouter(baseGroup)
 	}
 	//初始化base/api路由组
 	apiGroup := baseGroup.Group("/api")

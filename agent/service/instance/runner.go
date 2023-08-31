@@ -9,9 +9,9 @@ import (
 	"runtime"
 	"strconv"
 	"thingue-launcher/agent/global"
-	"thingue-launcher/common/config"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
+	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"time"
 )
@@ -32,7 +32,7 @@ func (r *Runner) Start() error {
 	sid, err := NodeService.GetInstanceSid(global.NODE_ID, r.CID)
 	if err == nil {
 		r.SID = sid
-		wsUrl := util.HttpUrlToWsUrl(config.AppConfig.ServerUrl, "/ws/streamer")
+		wsUrl := util.HttpUrlToWsUrl(provider.AppConfig.ServerUrl, "/ws/streamer")
 		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.SID)
 	} else {
 		return errors.New("服务未连接")

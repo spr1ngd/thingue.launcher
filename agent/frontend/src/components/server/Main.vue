@@ -28,7 +28,7 @@ watch(tab, () => {
       indicator-color="primary"
       narrow-indicator
   >
-    <q-tab name="local" label="本地"/>
+    <q-tab name="local" label="内置"/>
     <q-tab name="remote" label="远程"/>
   </q-tabs>
   <q-separator/>

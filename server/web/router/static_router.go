@@ -1,19 +1,29 @@
 package router
 
 import (
-	"embed"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"thingue-launcher/common/provider"
 )
 
 type staticRouter struct{}
 
 var StaticRouter = new(staticRouter)
 
-func (s *staticRouter) BuildRouter(Router *gin.RouterGroup, staticFiles embed.FS) (R gin.IRoutes) {
-	Router.GET("/static/*filepath", func(c *gin.Context) {
-		c.Request.URL.Path = "/frontend/dist" + c.Param("filepath")
-		http.FileServer(http.FS(staticFiles)).ServeHTTP(c.Writer, c.Request)
-	})
+func (s *staticRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
+	if provider.AppConfig.LocalServer.UseExternalStatic {
+		Router.Static("/static", provider.AppConfig.LocalServer.ExternalStaticPath)
+	} else {
+		dir, _ := provider.WebStaticFiles.ReadDir("/")
+		fmt.Println(provider.WebStaticFiles)
+		for _, entry := range dir {
+			fmt.Println(entry.Name())
+		}
+		Router.GET("/static/*filepath", func(c *gin.Context) {
+			c.Request.URL.Path = provider.WebStaticPath + c.Param("filepath")
+			http.FileServer(http.FS(provider.WebStaticFiles)).ServeHTTP(c.Writer, c.Request)
+		})
+	}
 	return Router
 }

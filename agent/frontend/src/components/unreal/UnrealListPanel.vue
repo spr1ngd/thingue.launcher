@@ -146,7 +146,7 @@ function handleGotoServer(tab) {
               <q-item>
                 <q-item-section class="text-italic text-grey">
                   <span>没有可用选项，<q-btn padding="none" color="primary" dense flat
-                                            @click="handleGotoServer('local')">启动本地服务</q-btn>
+                                            @click="handleGotoServer('local')">启动内置服务</q-btn>
                   </span>
                   <span>或 <q-btn padding="none" color="primary" dense flat
                                   @click="handleGotoServer('remote')">配置远程服务地址</q-btn>

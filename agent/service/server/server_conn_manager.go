@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"thingue-launcher/agent/service/instance"
-	"thingue-launcher/common/config"
 	"thingue-launcher/common/message"
+	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 )
 
@@ -23,13 +23,13 @@ var ServerConnManager = serverConnManager{
 func (m *serverConnManager) Connect(httpUrl string) error {
 	var err error
 	wsUrl := util.HttpUrlToWsUrl(httpUrl, "/ws/agent")
-	appConfig := config.AppConfig
+	appConfig := provider.AppConfig
 	m.ws, _, err = websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err == nil {
 		fmt.Printf("服务连接成功：%s\n", wsUrl)
 		//2.1如果连接成功,保存连接信息
 		appConfig.ServerUrl = httpUrl
-		config.WriteConfig()
+		provider.WriteConfig()
 		instance.NodeService.SetBaseUrl(httpUrl)
 		//2.2如果连接成功,启动`消息接收goroutine`
 		go func() {
@@ -48,7 +48,7 @@ func (m *serverConnManager) Connect(httpUrl string) error {
 			fmt.Printf("服务连接断开：%s\n", wsUrl)
 			m.RemoteServerConnCloseChanel <- wsUrl
 			appConfig.ServerUrl = ""
-			config.WriteConfig()
+			provider.WriteConfig()
 		}()
 	} else {
 		// 如果连接失败
