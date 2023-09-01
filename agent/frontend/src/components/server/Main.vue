@@ -1,7 +1,7 @@
 <script setup>
 import LocalServer from "@/components/server/LocalServerPanel.vue";
 import RemoteServer from "@/components/server/RemoteServerPanel.vue";
-import {defineProps, onMounted, ref, watch} from "vue";
+import {onMounted, ref, watch} from "vue";
 
 const tab = ref("local")
 

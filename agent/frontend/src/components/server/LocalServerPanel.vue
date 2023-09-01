@@ -4,7 +4,8 @@ import {
   GetLocalServerStatus,
   LocalServerShutdown,
   LocalServerStart,
-  UpdateLocalServerConfig
+  UpdateLocalServerConfig,
+  OpenLocalServerUrl
 } from "@wails/go/api/serverApi.js";
 import {GetAppConfig} from "@wails/go/api/systemApi";
 import {Notify} from "quasar";
@@ -14,10 +15,10 @@ const tab = ref("local")
 
 const localServerConfig = reactive({
   bindAddr: "",
-  basePath: "",
+  contentPath: "",
   autoStart: false,
   useExternalStatic: false,
-  externalStaticPath: ""
+  staticDir: ""
 })
 
 let localServerStatus = ref(false)
@@ -32,22 +33,15 @@ async function serverShutdown() {
   localServerStatus.value = await GetLocalServerStatus()
 }
 
-function handleOpenBrowser() {
-  const port = localServerConfig.bindAddr.split(":")[1]
-  let url = new URL(`http://localhost:${port}`);
-  url = new URL(localServerConfig.basePath, url);
-  url = new URL("/static/", url);
-  window.runtime.BrowserOpenURL(url);
-}
-
 onMounted(async () => {
   // 获取本地server配置
   let appConfig = await GetAppConfig();
-  localServerConfig.bindAddr = appConfig.LocalServer.bindAddr
-  localServerConfig.basePath = appConfig.LocalServer.basePath
-  localServerConfig.autoStart = appConfig.LocalServer.autoStart
-  localServerConfig.useExternalStatic = appConfig.LocalServer.useExternalStatic
-  localServerConfig.externalStaticPath = appConfig.LocalServer.externalStaticPath
+  console.log(appConfig)
+  localServerConfig.bindAddr = appConfig.localServer.bindAddr
+  localServerConfig.contentPath = appConfig.localServer.contentPath
+  localServerConfig.autoStart = appConfig.localServer.autoStart
+  localServerConfig.useExternalStatic = appConfig.localServer.useExternalStatic
+  localServerConfig.staticDir = appConfig.localServer.staticDir
   // 获取本地server状态
   localServerStatus.value = await GetLocalServerStatus()
   //注册事件监听
@@ -57,11 +51,11 @@ onMounted(async () => {
   })
   watch(localServerConfig, async (value, oldValue, onCleanup) => {
     UpdateLocalServerConfig({
-      basePath: localServerConfig.basePath,
+      contentPath: localServerConfig.contentPath,
       bindAddr: localServerConfig.bindAddr,
       autoStart: localServerConfig.autoStart,
       useExternalStatic: localServerConfig.useExternalStatic,
-      externalStaticPath: localServerConfig.externalStaticPath,
+      staticDir: localServerConfig.staticDir,
     })
   })
 })
@@ -93,7 +87,7 @@ onMounted(() => {
               <q-item-section>
                 <q-item-label>服务路径</q-item-label>
                 <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.basePath"/>
+                         v-model="localServerConfig.contentPath"/>
               </q-item-section>
             </q-item>
             <q-item>
@@ -106,7 +100,7 @@ onMounted(() => {
               <q-item-section>
                 <q-item-label>静态资源路径</q-item-label>
                 <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.externalStaticPath"/>
+                         v-model="localServerConfig.staticDir"/>
               </q-item-section>
             </q-item>
             <q-item>
@@ -122,7 +116,7 @@ onMounted(() => {
                 <q-btn dense label="关闭" color="negative" @click="serverShutdown" :disable="!localServerStatus"></q-btn>
               </q-item-section>
               <q-item-section avatar>
-                <q-btn flat round icon="open_in_new" @click="handleOpenBrowser"/>
+                <q-btn flat round icon="open_in_new" @click="OpenLocalServerUrl"/>
               </q-item-section>
             </q-item>
           </q-list>

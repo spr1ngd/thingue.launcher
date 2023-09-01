@@ -1,7 +1,7 @@
 <script setup>
 import UnrealListPanel from "@/components/unreal/UnrealListPanel.vue";
 import UnrealSettingPanel from "@/components/unreal/UnrealSettingsPanel.vue";
-import {defineEmits, ref} from "vue";
+import {ref} from "vue";
 
 const currentPanel = ref("list")
 

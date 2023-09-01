@@ -14,8 +14,8 @@ const versionInfo = ref({})
 onMounted(async () => {
   const appConfig = await GetAppConfig();
   versionInfo.value = await GetVersionInfo();
-  systemSettings.RestartTaskCron = appConfig.SystemSettings.RestartTaskCron
-  enableRestartTask.value = appConfig.EnableRestartTask
+  systemSettings.RestartTaskCron = appConfig.systemSettings.restartTaskCron
+  enableRestartTask.value = appConfig.systemSettings.enableRestartTask
   watch(systemSettings, async (value, oldValue, onCleanup) => {
     UpdateSystemSettings(systemSettings)
   })

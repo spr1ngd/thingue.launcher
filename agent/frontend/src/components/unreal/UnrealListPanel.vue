@@ -2,7 +2,7 @@
 import {defineEmits, onMounted, onUnmounted, ref} from "vue";
 import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
 import {GetAppConfig, OpenExplorer} from "@wails/go/api/systemApi.js";
-import {ConnectServer, DisconnectServer, GetConnectServerOptions} from "@wails/go/api/serverApi";
+import {ConnectServer, DisconnectServer, GetConnectServerOptions, OpenInstancePreviewUrl} from "@wails/go/api/serverApi";
 
 import {Notify} from "quasar";
 import {GoTimeFormat, RunnerStateCodeToString} from "@/utils";
@@ -83,11 +83,6 @@ function handleDelete(cid) {
 
 async function handleOpenDir(path) {
   await OpenExplorer(path)
-}
-
-async function handleOpenPreview(row) {
-  const url = new URL(`/static/player.html?sid=${row.sid}`, currentServer.value)
-  window.runtime.BrowserOpenURL(url.href)
 }
 
 async function handleSelectChange() {
@@ -172,7 +167,7 @@ function handleGotoServer(tab) {
               <q-list dense>
                 <q-item>
                   <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
-                                  @click="handleOpenPreview(props.row)">
+                                  @click="OpenInstancePreviewUrl(props.row.sid)">
                     <q-item-label caption class="ellipsis">名称</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.name }}</q-item-label>
                   </q-item-section>
@@ -220,7 +215,8 @@ function handleGotoServer(tab) {
                        @click="handleStopInstance(props.row)">
                   <q-tooltip :delay="1000">停止</q-tooltip>
                 </q-btn>
-                <q-btn padding="none" color="blue" flat dense icon="sym_o_settings" @click="handleEditSettings(props.row)">
+                <q-btn padding="none" color="blue" flat dense icon="sym_o_settings"
+                       @click="handleEditSettings(props.row)">
                   <q-tooltip :delay="1000">编辑或查看设置</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="grey" flat dense icon="sym_o_delete" push>

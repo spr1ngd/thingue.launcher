@@ -15,7 +15,7 @@ var (
 
 func main() {
 	provider.SetVersionBuildInfo(GitCommit, BuildDate)
-	provider.InitConfig()
+	provider.InitConfigFromFile()
 	provider.SetWebStatic("server/frontend/dist", staticFiles)
 	agent.Startup()
 	agent.Shutdown()

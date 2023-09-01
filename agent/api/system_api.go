@@ -45,15 +45,14 @@ func (a *systemApi) GetAppConfig() *provider.Config {
 
 func (a *systemApi) ControlRestartTask(enable bool) error {
 	var err error
-	appConfig := provider.AppConfig
 	if enable {
 		err = service.RunnerRestartTaskManager.Start()
 	} else {
 		service.RunnerRestartTaskManager.Stop()
 	}
 	if err == nil {
-		appConfig.EnableRestartTask = enable
-		provider.WriteConfig()
+		provider.AppConfig.SystemSettings.EnableRestartTask = enable
+		provider.WriteConfigToFile()
 	}
 	return err
 }
@@ -61,7 +60,7 @@ func (a *systemApi) ControlRestartTask(enable bool) error {
 func (a *systemApi) UpdateSystemSettings(systemSettings provider.SystemSettings) {
 	appConfig := provider.AppConfig
 	appConfig.SystemSettings = systemSettings
-	provider.WriteConfig()
+	provider.WriteConfigToFile()
 }
 
 func (a *systemApi) GetVersionInfo() *domain.VersionInfo {

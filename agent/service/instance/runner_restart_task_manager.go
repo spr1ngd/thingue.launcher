@@ -13,12 +13,12 @@ type RunnerRestartTaskManager struct {
 
 func (t *RunnerRestartTaskManager) Init() {
 	t.restartCron = cron.New()
-	if provider.AppConfig.EnableRestartTask {
+	if provider.AppConfig.SystemSettings.EnableRestartTask {
 		err := t.Start()
 		if err != nil {
 			// 如果开启失败将设置改为false
-			provider.AppConfig.EnableRestartTask = false
-			provider.WriteConfig()
+			provider.AppConfig.SystemSettings.EnableRestartTask = false
+			provider.WriteConfigToFile()
 		}
 	}
 }

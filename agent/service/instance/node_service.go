@@ -26,10 +26,10 @@ func (s *nodeService) SetBaseUrl(baseurl string) {
 }
 
 func (s *nodeService) GetInstanceSid(nodeId uint, instanceId uint) (string, error) {
-	if provider.AppConfig.ServerUrl == "" {
+	if provider.AppConfig.RegisterUrl == "" {
 		return "", errors.New("服务未连接")
 	}
-	parse, _ := url.Parse(provider.AppConfig.ServerUrl)
+	parse, _ := url.Parse(provider.AppConfig.RegisterUrl)
 	result, err := util.HttpGet(parse.JoinPath("/api/instance/getInstanceSid").String() +
 		fmt.Sprintf("?nodeId=%d&instanceId=%d", nodeId, instanceId))
 	fmt.Println("result", string(result))

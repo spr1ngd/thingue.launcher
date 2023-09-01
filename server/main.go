@@ -19,9 +19,7 @@ var (
 func main() {
 	provider.SetVersionBuildInfo(GitCommit, BuildDate)
 	provider.SetWebStatic("frontend/dist", staticFiles)
-	provider.InitConfig()
-	fmt.Println(provider.AppConfig.LocalServer.BindAddr)
-	fmt.Println(viper.GetString("agent.localserver.bindaddr"))
+	provider.InitFlagConfig()
 	showHelp := viper.GetBool("showHelp")
 	if showHelp {
 		pflag.Usage()

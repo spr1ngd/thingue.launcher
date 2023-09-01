@@ -9,7 +9,9 @@ import (
 )
 
 func InitGorm() {
-	db, err := gorm.Open(sqlite.Open("./thingue-launcher/server.db"), &gorm.Config{})
+	//dsn := "./thingue-launcher/server.db"
+	dsn := "file::memory:?cache=shared"
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

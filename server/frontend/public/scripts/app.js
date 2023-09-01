@@ -13,7 +13,7 @@ async function fetchData() {
     }
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    const response = await fetch("/api/instance/ticketSelect", {
+    const response = await fetch(path + "/api/instance/ticketSelect", {
         method: 'POST',
         headers: myHeaders,
         body: JSON.stringify({

@@ -28,8 +28,8 @@ func (m *serverConnManager) Connect(httpUrl string) error {
 	if err == nil {
 		fmt.Printf("服务连接成功：%s\n", wsUrl)
 		//2.1如果连接成功,保存连接信息
-		appConfig.ServerUrl = httpUrl
-		provider.WriteConfig()
+		appConfig.RegisterUrl = httpUrl
+		provider.WriteConfigToFile()
 		instance.NodeService.SetBaseUrl(httpUrl)
 		//2.2如果连接成功,启动`消息接收goroutine`
 		go func() {
@@ -47,8 +47,8 @@ func (m *serverConnManager) Connect(httpUrl string) error {
 			}
 			fmt.Printf("服务连接断开：%s\n", wsUrl)
 			m.RemoteServerConnCloseChanel <- wsUrl
-			appConfig.ServerUrl = ""
-			provider.WriteConfig()
+			appConfig.RegisterUrl = ""
+			provider.WriteConfigToFile()
 		}()
 	} else {
 		// 如果连接失败

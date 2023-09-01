@@ -9,7 +9,7 @@ func BuildRouter() *gin.Engine {
 	Router := gin.Default()
 	Router.Use(CorsMiddleware())
 	//初始化base路由组
-	baseGroup := Router.Group(provider.AppConfig.LocalServer.BasePath)
+	baseGroup := Router.Group(provider.AppConfig.LocalServer.ContentPath)
 	{
 		//初始化base/ws路由组
 		WsRouter.BuildRouter(baseGroup)

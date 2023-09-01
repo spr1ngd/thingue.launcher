@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"thingue-launcher/agent/constants"
 	"thingue-launcher/agent/service"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/model"
 )
 

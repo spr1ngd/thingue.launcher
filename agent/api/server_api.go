@@ -2,11 +2,15 @@ package api
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"net"
+	"net/url"
 	"strings"
-	"thingue-launcher/agent/constants"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/service"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/server/initialize"
@@ -23,11 +27,11 @@ func (s *serverApi) Init(ctx context.Context) {
 	if provider.AppConfig.LocalServer.AutoStart {
 		s.LocalServerStart()
 	}
-	if provider.AppConfig.ServerUrl != "" {
-		err := s.ConnectServer(provider.AppConfig.ServerUrl)
+	if provider.AppConfig.RegisterUrl != "" {
+		err := s.ConnectServer(provider.AppConfig.RegisterUrl)
 		if err != nil {
-			provider.AppConfig.ServerUrl = ""
-			provider.WriteConfig()
+			provider.AppConfig.RegisterUrl = ""
+			provider.WriteConfigToFile()
 		}
 	}
 	go func() {
@@ -61,7 +65,7 @@ func (s *serverApi) GetLocalServerStatus() bool {
 func (s *serverApi) UpdateLocalServerConfig(localServerConfig provider.LocalServer) {
 	appConfig := provider.AppConfig
 	appConfig.LocalServer = localServerConfig
-	provider.WriteConfig()
+	provider.WriteConfigToFile()
 }
 
 func (s *serverApi) ListRemoteServer() []model.RemoteServer {
@@ -87,12 +91,9 @@ func (s *serverApi) DeleteRemoteServer(id uint) {
 func (s *serverApi) GetConnectServerOptions() []string {
 	var options []string
 	if s.GetLocalServerStatus() {
-		appConfig := provider.AppConfig
-		port := strings.Split(appConfig.LocalServer.BindAddr, ":")[1]
-		if strings.HasSuffix(port+appConfig.LocalServer.BasePath, "/") {
-			options = append(options, "http://localhost:"+port+appConfig.LocalServer.BasePath)
-		} else {
-			options = append(options, "http://localhost:"+port+appConfig.LocalServer.BasePath+"/")
+		serverUrl, err := s.GetLocalServerUrl()
+		if err == nil {
+			options = append(options, serverUrl.String())
 		}
 	}
 	for _, remoteServer := range s.ListRemoteServer() {
@@ -107,4 +108,39 @@ func (s *serverApi) ConnectServer(httpUrl string) error {
 
 func (s *serverApi) DisconnectServer() {
 	service.ServerConnManager.Disconnect()
+}
+
+func (s *serverApi) GetLocalServerUrl() (*url.URL, error) {
+	split := strings.Split(provider.AppConfig.LocalServer.BindAddr, ":")
+	if split[1] == "" {
+		return nil, errors.New("地址不正确")
+	}
+	var baseUrl string
+	ip := net.ParseIP(split[0])
+	if ip != nil && ip.String() != "0.0.0.0" {
+		baseUrl = fmt.Sprintf("http://%s:%s", ip, split[1])
+	} else {
+		baseUrl = fmt.Sprintf("http://localhost:%s", split[1])
+	}
+	parse, err := url.Parse(baseUrl)
+	if err != nil {
+		return nil, errors.New("地址不正确")
+	}
+	return parse.JoinPath(provider.AppConfig.LocalServer.ContentPath), nil
+}
+
+func (s *serverApi) OpenLocalServerUrl() {
+	localServerUrl, err := s.GetLocalServerUrl()
+	if err == nil {
+		path := localServerUrl.JoinPath("/static")
+		runtime.BrowserOpenURL(s.ctx, path.String())
+	}
+}
+
+func (s *serverApi) OpenInstancePreviewUrl(sid string) {
+	localServerUrl, err := s.GetLocalServerUrl()
+	if err == nil {
+		path := localServerUrl.JoinPath("/static/player.html")
+		runtime.BrowserOpenURL(s.ctx, fmt.Sprintf("%s?sid=%s", path.String(), sid))
+	}
 }
