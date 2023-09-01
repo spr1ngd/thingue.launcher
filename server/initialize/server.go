@@ -1,13 +1,14 @@
 package initialize
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
+	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
+	"thingue-launcher/server/global"
 	"thingue-launcher/server/web/router"
-	"time"
 )
 
 type server struct {
@@ -26,6 +27,8 @@ func (s *server) Serve() {
 		InitGorm() // 初始化gorm
 		s.isInitialized = true
 	}
+	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Node{})
+	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
 	s.server = http.Server{
 		Addr:    provider.AppConfig.LocalServer.BindAddr,
 		Handler: router.BuildRouter(),
@@ -50,9 +53,9 @@ func (s *server) Start() {
 }
 
 func (s *server) Stop() {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err := s.server.Shutdown(ctx)
+	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//defer cancel()
+	err := s.server.Close()
 	if err != nil {
 		fmt.Printf("server shutdown failed: %v\n", err)
 	} else {

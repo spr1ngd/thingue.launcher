@@ -53,7 +53,7 @@ func (m *runnerManager) GetRunnerById(id uint) *Runner {
 }
 
 func (m *runnerManager) CloseAllRunner() {
-	fmt.Printf("关闭所有正在运行的实例")
+	fmt.Println("关闭所有正在运行的实例")
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
 			runner.Stop()

@@ -12,11 +12,11 @@ import (
 func HttpGet(url string) ([]byte, error) {
 	var result []byte
 	response, err := http.Get(url)
-	defer response.Body.Close()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
 		result, err = io.ReadAll(response.Body)
+		defer response.Body.Close()
 	}
 	return result, err
 }

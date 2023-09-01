@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"runtime"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/server/initialize"
 )
@@ -27,9 +28,9 @@ func main() {
 	}
 	showVersion := viper.GetBool("showVersion")
 	if showVersion {
-		fmt.Printf("ThingUE Server v%s\n", provider.VersionInfo.Version)
-		fmt.Printf("Build Date %s\n", provider.VersionInfo.BuildDate)
-		fmt.Printf("Git Commit %s\n", provider.VersionInfo.GitCommit)
+		fmt.Printf("ThingUE Server %s v%s\n", runtime.GOOS, provider.VersionInfo.Version)
+		fmt.Printf("BuildDate %s\n", provider.VersionInfo.BuildDate)
+		fmt.Printf("GitCommit %s\n", provider.VersionInfo.GitCommit)
 		return
 	}
 	initialize.Server.Serve()

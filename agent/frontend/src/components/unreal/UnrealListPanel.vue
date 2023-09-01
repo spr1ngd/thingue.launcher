@@ -1,5 +1,5 @@
 <script setup>
-import {defineEmits, onMounted, onUnmounted, ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
 import {GetAppConfig, OpenExplorer} from "@wails/go/api/systemApi.js";
 import {ConnectServer, DisconnectServer, GetConnectServerOptions, OpenInstancePreviewUrl} from "@wails/go/api/serverApi";

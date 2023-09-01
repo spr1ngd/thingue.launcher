@@ -22,6 +22,4 @@ func InitGorm() {
 	); err != nil {
 		fmt.Println(err)
 	}
-	db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Node{})
-	db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
 }

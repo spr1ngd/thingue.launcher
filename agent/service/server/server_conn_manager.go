@@ -46,9 +46,9 @@ func (m *serverConnManager) Connect(httpUrl string) error {
 				MsgReceive(msg)
 			}
 			fmt.Printf("服务连接断开：%s\n", wsUrl)
-			m.RemoteServerConnCloseChanel <- wsUrl
 			appConfig.RegisterUrl = ""
 			provider.WriteConfigToFile()
+			m.RemoteServerConnCloseChanel <- wsUrl
 		}()
 	} else {
 		// 如果连接失败

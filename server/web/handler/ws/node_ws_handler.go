@@ -16,6 +16,11 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 		fmt.Println("WebSocket upgrade error:", err)
 		return
 	}
+	conn.SetCloseHandler(func(code int, text string) error {
+		conn.Close()
+		fmt.Println("连接关闭之前")
+		return nil
+	})
 	node := model.Node{}
 	core.NodeService.NodeOnline(&node)
 	callbackMsg := message.ServerConnectCallback(node.ID)
