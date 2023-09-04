@@ -2,7 +2,7 @@
 import {onMounted, onUnmounted, ref} from "vue";
 import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
 import {GetAppConfig, OpenExplorer} from "@wails/go/api/systemApi.js";
-import {ConnectServer, DisconnectServer, GetConnectServerOptions, OpenInstancePreviewUrl} from "@wails/go/api/serverApi";
+import {ConnectServer, DisconnectServer, GetConnectServerOptions, OpenInstancePreviewUrl,GetActiveServerUrl} from "@wails/go/api/serverApi";
 
 import {Notify} from "quasar";
 import {GoTimeFormat, RunnerStateCodeToString} from "@/utils";
@@ -29,8 +29,8 @@ onMounted(async () => {
   }
 
   //注册事件监听
-  window.runtime.EventsOn("remote_server_conn_close", () => {
-    currentServer.value = null
+  window.runtime.EventsOn("remote_server_conn_update", async () => {
+    currentServer.value = await GetActiveServerUrl()
   })
   window.runtime.EventsOn("runner_unexpected_exit", () => {
     list()
@@ -38,8 +38,7 @@ onMounted(async () => {
   window.runtime.EventsOn("runner_status_update", () => {
     list()
   })
-  let appConfig = await GetAppConfig();
-  currentServer.value = appConfig.ServerUrl;
+  currentServer.value = await GetActiveServerUrl()
 })
 
 onUnmounted(() => {

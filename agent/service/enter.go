@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ServerConnManager        = server.ServerConnManager
+	ServerConnManager        = server.ConnManager
 	RunnerManager            = instance.RunnerManager
 	InstanceManager          = instance.InstanceManager
 	RunnerRestartTaskManager = new(instance.RunnerRestartTaskManager)

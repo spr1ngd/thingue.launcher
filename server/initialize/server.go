@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
+	coreprovider "thingue-launcher/server/core/provider"
 	"thingue-launcher/server/global"
 	"thingue-launcher/server/web/router"
 )
@@ -53,9 +54,9 @@ func (s *server) Start() {
 }
 
 func (s *server) Stop() {
-	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	//defer cancel()
 	err := s.server.Close()
+	coreprovider.NodeConnProvider.CloseAllConnection()
+	coreprovider.AdminConnProvider.CloseAllConnection()
 	if err != nil {
 		fmt.Printf("server shutdown failed: %v\n", err)
 	} else {

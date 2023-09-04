@@ -52,7 +52,7 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	if err != nil {
 		service.InstanceManager.Delete(instance.CID)
 	}
-	service.ServerConnManager.Disconnect()
+	_ = service.ServerConnManager.Disconnect()
 	return err
 }
 

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"thingue-launcher/common/message"
 )
@@ -12,8 +13,8 @@ type nodeConnProvider struct {
 
 var NodeConnProvider = nodeConnProvider{ConnMap: make(map[uint]*websocket.Conn)}
 
-func (m *nodeConnProvider) SendToNode(nodeId uint, message *message.Message) error {
-	conn := m.ConnMap[nodeId]
+func (p *nodeConnProvider) SendToNode(nodeId uint, message *message.Message) error {
+	conn := p.ConnMap[nodeId]
 	if conn != nil {
 		return conn.WriteMessage(websocket.TextMessage, message.GetBytes())
 	} else {
@@ -21,6 +22,11 @@ func (m *nodeConnProvider) SendToNode(nodeId uint, message *message.Message) err
 	}
 }
 
-func (m *nodeConnProvider) send() {
-
+func (p *nodeConnProvider) CloseAllConnection() {
+	for _, conn := range p.ConnMap {
+		err := conn.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }

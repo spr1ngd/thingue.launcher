@@ -10,6 +10,7 @@ import (
 	"strings"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/agent/service"
+	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
@@ -30,14 +31,13 @@ func (s *serverApi) Init(ctx context.Context) {
 	if provider.AppConfig.RegisterUrl != "" {
 		err := s.ConnectServer(provider.AppConfig.RegisterUrl)
 		if err != nil {
-			provider.AppConfig.RegisterUrl = ""
-			provider.WriteConfigToFile()
+			service.ServerConnManager.StartReconnect()
 		}
 	}
 	go func() {
 		for {
-			wsUrl := <-service.ServerConnManager.RemoteServerConnCloseChanel
-			runtime.EventsEmit(s.ctx, constants.REMOTE_SERVER_CONN_CLOSE, wsUrl)
+			wsUrl := <-service.ServerConnManager.ServerConnUpdateChanel
+			runtime.EventsEmit(s.ctx, constants.REMOTE_SERVER_CONN_UPDATE, wsUrl)
 		}
 	}()
 	// 监听localserver关闭
@@ -103,11 +103,19 @@ func (s *serverApi) GetConnectServerOptions() []string {
 }
 
 func (s *serverApi) ConnectServer(httpUrl string) error {
+	// 修改配置
+	provider.AppConfig.RegisterUrl = httpUrl
+	provider.WriteConfigToFile()
 	return service.ServerConnManager.Connect(httpUrl)
 }
 
 func (s *serverApi) DisconnectServer() {
-	service.ServerConnManager.Disconnect()
+	// 修改配置
+	provider.AppConfig.RegisterUrl = ""
+	provider.WriteConfigToFile()
+	// 关闭已启动实例
+	instance.RunnerManager.CloseAllRunner()
+	_ = service.ServerConnManager.Disconnect()
 }
 
 func (s *serverApi) GetLocalServerUrl() (*url.URL, error) {
@@ -143,4 +151,8 @@ func (s *serverApi) OpenInstancePreviewUrl(sid string) {
 		path := localServerUrl.JoinPath("/static/player.html")
 		runtime.BrowserOpenURL(s.ctx, fmt.Sprintf("%s?sid=%s", path.String(), sid))
 	}
+}
+
+func (s *serverApi) GetActiveServerUrl() string {
+	return service.ServerConnManager.ActiveAddrUrl
 }
