@@ -1877,7 +1877,13 @@ function connect() {
                 }, 1000);
             } else if (msg.type === 'iceCandidate') {
                 onWebRtcIce(msg.candidate);
-            } else {
+            } else if (msg.type === 'state') {
+                if (msg.name === 'streamingState' && !msg.value) {
+                    console.error("流状态异常")
+                    window.top.postMessage("streamingStateError", "*");
+                }
+            }
+            else {
                 console.log(`invalid SS message type: ${msg.type}`);
             }
         };

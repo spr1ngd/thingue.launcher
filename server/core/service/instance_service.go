@@ -27,7 +27,7 @@ func (s *instanceService) AddPlayer(sid string, playerId string) {
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
-func (s *instanceService) RemovePlayer(sid string, playerId string) {
+func (s *instanceService) RemovePlayer(sid string, playerId string) (bool, uint) {
 	instance := s.GetInstanceBySid(sid)
 	for i, id := range instance.PlayerIds {
 		if id == playerId {
@@ -37,6 +37,7 @@ func (s *instanceService) RemovePlayer(sid string, playerId string) {
 	instance.PlayerCount = instance.PlayerCount - 1
 	global.SERVER_DB.Save(&instance)
 	provider.AdminConnProvider.BroadcastUpdate()
+	return instance.AutoControl, instance.StopDelay
 }
 
 func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {

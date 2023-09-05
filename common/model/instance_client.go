@@ -17,6 +17,8 @@ type ClientInstance struct {
 	FaultRecover      bool        `json:"faultRecover"`
 	LastStartAt       time.Time   `json:"lastStartAt"`
 	LastStopAt        time.Time   `json:"lastStopAt"`
+	AutoControl       bool        `json:"autoControl"`
+	StopDelay         int         `json:"stopDelay"`
 	Pid               int         `json:"pid" gorm:"-"`
 	StateCode         int8        `json:"stateCode" gorm:"-"`
 	StreamerConnected bool        `json:"streamerConnected" gorm:"-"`
@@ -27,7 +29,9 @@ type ClientInstance struct {
 func (clientInstance *ClientInstance) ToServerInstance() *ServerInstance {
 	var serverInstance *ServerInstance
 	mapstructure.Decode(clientInstance, &serverInstance)
-	sid, _ := uuid.NewUUID()
-	serverInstance.SID = sid.String()
+	if serverInstance.SID == "" {
+		sid, _ := uuid.NewUUID()
+		serverInstance.SID = sid.String()
+	}
 	return serverInstance
 }

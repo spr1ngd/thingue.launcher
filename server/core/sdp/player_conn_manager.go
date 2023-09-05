@@ -2,10 +2,13 @@ package sdp
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"strconv"
+	"thingue-launcher/common/request"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/core/service"
+	"time"
 )
 
 type playerConnManager struct {
@@ -35,7 +38,27 @@ func (m *playerConnManager) SetStreamer(playerConnector *PlayerConnector, ticket
 			playerConnector.StreamerConnector = streamerConnector
 			service.InstanceService.AddPlayer(sid, strconv.Itoa(int(playerConnector.PlayerId)))
 		} else {
-			err = errors.New("streamer已离线")
+			instance := service.InstanceService.GetInstanceBySid(sid)
+			if instance.AutoControl {
+				service.InstanceService.ProcessControl(request.ProcessControl{
+					SID:     sid,
+					Command: "START",
+				})
+				ticker := time.NewTicker(2 * time.Second)
+				for {
+					<-ticker.C
+					streamerConnector := StreamerConnManager.GetConnectorById(sid)
+					if streamerConnector != nil {
+						playerConnector.StreamerConnector = streamerConnector
+						service.InstanceService.AddPlayer(sid, strconv.Itoa(int(playerConnector.PlayerId)))
+						ticker.Stop()
+						break
+					}
+				}
+				fmt.Println("自动启动成功")
+			} else {
+				err = errors.New("streamer已离线")
+			}
 		}
 	}
 	return err
@@ -46,8 +69,12 @@ func (m *playerConnManager) OnPlayerDisConnect(playerConnector *PlayerConnector)
 		"type":     "playerDisconnected",
 		"playerId": playerConnector.PlayerId,
 	}))
-	service.InstanceService.RemovePlayer(
+	playerConnector.StreamerConnector.removePlayer(playerConnector)
+	autoControl, delay := service.InstanceService.RemovePlayer(
 		playerConnector.StreamerConnector.SID,
 		strconv.Itoa(int(playerConnector.PlayerId)),
 	)
+	if autoControl && delay >= 0 {
+		playerConnector.StreamerConnector.autoStopTimer.Reset(time.Duration(delay) * time.Second)
+	}
 }

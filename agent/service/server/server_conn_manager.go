@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"net"
+	"sync"
 	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/provider"
@@ -21,10 +23,12 @@ type connManager struct {
 
 var ConnManager = connManager{
 	conn:                   nil,
-	ServerConnUpdateChanel: make(chan string),
+	ServerConnUpdateChanel: make(chan string, 1),
 }
+var connectLock sync.Mutex
 
 func (m *connManager) Connect(httpUrl string) error {
+	connectLock.Lock()
 	var err error
 	wsUrl := util.HttpUrlToWsUrl(httpUrl, "/ws/agent")
 	m.conn, _, err = websocket.DefaultDialer.Dial(wsUrl, nil)
@@ -64,6 +68,7 @@ func (m *connManager) Connect(httpUrl string) error {
 		// 如果连接失败
 		fmt.Printf("服务连接失败：%s\n", wsUrl)
 	}
+	connectLock.Unlock()
 	return err
 }
 
@@ -76,6 +81,11 @@ func (m *connManager) Disconnect() error {
 	}
 }
 
+func (m *connManager) Reconnect() {
+	m.Disconnect()
+	m.Connect(provider.AppConfig.RegisterUrl)
+}
+
 func (m *connManager) StartReconnect() {
 	fmt.Println("开始尝试重连")
 	m.reconnectTimer = time.NewTimer(5 * time.Second)
@@ -83,12 +93,14 @@ func (m *connManager) StartReconnect() {
 		for {
 			if m.conn != nil {
 				_, _, err := m.conn.ReadMessage()
-				if !websocket.IsCloseError(err, websocket.CloseAbnormalClosure) {
+				var opError *net.OpError
+				ok := errors.As(err, &opError)
+				if !websocket.IsCloseError(err, websocket.CloseAbnormalClosure) && !ok {
 					break
 				}
 			}
 			t := <-m.reconnectTimer.C
-			fmt.Println("重连一次", t.Format(`"2006-01-02 15:04:05"`))
+			fmt.Println("重连一次", t.Format("2006-01-02 15:04:05"))
 			err := m.Connect(provider.AppConfig.RegisterUrl)
 			if err == nil {
 				fmt.Println("重连成功")
@@ -102,11 +114,11 @@ func (m *connManager) StartReconnect() {
 
 func (m *connManager) StartHeartbeat() {
 	// 创建一个定时器，每隔一段时间发送心跳消息
-	m.heartbeatTicker = time.NewTicker(5 * time.Second)
+	m.heartbeatTicker = time.NewTicker(40 * time.Second)
 	go func() {
 		for {
 			t := <-m.heartbeatTicker.C
-			err := m.conn.WriteMessage(websocket.TextMessage, util.MapToJson(map[string]interface{}{"type": "ping", "time": t.Format(`"2006-01-02 15:04:05"`)}))
+			err := m.conn.WriteMessage(websocket.TextMessage, util.MapToJson(map[string]interface{}{"type": "ping", "time": t.Format("2006-01-02 15:04:05")}))
 			if err != nil {
 				m.heartbeatTicker.Stop()
 				err = m.conn.Close()

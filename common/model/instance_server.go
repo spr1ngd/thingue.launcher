@@ -27,6 +27,8 @@ type ServerInstance struct {
 	PlayerCount       uint          `json:"playerCount"`
 	CurrentPak        string        `json:"currentPak"`
 	Rendering         bool          `json:"rendering"`
+	AutoControl       bool          `json:"autoControl"`
+	StopDelay         uint          `json:"stopDelay"`
 	Labels            labels.Labels `json:"labels" gorm:"-"`
 	Paks              []domain.Pak  `json:"paks" gorm:"-"`
 	PakName           string        `json:"pakName" gorm:"-"`

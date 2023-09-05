@@ -66,8 +66,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="row">
-    <div class="col-6">
+<!--  <div class="row">-->
+<!--    <div class="col-6">-->
       <q-card style="width: 300px">
         <q-card-section class="q-pa-sm">
           <div class="row no-wrap items-center q-pa-sm">
@@ -122,20 +122,20 @@ onMounted(() => {
           </q-list>
         </q-card-section>
       </q-card>
-    </div>
-    <div class="col-6">
-      <q-card style="width: 300px">
-        <q-card-section class="q-pa-sm">
-          <div class="row no-wrap items-center q-pa-sm">
-            <div class="text-h6">中继服务地址配置</div>
-          </div>
-        </q-card-section>
-        <q-card-section class="q-pa-none q-pt-sm">
+<!--    </div>-->
+<!--    <div class="col-6">-->
+<!--      <q-card style="width: 300px">-->
+<!--        <q-card-section class="q-pa-sm">-->
+<!--          <div class="row no-wrap items-center q-pa-sm">-->
+<!--            <div class="text-h6">中继服务地址配置</div>-->
+<!--          </div>-->
+<!--        </q-card-section>-->
+<!--        <q-card-section class="q-pa-none q-pt-sm">-->
 
-        </q-card-section>
-      </q-card>
-    </div>
-  </div>
+<!--        </q-card-section>-->
+<!--      </q-card>-->
+<!--    </div>-->
+<!--  </div>-->
 </template>
 
 <style scoped>

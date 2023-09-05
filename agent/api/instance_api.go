@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/constants"
@@ -52,19 +53,20 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	if err != nil {
 		service.InstanceManager.Delete(instance.CID)
 	}
-	_ = service.ServerConnManager.Disconnect()
+	service.ServerConnManager.Reconnect()
 	return err
 }
 
 func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
-	service.ServerConnManager.Disconnect()
+	fmt.Println(instance)
+	service.ServerConnManager.Reconnect()
 	return service.InstanceManager.Save(instance)
 }
 
 func (u *instanceApi) DeleteInstance(cid uint) error {
 	err := service.RunnerManager.DeleteRunner(cid)
 	if err == nil {
-		service.ServerConnManager.Disconnect()
+		service.ServerConnManager.Reconnect()
 		service.InstanceManager.Delete(cid)
 	}
 	return err

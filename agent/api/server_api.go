@@ -34,6 +34,7 @@ func (s *serverApi) Init(ctx context.Context) {
 			service.ServerConnManager.StartReconnect()
 		}
 	}
+	// 监听连接状态
 	go func() {
 		for {
 			wsUrl := <-service.ServerConnManager.ServerConnUpdateChanel

@@ -78,6 +78,7 @@ function select() {
 }
 
 async function save() {
+  props.data.settings.stopDelay = Number(props.data.settings.stopDelay)
   if (props.data.type === 'new') {
     await CreateInstance(props.data.settings)
     emit('openListPanel')
@@ -150,6 +151,20 @@ async function save() {
             <q-item-label caption>
               实例非正常退出或心跳异常时尝试通过重新启动从异常状态中恢复
             </q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item tag="label" v-ripple>
+          <q-item-section side top>
+            <q-checkbox v-model="props.data.settings.autoControl"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>自动启停</q-item-label>
+            <q-item-label caption>
+              实例有访问时自动开启，无访问时自动关闭
+            </q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-input  dense v-model="props.data.settings.stopDelay" label="关闭延迟时间（秒）" type="number"/>
           </q-item-section>
         </q-item>
       </q-list>

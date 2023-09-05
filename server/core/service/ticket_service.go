@@ -23,7 +23,7 @@ var TicketService = ticketService{
 
 func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (response.InstanceTicket, error) {
 	// 数据库查询
-	query := global.SERVER_DB.Where("streamer_connected = ?", true)
+	query := global.SERVER_DB.Where("streamer_connected = ? or auto_control = ?", true, true)
 	if selectCond.SID != "" {
 		query = query.Where("s_id = ?", selectCond.SID)
 	}

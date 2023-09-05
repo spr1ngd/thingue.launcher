@@ -14,6 +14,7 @@ type StreamerConnector struct {
 	PlayerConnectors []*PlayerConnector
 	conn             *websocket.Conn
 	heartbeatTimer   *time.Timer
+	autoStopTimer    *time.Timer
 }
 
 func (s *StreamerConnector) HandleMessage(msgStr []byte) {
@@ -64,6 +65,13 @@ func (s *StreamerConnector) HandleMessage(msgStr []byte) {
 		// todo
 		fmt.Println(msg)
 	} else if msgType == "state" {
+		name := msg["name"].(string)
+		value := msg["value"].(bool)
+		if "streamingState" == name && !value {
+			for _, connector := range s.PlayerConnectors {
+				connector.SendMessage(msgStr)
+			}
+		}
 		// todo
 		fmt.Println(msg)
 	} else if msgType == "rendering" {
