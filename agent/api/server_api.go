@@ -147,9 +147,9 @@ func (s *serverApi) OpenLocalServerUrl() {
 }
 
 func (s *serverApi) OpenInstancePreviewUrl(sid string) {
-	localServerUrl, err := s.GetLocalServerUrl()
+	parse, err := url.Parse(s.GetActiveServerUrl())
 	if err == nil {
-		path := localServerUrl.JoinPath("/static/player.html")
+		path := parse.JoinPath("/static/player.html")
 		runtime.BrowserOpenURL(s.ctx, fmt.Sprintf("%s?sid=%s", path.String(), sid))
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/model"
+	"thingue-launcher/common/provider"
 )
 
 type instanceApi struct {
@@ -53,20 +54,26 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	if err != nil {
 		service.InstanceManager.Delete(instance.CID)
 	}
-	service.ServerConnManager.Reconnect()
+	provider.AppConfig.RegisterUrl = ""
+	provider.WriteConfigToFile()
+	service.ServerConnManager.Disconnect()
 	return err
 }
 
 func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 	fmt.Println(instance)
-	service.ServerConnManager.Reconnect()
+	provider.AppConfig.RegisterUrl = ""
+	provider.WriteConfigToFile()
+	service.ServerConnManager.Disconnect()
 	return service.InstanceManager.Save(instance)
 }
 
 func (u *instanceApi) DeleteInstance(cid uint) error {
 	err := service.RunnerManager.DeleteRunner(cid)
 	if err == nil {
-		service.ServerConnManager.Reconnect()
+		provider.AppConfig.RegisterUrl = ""
+		provider.WriteConfigToFile()
+		service.ServerConnManager.Disconnect()
 		service.InstanceManager.Delete(cid)
 	}
 	return err

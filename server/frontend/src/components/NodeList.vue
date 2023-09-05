@@ -90,9 +90,6 @@ onMounted(() => {
   })
 });
 
-function handleRowClick(evt, row, index) {
-  console.log(evt, row, index)
-}
 </script>
 <template>
   <q-table title="节点列表" :rows="rows" :columns="columns" row-key="id" v-model:expanded="expanded">
