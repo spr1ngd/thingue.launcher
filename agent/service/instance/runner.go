@@ -27,8 +27,8 @@ func (r *Runner) Start() error {
 	if r.process != nil {
 		return errors.New("实例已在运行")
 	}
-	// 设置PixelStreamingURL
 	var launchArguments []string
+	// 设置PixelStreamingURL
 	sid, err := NodeService.GetInstanceSid(global.NODE_ID, r.CID)
 	if err == nil {
 		r.SID = sid
@@ -40,6 +40,10 @@ func (r *Runner) Start() error {
 	// 设置日志文件名称为实例名称
 	if r.Name != "" {
 		launchArguments = append(launchArguments, "LOG="+r.Name+".log")
+	}
+	// 设置H265
+	if r.EnableH265 {
+		launchArguments = append(launchArguments, "-PSForceH265")
 	}
 	// 运行前
 	fmt.Println(r.ExecPath, launchArguments)

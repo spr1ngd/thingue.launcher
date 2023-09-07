@@ -47,6 +47,7 @@ onUnmounted(() => {
 
 async function list() {
   rows.value = await ListInstance()
+  console.log(rows.value)
 }
 
 function handleNewSettings() {
@@ -58,9 +59,11 @@ function handleNewSettings() {
         "-RenderOffScreen",
         "-ForceRes",
         "-ResX=1920",
-        "-ResX=1080",
+        "-ResY=1080",
       ],
-      faultRecover: false
+      faultRecover: false,
+      enableH265: false,
+      autoResizeRes: false
     }
   })
 }

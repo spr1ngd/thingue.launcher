@@ -19,12 +19,13 @@ async function fetchData() {
         body: JSON.stringify({
             sid: GetQueryString("sid"),
             name: GetQueryString("name"),
-            playerCount: Number(GetQueryString("playerCount")),
+            playerCount: GetQueryString("playerCount") ? Number(GetQueryString("playerCount")) : -1,
             labelSelector: GetQueryString("labelSelector"),
         }),
     })
     const resJson = await response.json()
     if (resJson.code === 200) {
+        matchViewportResolution = resJson.data.autoResizeRes
         return `${origin}${path}/ws/player/${resJson.data.ticket}`;
     }
 }
@@ -935,7 +936,6 @@ function validateVideoEncodeSize(playerElement) {
 }
 
 function updateVideoStreamSize() {
-    return;
     if (!matchViewportResolution || !canResizeViewportResolution) {
         return;
     }
@@ -949,24 +949,29 @@ function updateVideoStreamSize() {
         let width = playerElement.clientWidth;
         let height = playerElement.clientHeight;
 
-        let ratio = height * 1.0 / width;
-        width = Math.min(width, 3840);
-        height = width * ratio;
+        // unreal engine 4
+        {
+            let descriptor = {
+                Console: double_resolution
+                    ? 'r.setres ' + width * 2 + 'x' + height * 2
+                    : 'r.setres ' + width + 'x' + height
+            };
+            emitUIInteraction(descriptor);
+            console.log(`ue4 : ${descriptor}`);
+        }
 
-        // let descriptor = {
-        // 	Console: double_resolution
-        // 		? 'r.setres ' + playerElement.clientWidth * 2 + 'x' + playerElement.clientHeight * 2
-        // 		: 'r.setres ' + playerElement.clientWidth + 'x' + playerElement.clientHeight
-        // };
-        let descriptor = {
-            Console: double_resolution
-                ? 'r.setres ' + width * 2 + 'x' + height * 2
-                : 'r.setres ' + width + 'x' + height
-        };
-        emitUIInteraction(descriptor);
-        console.log(descriptor);
+        // unreal engine 5
+        {
+            let descriptor = {
+                "Resolution.Width": width,
+                "Resolution.Height": height
+            };
+            emitCommand(descriptor);
+            console.log(`ue5 : ${descriptor}`);
+        }
         lastTimeResized = new Date().getTime();
-    } else {
+    }
+    else {
         console.log('Resizing too often - skipping');
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(updateVideoStreamSize, 100);

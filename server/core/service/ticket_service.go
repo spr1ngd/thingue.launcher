@@ -30,7 +30,7 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 	if selectCond.Name != "" {
 		query = query.Where("name = ?", selectCond.Name)
 	}
-	if selectCond.PlayerCount != 0 {
+	if selectCond.PlayerCount >= 0 {
 		query = query.Where("player_count = ?", selectCond.PlayerCount)
 	}
 	var serverInstances []model.ServerInstance

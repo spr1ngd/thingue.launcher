@@ -114,6 +114,17 @@ func (s *StreamerConnector) removePlayer(p *PlayerConnector) {
 	}
 }
 
+func (s *StreamerConnector) SendPlayersCount() {
+	players := s.PlayerConnectors
+	msg := map[string]interface{}{
+		"type":  "playerCount",
+		"count": len(players),
+	}
+	for _, player := range players {
+		player.SendMessage(util.MapToJson(msg))
+	}
+}
+
 func (s *StreamerConnector) SendCloseMsg(code int, msg string) {
 	s.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(code, msg))
 }

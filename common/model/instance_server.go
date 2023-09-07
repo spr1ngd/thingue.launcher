@@ -29,6 +29,8 @@ type ServerInstance struct {
 	Rendering         bool          `json:"rendering"`
 	AutoControl       bool          `json:"autoControl"`
 	StopDelay         uint          `json:"stopDelay"`
+	EnableH265        bool          `json:"enableH265"`
+	AutoResizeRes     bool          `json:"autoResizeRes"`
 	Labels            labels.Labels `json:"labels" gorm:"-"`
 	Paks              []domain.Pak  `json:"paks" gorm:"-"`
 	PakName           string        `json:"pakName" gorm:"-"`

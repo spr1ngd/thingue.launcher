@@ -3,12 +3,10 @@ package api
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/model"
-	"thingue-launcher/common/provider"
 )
 
 type instanceApi struct {
@@ -51,28 +49,25 @@ func (u *instanceApi) ListInstance() []*model.ClientInstance {
 func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	service.InstanceManager.Create(instance)
 	err := service.RunnerManager.NewRunner(instance)
-	if err != nil {
+	if err == nil {
+		service.ServerConnManager.Disconnect()
+	} else {
 		service.InstanceManager.Delete(instance.CID)
 	}
-	provider.AppConfig.RegisterUrl = ""
-	provider.WriteConfigToFile()
-	service.ServerConnManager.Disconnect()
 	return err
 }
 
 func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
-	fmt.Println(instance)
-	provider.AppConfig.RegisterUrl = ""
-	provider.WriteConfigToFile()
-	service.ServerConnManager.Disconnect()
-	return service.InstanceManager.Save(instance)
+	err := service.InstanceManager.Save(instance)
+	if err == nil {
+		service.ServerConnManager.Disconnect()
+	}
+	return err
 }
 
 func (u *instanceApi) DeleteInstance(cid uint) error {
 	err := service.RunnerManager.DeleteRunner(cid)
 	if err == nil {
-		provider.AppConfig.RegisterUrl = ""
-		provider.WriteConfigToFile()
 		service.ServerConnManager.Disconnect()
 		service.InstanceManager.Delete(cid)
 	}

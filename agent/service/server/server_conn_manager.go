@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"net"
 	"sync"
 	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/message"
@@ -19,11 +18,14 @@ type connManager struct {
 	reconnectTimer         *time.Timer
 	ServerConnUpdateChanel chan string
 	ActiveAddrUrl          string
+	ReconnectInterval      int
+	MaxReconnectInterval   int
 }
 
 var ConnManager = connManager{
 	conn:                   nil,
 	ServerConnUpdateChanel: make(chan string, 1),
+	MaxReconnectInterval:   60,
 }
 var connectLock sync.Mutex
 
@@ -82,23 +84,28 @@ func (m *connManager) Disconnect() error {
 }
 
 func (m *connManager) Reconnect() {
-	m.Disconnect()
-	m.Connect(provider.AppConfig.RegisterUrl)
+	//if m.conn != nil {
+	//err := m.conn.Close()
+	//if err == nil {
+	//	_ = m.Connect(provider.AppConfig.RegisterUrl)
+	//}
+	//}
 }
 
 func (m *connManager) StartReconnect() {
 	fmt.Println("开始尝试重连")
-	m.reconnectTimer = time.NewTimer(5 * time.Second)
+	m.ReconnectInterval = 1
+	m.reconnectTimer = time.NewTimer(time.Duration(m.ReconnectInterval) * time.Second)
 	go func() {
 		for {
-			if m.conn != nil {
-				_, _, err := m.conn.ReadMessage()
-				var opError *net.OpError
-				ok := errors.As(err, &opError)
-				if !websocket.IsCloseError(err, websocket.CloseAbnormalClosure) && !ok {
-					break
-				}
-			}
+			//if m.conn != nil {
+			//	_, _, err := m.conn.ReadMessage()
+			//	var opError *net.OpError
+			//	ok := errors.As(err, &opError)
+			//	if !websocket.IsCloseError(err, websocket.CloseAbnormalClosure) && !ok {
+			//		break
+			//	}
+			//}
 			t := <-m.reconnectTimer.C
 			fmt.Println("重连一次", t.Format("2006-01-02 15:04:05"))
 			err := m.Connect(provider.AppConfig.RegisterUrl)
@@ -106,7 +113,8 @@ func (m *connManager) StartReconnect() {
 				fmt.Println("重连成功")
 				break
 			}
-			m.reconnectTimer.Reset(10 * time.Second)
+			nextInterval := util.IntMin(m.ReconnectInterval*2, m.MaxReconnectInterval)
+			m.reconnectTimer.Reset(time.Duration(nextInterval) * time.Second)
 		}
 		fmt.Println("停止尝试重连")
 	}()

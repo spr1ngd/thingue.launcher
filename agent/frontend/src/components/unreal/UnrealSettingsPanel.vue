@@ -1,10 +1,11 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import * as monaco from 'monaco-editor'
-import {Notify} from "quasar";
+import {Notify, useQuasar} from "quasar";
 import {OpenFileDialog} from "@wails/go/api/systemApi";
-import {CreateInstance, SaveInstance} from "@wails/go/api/instanceApi";
+import {CreateInstance, SaveInstance, StopInstance} from "@wails/go/api/instanceApi";
 
+const $q = useQuasar();
 const emit = defineEmits(['openListPanel'])
 const props = defineProps(['data']);
 const launchArgumentsEditorRef = ref()
@@ -87,9 +88,25 @@ async function save() {
       await SaveInstance(props.data.settings)
       emit('openListPanel')
     } catch (err) {
-      Notify.create({
-        message: err
-      })
+      // if (err === "实例运行中无法修改配置") {
+      //   $q.dialog({
+      //     title: '确认',
+      //     message: err + '，你想要立即停止当前实例吗?',
+      //     cancel: true,
+      //     persistent: true
+      //   }).onOk(() => {
+      //     StopInstance(props.data.settings.cid).then(() => {
+      //       Notify.create("进程退出成功")
+      //     }).catch(err => {
+      //       Notify.create(err)
+      //     })
+      //     console.log(props.data.settings.cid)
+      //   })
+      // } else {
+        Notify.create({
+          message: err
+        })
+      // }
     }
   }
 }
@@ -110,9 +127,28 @@ async function save() {
     <q-card-section class="q-pa-none q-pt-sm">
       <q-list>
         <q-item>
-          <q-item-section avatar>
+          <q-item-section>
             <q-item-label>实例名称</q-item-label>
             <q-input dense outlined square v-model="props.data.settings.name"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>&nbsp</q-item-label>
+            <div class="row">
+              <div class="col-6">
+                <q-tooltip anchor="top middle" self="center middle" :delay="1000">
+                  启用h265编码以支持8K，需要配合ThingBrowser使用
+                </q-tooltip>
+                <q-toggle label="H265编码" v-model="props.data.settings.enableH265"/>
+              </div>
+              <div class="col-6">
+                <q-tooltip anchor="top middle" self="center middle" :delay="1000">
+                  启用分辨率自适应前端会自动根据浏览器窗口大小调整分辨率
+                </q-tooltip>
+                <q-toggle label="分辨率自适应" v-model="props.data.settings.autoResizeRes"/>
+              </div>
+            </div>
+          </q-item-section>
+          <q-item-section side>
           </q-item-section>
         </q-item>
         <q-item>
@@ -120,7 +156,6 @@ async function save() {
             <q-item-label>启动位置</q-item-label>
             <q-input dense outlined square v-model="props.data.settings.execPath">
               <template v-slot:append>
-<!--                <q-icon name="sym_o_file_open"  class="cursor-pointer"/>-->
                 <q-btn padding="none" icon="sym_o_file_open" flat dense @click="select"/>
               </template>
             </q-input>

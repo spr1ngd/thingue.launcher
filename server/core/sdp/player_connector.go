@@ -31,12 +31,14 @@ func (p *PlayerConnector) HandleMessage(msgStr []byte) {
 		streamer.AddPlayer(p)
 		msg["playerId"] = p.PlayerId
 		streamer.SendMessage(util.MapToJson(msg))
+		streamer.SendPlayersCount()
 	} else if msgType == "iceCandidate" {
 		msg["playerId"] = p.PlayerId
 		p.StreamerConnector.SendMessage(util.MapToJson(msg))
 	} else if msgType == "stats" {
 	} else if msgType == "kick" {
 		p.KickOthers()
+		p.StreamerConnector.SendPlayersCount()
 	} else {
 		p.SendCloseMsg(1008, "Unsupported message type")
 	}
@@ -52,17 +54,6 @@ func (p *PlayerConnector) Close() {
 
 func (p *PlayerConnector) SendCloseMsg(code int, msg string) {
 	p.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(code, msg))
-}
-
-func (p *PlayerConnector) SendPlayersCount() {
-	players := p.StreamerConnector.PlayerConnectors
-	msg := map[string]interface{}{
-		"type":  "playerCount",
-		"count": len(players),
-	}
-	for _, player := range players {
-		player.SendMessage(util.MapToJson(msg))
-	}
 }
 
 func (p *PlayerConnector) KickOthers() {

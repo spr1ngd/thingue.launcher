@@ -69,6 +69,7 @@ func (m *playerConnManager) OnPlayerDisConnect(playerConnector *PlayerConnector)
 		"type":     "playerDisconnected",
 		"playerId": playerConnector.PlayerId,
 	}))
+	playerConnector.StreamerConnector.SendPlayersCount()
 	playerConnector.StreamerConnector.removePlayer(playerConnector)
 	autoControl, delay := service.InstanceService.RemovePlayer(
 		playerConnector.StreamerConnector.SID,

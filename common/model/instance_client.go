@@ -19,6 +19,8 @@ type ClientInstance struct {
 	LastStopAt        time.Time   `json:"lastStopAt"`
 	AutoControl       bool        `json:"autoControl"`
 	StopDelay         int         `json:"stopDelay"`
+	EnableH265        bool        `json:"enableH265"`
+	AutoResizeRes     bool        `json:"autoResizeRes"`
 	Pid               int         `json:"pid" gorm:"-"`
 	StateCode         int8        `json:"stateCode" gorm:"-"`
 	StreamerConnected bool        `json:"streamerConnected" gorm:"-"`
