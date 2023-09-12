@@ -31,7 +31,7 @@ func (s *serverApi) Init(ctx context.Context) {
 	if provider.AppConfig.RegisterUrl != "" {
 		err := s.ConnectServer(provider.AppConfig.RegisterUrl)
 		if err != nil {
-			service.ServerConnManager.StartReconnect()
+			//service.ServerConnManager.StartReconnect()
 		}
 	}
 	// 监听连接状态
@@ -105,6 +105,9 @@ func (s *serverApi) GetConnectServerOptions() []string {
 
 func (s *serverApi) ConnectServer(httpUrl string) error {
 	// 修改配置
+	if provider.AppConfig.RegisterUrl != "" {
+		s.DisconnectServer()
+	}
 	provider.AppConfig.RegisterUrl = httpUrl
 	provider.WriteConfigToFile()
 	return service.ServerConnManager.Connect(httpUrl)

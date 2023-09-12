@@ -17,6 +17,7 @@ type connManager struct {
 	heartbeatTicker        *time.Ticker
 	reconnectTimer         *time.Timer
 	ServerConnUpdateChanel chan string
+	CloseSignalChannel     chan string
 	ActiveAddrUrl          string
 	ReconnectInterval      int
 	MaxReconnectInterval   int
@@ -25,12 +26,18 @@ type connManager struct {
 var ConnManager = connManager{
 	conn:                   nil,
 	ServerConnUpdateChanel: make(chan string, 1),
+	CloseSignalChannel:     make(chan string),
 	MaxReconnectInterval:   60,
 }
 var connectLock sync.Mutex
 
 func (m *connManager) Connect(httpUrl string) error {
 	connectLock.Lock()
+	defer connectLock.Unlock()
+	if m.ActiveAddrUrl != "" {
+		fmt.Println("无法重复连接")
+		return nil
+	}
 	var err error
 	wsUrl := util.HttpUrlToWsUrl(httpUrl, "/ws/agent")
 	m.conn, _, err = websocket.DefaultDialer.Dial(wsUrl, nil)
@@ -61,35 +68,33 @@ func (m *connManager) Connect(httpUrl string) error {
 			// 关闭定时器
 			m.heartbeatTicker.Stop()
 			// 如果是异常断连，开启重连尝试
-			if provider.AppConfig.RegisterUrl != "" {
+			m.ServerConnUpdateChanel <- wsUrl
+			select {
+			case m.CloseSignalChannel <- "exitCode":
+				//正常退出1
+			default:
 				m.StartReconnect()
 			}
-			m.ServerConnUpdateChanel <- wsUrl
 		}()
 	} else {
 		// 如果连接失败
 		fmt.Printf("服务连接失败：%s\n", wsUrl)
 	}
-	connectLock.Unlock()
 	return err
 }
 
 func (m *connManager) Disconnect() error {
 	if m.conn != nil {
 		err := m.conn.Close()
+		fmt.Printf("开始连接关闭%s\n", err)
+		if err == nil {
+			exitCode := <-m.CloseSignalChannel
+			fmt.Printf("连接关闭%s\n", exitCode)
+		}
 		return err
 	} else {
 		return errors.New("未连接无需断开")
 	}
-}
-
-func (m *connManager) Reconnect() {
-	//if m.conn != nil {
-	//err := m.conn.Close()
-	//if err == nil {
-	//	_ = m.Connect(provider.AppConfig.RegisterUrl)
-	//}
-	//}
 }
 
 func (m *connManager) StartReconnect() {
@@ -98,14 +103,6 @@ func (m *connManager) StartReconnect() {
 	m.reconnectTimer = time.NewTimer(time.Duration(m.ReconnectInterval) * time.Second)
 	go func() {
 		for {
-			//if m.conn != nil {
-			//	_, _, err := m.conn.ReadMessage()
-			//	var opError *net.OpError
-			//	ok := errors.As(err, &opError)
-			//	if !websocket.IsCloseError(err, websocket.CloseAbnormalClosure) && !ok {
-			//		break
-			//	}
-			//}
 			t := <-m.reconnectTimer.C
 			fmt.Println("重连一次", t.Format("2006-01-02 15:04:05"))
 			err := m.Connect(provider.AppConfig.RegisterUrl)
