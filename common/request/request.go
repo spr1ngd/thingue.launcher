@@ -8,7 +8,7 @@ import (
 type TicketSelector struct {
 	SID           string `json:"sid"`
 	Name          string `json:"name"`
-	PlayerCount   uint   `json:"playerCount"`
+	PlayerCount   int    `json:"playerCount"`
 	LabelSelector string `json:"labelSelector"`
 }
 

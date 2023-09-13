@@ -17,7 +17,8 @@ type connManager struct {
 	heartbeatTicker        *time.Ticker
 	reconnectTimer         *time.Timer
 	ServerConnUpdateChanel chan string
-	CloseSignalChannel     chan string
+	disconnecting          bool
+	wg                     sync.WaitGroup
 	ActiveAddrUrl          string
 	ReconnectInterval      int
 	MaxReconnectInterval   int
@@ -26,12 +27,13 @@ type connManager struct {
 var ConnManager = connManager{
 	conn:                   nil,
 	ServerConnUpdateChanel: make(chan string, 1),
-	CloseSignalChannel:     make(chan string),
 	MaxReconnectInterval:   60,
 }
 var connectLock sync.Mutex
 
 func (m *connManager) Connect(httpUrl string) error {
+	fmt.Println("开始连接=======================", httpUrl)
+	defer fmt.Println("结束连接=======================", httpUrl)
 	connectLock.Lock()
 	defer connectLock.Unlock()
 	if m.ActiveAddrUrl != "" {
@@ -69,10 +71,11 @@ func (m *connManager) Connect(httpUrl string) error {
 			m.heartbeatTicker.Stop()
 			// 如果是异常断连，开启重连尝试
 			m.ServerConnUpdateChanel <- wsUrl
-			select {
-			case m.CloseSignalChannel <- "exitCode":
-				//正常退出1
-			default:
+			//time.Sleep(3 * time.Second)
+			fmt.Printf("=========================实际连接关闭%s\n", err)
+			if m.disconnecting {
+				m.wg.Done()
+			} else {
 				m.StartReconnect()
 			}
 		}()
@@ -85,11 +88,14 @@ func (m *connManager) Connect(httpUrl string) error {
 
 func (m *connManager) Disconnect() error {
 	if m.conn != nil {
+		m.disconnecting = true
+		m.wg.Add(1)
+		fmt.Printf("=========================开始连接关闭\n")
 		err := m.conn.Close()
-		fmt.Printf("开始连接关闭%s\n", err)
 		if err == nil {
-			exitCode := <-m.CloseSignalChannel
-			fmt.Printf("连接关闭%s\n", exitCode)
+			m.wg.Wait()
+			m.disconnecting = false
+			fmt.Printf("=========================结束连接关闭\n")
 		}
 		return err
 	} else {
