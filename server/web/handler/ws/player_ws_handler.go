@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"thingue-launcher/server/core"
+	"time"
 )
 
 func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
@@ -32,6 +33,7 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 		playerConnector.Close()
 		core.PlayerConnManager.OnPlayerDisConnect(playerConnector)
 	} else {
+		time.Sleep(5 * time.Second)
 		playerConnector.Close()
 	}
 }

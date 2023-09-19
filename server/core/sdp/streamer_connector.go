@@ -3,7 +3,6 @@ package sdp
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"strconv"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/core/service"
 	"time"
@@ -25,42 +24,12 @@ func (s *StreamerConnector) HandleMessage(msgStr []byte) {
 			"type": "pong",
 			"time": msg["time"],
 		}))
-	} else if msgType == "answer" {
-		var playerId uint
-		f, ok := msg["playerId"].(float64)
-		if ok {
-			playerId = uint(f)
-		} else {
-			parseUint, err := strconv.ParseUint(msg["playerId"].(string), 10, 32)
-			if err != nil {
-				s.SendCloseMsg(1008, "不支持的消息类型")
-				return
-			}
-			playerId = uint(parseUint)
-		}
-		for _, player := range s.PlayerConnectors {
-			if player.PlayerId == playerId {
-				player.SendMessage(msgStr)
-			}
-		}
+	} else if msgType == "offer" { // for new streamer
+		s.ForwardMessage(msg)
+	} else if msgType == "answer" { // for old streamer
+		s.ForwardMessage(msg)
 	} else if msgType == "iceCandidate" {
-		var playerId uint
-		f, ok := msg["playerId"].(float64)
-		if ok {
-			playerId = uint(f)
-		} else {
-			parseUint, err := strconv.ParseUint(msg["playerId"].(string), 10, 32)
-			if err != nil {
-				s.SendCloseMsg(1008, "不支持的消息类型")
-				return
-			}
-			playerId = uint(parseUint)
-		}
-		for _, player := range s.PlayerConnectors {
-			if player.PlayerId == playerId {
-				player.SendMessage(msgStr)
-			}
-		}
+		s.ForwardMessage(msg)
 	} else if msgType == "disconnectPlayer" {
 		// todo
 		fmt.Println(msg)
@@ -97,9 +66,22 @@ func (s *StreamerConnector) SendMsg(msg string) {
 	s.conn.WriteMessage(websocket.TextMessage, []byte(msg))
 }
 
-func (s *StreamerConnector) SendMessage(msg []byte) error {
-	err := s.conn.WriteMessage(websocket.TextMessage, msg)
+func (s *StreamerConnector) SendMessage(msgStr []byte) error {
+	err := s.conn.WriteMessage(websocket.TextMessage, msgStr)
 	return err
+}
+
+func (s *StreamerConnector) ForwardMessage(msg map[string]any) {
+	playerId, err := getPlayerIdFromMessage(msg)
+	if err != nil {
+		s.SendCloseMsg(1008, "不支持的消息类型")
+	}
+	delete(msg, "playerId")
+	for _, player := range s.PlayerConnectors {
+		if player.PlayerId == playerId {
+			player.SendMessage(util.MapToJson(msg))
+		}
+	}
 }
 
 func (s *StreamerConnector) AddPlayer(p *PlayerConnector) {

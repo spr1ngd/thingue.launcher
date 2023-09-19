@@ -26,14 +26,34 @@ func (p *PlayerConnector) HandleMessage(msgStr []byte) {
 			"type": "pong",
 			"time": msg["time"],
 		}))
-	} else if msgType == "offer" {
-		streamer := p.StreamerConnector
-		streamer.AddPlayer(p)
-		msg["playerId"] = p.PlayerId
-		streamer.SendMessage(util.MapToJson(msg))
-		streamer.SendPlayersCount()
+	} else if msgType == "listStreamers" {
+		//todo
+		var ids []string
+		ids = append(ids, "DefaultStreamer")
+		backMsg := map[string]any{}
+		backMsg["type"] = "streamerList"
+		backMsg["ids"] = ids
+		p.SendMessage(util.MapToJson(backMsg))
+	} else if msgType == "offer" { // for old streamer
+		p.StreamerConnector.AddPlayer(p)
+		msg["playerId"] = sanitizePlayerId(p.PlayerId)
+		p.StreamerConnector.SendMessage(util.MapToJson(msg))
+		p.StreamerConnector.SendPlayersCount()
+	} else if msgType == "subscribe" { // for new streamer
+		p.StreamerConnector.AddPlayer(p)
+		forwardMsg := map[string]any{}
+		forwardMsg["type"] = "playerConnected"
+		forwardMsg["playerId"] = sanitizePlayerId(p.PlayerId)
+		forwardMsg["dataChannel"] = true
+		forwardMsg["sfu"] = false
+		forwardMsg["sendOffer"] = true
+		p.StreamerConnector.SendMessage(util.MapToJson(forwardMsg))
+		p.StreamerConnector.SendPlayersCount()
+	} else if msgType == "answer" { // for new streamer
+		msg["playerId"] = sanitizePlayerId(p.PlayerId)
+		p.StreamerConnector.SendMessage(util.MapToJson(msg))
 	} else if msgType == "iceCandidate" {
-		msg["playerId"] = p.PlayerId
+		msg["playerId"] = sanitizePlayerId(p.PlayerId)
 		p.StreamerConnector.SendMessage(util.MapToJson(msg))
 	} else if msgType == "stats" {
 	} else if msgType == "kick" {
