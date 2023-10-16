@@ -2,6 +2,7 @@ package instance
 
 import (
 	"errors"
+	"gorm.io/gorm"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/common/model"
 )
@@ -22,8 +23,20 @@ func (m *instanceManager) Create(instance *model.ClientInstance) uint {
 }
 
 func (m *instanceManager) GetById(id uint) *model.ClientInstance {
-	instance := model.ClientInstance{}
-	global.APP_DB.First(&instance, id)
+	var instance model.ClientInstance
+	result := global.APP_DB.First(&instance, id)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	return &instance
+}
+
+func (m *instanceManager) GetInternal() *model.ClientInstance {
+	var instance model.ClientInstance
+	result := global.APP_DB.Where(&model.ClientInstance{IsInternal: true}).First(&instance)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
 	return &instance
 }
 

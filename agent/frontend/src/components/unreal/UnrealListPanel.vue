@@ -63,7 +63,9 @@ function handleNewSettings() {
       ],
       faultRecover: false,
       enableH265: false,
-      autoResizeRes: false
+      autoResizeRes: false,
+      autoControl: false,
+      stopDelay: 5
     }
   })
 }
@@ -168,7 +170,7 @@ function handleGotoServer(tab) {
             <q-card-section class="q-pt-md q-pa-none">
               <q-list dense>
                 <q-item>
-                  <q-item-section avatar style="width: 100px" class="clickable  cursor-pointer"
+                  <q-item-section avatar style="width: 120px" class="clickable  cursor-pointer"
                                   @click="OpenInstancePreviewUrl(props.row.sid)">
                     <q-item-label caption class="ellipsis">名称</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.name }}</q-item-label>
@@ -198,7 +200,7 @@ function handleGotoServer(tab) {
                 <q-item>
                   <q-item-section @click="handleOpenDir(props.row.execPath)">
                     <q-item-label caption class="ellipsis cursor-pointer">
-                      启动位置
+                      启动位置 <q-badge outline color="blue" v-if="props.row.isInternal">自动配置</q-badge>
                     </q-item-label>
                     <q-item-label class="ellipsis cursor-pointer">
                       {{ props.row.execPath }}

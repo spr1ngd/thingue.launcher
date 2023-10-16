@@ -26,6 +26,7 @@ type ClientInstance struct {
 	StreamerConnected bool        `json:"streamerConnected" gorm:"-"`
 	PlayerIds         []string    `json:"playerIds" gorm:"-"`
 	PlayerCount       uint        `json:"playerCount" gorm:"-"`
+	IsInternal        bool        `json:"isInternal"`
 }
 
 func (clientInstance *ClientInstance) ToServerInstance() *ServerInstance {

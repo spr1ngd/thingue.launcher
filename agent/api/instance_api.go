@@ -17,11 +17,7 @@ var InstanceApi = new(instanceApi)
 
 func (u *instanceApi) Init(ctx context.Context) {
 	u.ctx = ctx
-	// 从持久化数据中实例化Runners
-	instances := service.InstanceManager.List()
-	for index := range instances {
-		service.RunnerManager.NewRunner(&instances[index])
-	}
+	service.RunnerManager.Init()
 	// 启动实例异常退出监听
 	go func() {
 		for {

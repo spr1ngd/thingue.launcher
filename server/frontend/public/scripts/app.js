@@ -231,7 +231,10 @@ function sendStartLatencyTest() {
         let descriptor = {
             StartTime: StartTimeMs
         };
-        emitDescriptor(MessageType.LatencyTest, descriptor);
+        //send to ue4
+        emitDescriptor(MessageType.LatencyTest, descriptor, true);
+        //send to ue5
+        emitDescriptor(MessageType.LatencyTest, descriptor, false);
     };
 
     webRtcPlayerObj.startLatencyTest(onTestStarted);
@@ -1044,10 +1047,10 @@ function emitDescriptor(messageType, descriptor, largeSizeBuffer = true) {
 
     // Add the UTF-16 JSON string to the array byte buffer, going two bytes at
     // a time.
-    if (largeSizeBuffer) {
+    // if (largeSizeBuffer) {
         // console.error(`spr1ngd : Inside unreal engine 5, ThingUE do not support large size buffer any more, please use custom websocket server transfer data.`);
-        largeSizeBuffer = false;
-    }
+        // largeSizeBuffer = false;
+    // }
 
     let bufferSize = largeSizeBuffer ? 4 : 2;
     let data = new DataView(new ArrayBuffer(1 + bufferSize + 2 * descriptorAsString.length));
@@ -1093,8 +1096,8 @@ function emitUIInteraction(descriptor, largeSizeBuffer = true) {
 //    "{ Resolution: { Width: <value>, Height: <value> } }"
 //
 
-function emitCommand(descriptor) {
-    emitDescriptor(MessageType.Command, descriptor);
+function emitCommand(descriptor, largeSizeBuffer = false) {
+    emitDescriptor(MessageType.Command, descriptor,largeSizeBuffer);
 }
 
 function requestInitialSettings() {

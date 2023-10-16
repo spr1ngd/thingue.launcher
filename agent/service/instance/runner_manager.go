@@ -3,6 +3,8 @@ package instance
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"thingue-launcher/common/model"
 	"time"
 )
@@ -11,6 +13,7 @@ type runnerManager struct {
 	IdRunnerMap                map[uint]*Runner
 	RunnerUnexpectedExitChanel chan uint
 	RunnerStatusUpdateChanel   chan uint
+	HaveInternalInstance       bool
 }
 
 var RunnerManager = runnerManager{
@@ -19,11 +22,50 @@ var RunnerManager = runnerManager{
 	RunnerStatusUpdateChanel:   make(chan uint),
 }
 
+func (m *runnerManager) Init() {
+	// 从当前位置发现内置Runner
+	pwd, _ := os.Getwd()
+	files, _ := os.ReadDir(pwd)
+	for _, entry := range files {
+		if !entry.IsDir() {
+			if "ThingUE.exe" == entry.Name() {
+				m.HaveInternalInstance = true
+				instance := InstanceManager.GetInternal()
+				if instance == nil {
+					instance = &model.ClientInstance{
+						Name:            "ThingUE",
+						ExecPath:        filepath.Join(pwd, entry.Name()),
+						LaunchArguments: []string{"-AudioMixer", "-RenderOffScreen", "-ForceRes", "-ResX=1920", "-ResY=1080"},
+						IsInternal:      true,
+					}
+					InstanceManager.Create(instance)
+					_ = m.NewRunner(instance)
+				} else {
+					instance.ExecPath = filepath.Join(pwd, entry.Name())
+					_ = m.NewRunner(instance)
+					_ = InstanceManager.Save(instance)
+				}
+			}
+		}
+	}
+
+	// 从持久化数据中实例化非内置Runners
+	instances := InstanceManager.List()
+	for index := range instances {
+		if !instances[index].IsInternal {
+			m.NewRunner(&instances[index])
+		}
+	}
+}
+
 func (m *runnerManager) List() []*model.ClientInstance {
 	var instances = make([]*model.ClientInstance, 0)
 	for _, instance := range InstanceManager.List() {
 		runner := m.GetRunnerById(instance.CID)
 		if runner != nil {
+			if !m.HaveInternalInstance && runner.IsInternal { //处理内置
+				continue
+			}
 			//todo 排查这里为什么会NullPointerException
 			instances = append(instances, runner.ClientInstance)
 		}
@@ -71,6 +113,7 @@ func (m *runnerManager) ExecCommand(id uint, command string) {
 		}
 	}
 }
+
 func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
@@ -89,6 +132,9 @@ func (m *runnerManager) RestartAllRunner() {
 func (m *runnerManager) DeleteRunner(id uint) error {
 	runner := m.GetRunnerById(id)
 	if runner != nil {
+		if runner.IsInternal {
+			return errors.New("自动配置实例无法删除")
+		}
 		if runner.StateCode == 1 {
 			return errors.New("实例正在运行，无法删除")
 		}
