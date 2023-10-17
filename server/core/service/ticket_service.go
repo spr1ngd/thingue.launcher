@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"github.com/bluele/gcache"
 	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,8 +23,13 @@ var TicketService = ticketService{
 }
 
 func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (response.InstanceTicket, error) {
+	ticket := response.InstanceTicket{}
 	// 数据库查询
-	query := global.SERVER_DB.Where("streamer_connected = ? or auto_control = ?", true, true)
+	query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
+	//query := global.SERVER_DB
+	if selectCond.StreamerConnected == true {
+		query = query.Where("streamer_connected = ?", selectCond.StreamerConnected)
+	}
 	if selectCond.SID != "" {
 		query = query.Where("s_id = ?", selectCond.SID)
 	}
@@ -35,36 +41,36 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 	}
 	var serverInstances []model.ServerInstance
 	query.Find(&serverInstances)
-	ticket := response.InstanceTicket{}
-	if len(serverInstances) > 0 {
-		if selectCond.LabelSelector != "" {
-			// label匹配
-			selector, err := labels.Parse(selectCond.LabelSelector)
-			if err != nil {
-				return ticket, err
-			}
-			for _, instance := range serverInstances {
-				if selector.Matches(instance.Labels) {
-					//生成ticket
-					ticketId, _ := uuid.NewUUID()
-					//添加缓存
-					s.cache.SetWithExpire(ticketId.String(), instance.SID, 10*time.Second)
-					ticket.SetInstanceInfo(&instance)
-					ticket.Ticket = ticketId.String()
-					return ticket, nil
-				}
-			}
-		} else {
-			//不需要label匹配，挑选第一个生成ticket
-			ticketId, _ := uuid.NewUUID()
-			//添加缓存
-			s.cache.SetWithExpire(ticketId.String(), serverInstances[0].SID, 10*time.Second)
-			ticket.SetInstanceInfo(&serverInstances[0])
-			ticket.Ticket = ticketId.String()
-			return ticket, nil
-		}
+	if len(serverInstances) == 0 {
+		return ticket, errors.New("没有匹配的实例")
 	}
-	return ticket, errors.New("找不到合适的实例")
+	if selectCond.LabelSelector != "" {
+		// label匹配
+		selector, err := labels.Parse(selectCond.LabelSelector)
+		if err != nil {
+			return ticket, err // label解析失败
+		}
+		for _, instance := range serverInstances {
+			if selector.Matches(instance.Labels) {
+				//生成ticket
+				ticketId, _ := uuid.NewUUID()
+				//添加缓存
+				s.cache.SetWithExpire(ticketId.String(), instance.SID, 10*time.Second)
+				ticket.SetInstanceInfo(&instance)
+				ticket.Ticket = ticketId.String()
+				return ticket, nil
+			}
+		}
+		return ticket, errors.New(fmt.Sprintf("找不到符合%s的可用实例", selectCond.LabelSelector))
+	} else {
+		//不需要label匹配，挑选第一个生成ticket
+		ticketId, _ := uuid.NewUUID()
+		//添加缓存
+		s.cache.SetWithExpire(ticketId.String(), serverInstances[0].SID, 10*time.Second)
+		ticket.SetInstanceInfo(&serverInstances[0])
+		ticket.Ticket = ticketId.String()
+		return ticket, nil
+	}
 }
 
 func (s *ticketService) GetTicketById(sid string) (string, error) {

@@ -6,10 +6,11 @@ import (
 )
 
 type TicketSelector struct {
-	SID           string `json:"sid"`
-	Name          string `json:"name"`
-	PlayerCount   int    `json:"playerCount"`
-	LabelSelector string `json:"labelSelector"`
+	SID               string `json:"sid"`
+	Name              string `json:"name"`
+	PlayerCount       int    `json:"playerCount"`
+	LabelSelector     string `json:"labelSelector"`
+	StreamerConnected bool   `json:"streamerConnected"`
 }
 
 type NodeRegisterInfo struct {
