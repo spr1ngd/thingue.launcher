@@ -34,7 +34,7 @@ type SystemSettings struct {
 }
 
 func InitFlagConfig() {
-	pflag.StringP("bind", "b", "0.0.0.0:8080", "Sets the server bind address")
+	pflag.StringP("bind", "b", "0.0.0.0:8877", "Sets the server bind address")
 	pflag.String("content-path", "/", "Sets the server base content path")
 	pflag.String("static-dir", "", "Path to directory containing the web static resources. Defaults use embed")
 	pflag.BoolP("help", "h", false, "show help")
@@ -52,10 +52,11 @@ func InitFlagConfig() {
 }
 
 func InitConfigFromFile() {
-	viper.SetDefault("localserver.bindAddr", "0.0.0.0:8080")
+	viper.SetDefault("localserver.bindAddr", "0.0.0.0:8877")
 	viper.SetDefault("localserver.contentPath", "/")
 	viper.SetDefault("localserver.useExternalStatic", false)
 	viper.SetDefault("localserver.staticDir", "./thingue-launcher/static")
+	viper.SetDefault("localserver.autoStart", true)
 	// 加载配置文件
 	viper.SetConfigFile(configFile)
 	_ = viper.ReadInConfig()

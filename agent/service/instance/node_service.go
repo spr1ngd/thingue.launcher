@@ -65,6 +65,8 @@ func (s *nodeService) RegisterNode(nodeId uint) {
 			if res.Code != 200 {
 				fmt.Println("注册信息发送失败")
 			}
+		} else {
+			RunnerManager.StartInternalRunner()
 		}
 	}
 }

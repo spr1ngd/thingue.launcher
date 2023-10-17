@@ -14,6 +14,7 @@ type runnerManager struct {
 	RunnerUnexpectedExitChanel chan uint
 	RunnerStatusUpdateChanel   chan uint
 	HaveInternalInstance       bool
+	IsInternalInstanceStarted  bool
 }
 
 var RunnerManager = runnerManager{
@@ -30,8 +31,8 @@ func (m *runnerManager) Init() {
 		if !entry.IsDir() {
 			if "ThingUE.exe" == entry.Name() {
 				m.HaveInternalInstance = true
-				instance := InstanceManager.GetInternal()
-				if instance == nil {
+				instance, err := InstanceManager.GetInternal()
+				if err != nil {
 					instance = &model.ClientInstance{
 						Name:            "ThingUE",
 						ExecPath:        filepath.Join(pwd, entry.Name()),
@@ -53,7 +54,7 @@ func (m *runnerManager) Init() {
 	instances := InstanceManager.List()
 	for index := range instances {
 		if !instances[index].IsInternal {
-			m.NewRunner(&instances[index])
+			_ = m.NewRunner(&instances[index])
 		}
 	}
 }
@@ -143,4 +144,17 @@ func (m *runnerManager) DeleteRunner(id uint) error {
 		return errors.New("找不到实例")
 	}
 	return nil
+}
+
+func (m *runnerManager) StartInternalRunner() {
+	if m.HaveInternalInstance && !m.IsInternalInstanceStarted {
+		internal, err := InstanceManager.GetInternal()
+		if err == nil {
+			runner := m.GetRunnerById(internal.CID)
+			if runner != nil {
+				runner.Start()
+				m.IsInternalInstanceStarted = true
+			}
+		}
+	}
 }

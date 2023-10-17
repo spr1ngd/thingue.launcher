@@ -31,13 +31,13 @@ func (m *instanceManager) GetById(id uint) *model.ClientInstance {
 	return &instance
 }
 
-func (m *instanceManager) GetInternal() *model.ClientInstance {
+func (m *instanceManager) GetInternal() (*model.ClientInstance, error) {
 	var instance model.ClientInstance
 	result := global.APP_DB.Where(&model.ClientInstance{IsInternal: true}).First(&instance)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil
+		return &instance, result.Error
 	}
-	return &instance
+	return &instance, nil
 }
 
 func (m *instanceManager) Save(instance *model.ClientInstance) error {
