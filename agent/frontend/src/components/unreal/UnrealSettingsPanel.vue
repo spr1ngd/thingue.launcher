@@ -140,12 +140,12 @@ async function save() {
                 </q-tooltip>
                 <q-toggle label="H265编码" v-model="props.data.settings.enableH265"/>
               </div>
-              <div class="col-6">
-                <q-tooltip anchor="top middle" self="center middle" :delay="1000">
-                  启用分辨率自适应前端会自动根据浏览器窗口大小调整分辨率
-                </q-tooltip>
-                <q-toggle label="分辨率自适应" v-model="props.data.settings.autoResizeRes"/>
-              </div>
+<!--              <div class="col-6">-->
+<!--                <q-tooltip anchor="top middle" self="center middle" :delay="1000">-->
+<!--                  启用分辨率自适应前端会自动根据浏览器窗口大小调整分辨率-->
+<!--                </q-tooltip>-->
+<!--                <q-toggle label="分辨率自适应" v-model="props.data.settings.autoResizeRes"/>-->
+<!--              </div>-->
             </div>
           </q-item-section>
           <q-item-section side>

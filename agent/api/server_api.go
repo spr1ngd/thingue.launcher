@@ -28,8 +28,8 @@ func (s *serverApi) Init(ctx context.Context) {
 	if provider.AppConfig.LocalServer.AutoStart {
 		s.LocalServerStart()
 	}
-	if provider.AppConfig.RegisterUrl != "" {
-		err := s.ConnectServer(provider.AppConfig.RegisterUrl)
+	if provider.AppConfig.ServerURL != "" {
+		err := s.ConnectServer(provider.AppConfig.ServerURL)
 		if err != nil {
 			//service.ServerConnManager.StartReconnect()
 		}
@@ -105,17 +105,17 @@ func (s *serverApi) GetConnectServerOptions() []string {
 
 func (s *serverApi) ConnectServer(httpUrl string) error {
 	// 修改配置
-	if provider.AppConfig.RegisterUrl != "" {
+	if provider.AppConfig.ServerURL != "" {
 		s.DisconnectServer()
 	}
-	provider.AppConfig.RegisterUrl = httpUrl
+	provider.AppConfig.ServerURL = httpUrl
 	provider.WriteConfigToFile()
 	return service.ServerConnManager.Connect(httpUrl)
 }
 
 func (s *serverApi) DisconnectServer() {
 	// 修改配置
-	provider.AppConfig.RegisterUrl = ""
+	provider.AppConfig.ServerURL = ""
 	provider.WriteConfigToFile()
 	// 关闭已启动实例
 	instance.RunnerManager.CloseAllRunner()

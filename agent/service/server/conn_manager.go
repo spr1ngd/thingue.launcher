@@ -111,7 +111,7 @@ func (m *connManager) StartReconnect() {
 		for {
 			t := <-m.reconnectTimer.C
 			fmt.Println("重连一次", t.Format("2006-01-02 15:04:05"))
-			err := m.Connect(provider.AppConfig.RegisterUrl)
+			err := m.Connect(provider.AppConfig.ServerURL)
 			if err == nil {
 				fmt.Println("重连成功")
 				break

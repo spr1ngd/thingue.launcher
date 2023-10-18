@@ -25,8 +25,8 @@ var TicketService = ticketService{
 func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (response.InstanceTicket, error) {
 	ticket := response.InstanceTicket{}
 	// 数据库查询
-	query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
-	//query := global.SERVER_DB
+	//query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
+	query := global.SERVER_DB
 	if selectCond.StreamerConnected == true {
 		query = query.Where("streamer_connected = ?", selectCond.StreamerConnected)
 	}
@@ -41,8 +41,18 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 	}
 	var serverInstances []model.ServerInstance
 	query.Find(&serverInstances)
+	// 判断查询后是否有结果
 	if len(serverInstances) == 0 {
 		return ticket, errors.New("没有匹配的实例")
+	}
+	// 筛选掉未启动且未开启自动启停的实例
+	for i, instance := range serverInstances {
+		if instance.StateCode != 1 && instance.AutoControl == false {
+			serverInstances = append(serverInstances[:i], serverInstances[i+1:]...)
+		}
+	}
+	if len(serverInstances) == 0 {
+		return ticket, errors.New("实例未启动且未开启自动启停")
 	}
 	if selectCond.LabelSelector != "" {
 		// label匹配

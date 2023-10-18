@@ -141,6 +141,11 @@ function handleGotoServer(tab) {
         <div style="min-width: 100px">
           <q-select size="sm" dense clearable :options="options" options-dense v-model="currentServer"
                     @clear="DisconnectServer" @update:model-value="handleSelectChange">
+            <template v-slot:prepend v-if="currentServer">
+              <q-btn dense flat round icon="lens" size="8.5px" color="green">
+                <q-tooltip>服务已连接</q-tooltip>
+              </q-btn>
+            </template>
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-italic text-grey">
@@ -170,12 +175,12 @@ function handleGotoServer(tab) {
             <q-card-section class="q-pt-md q-pa-none">
               <q-list dense>
                 <q-item>
-                  <q-item-section avatar style="width: 120px" class="clickable  cursor-pointer"
+                  <q-item-section avatar class="clickable  cursor-pointer"
                                   @click="OpenInstancePreviewUrl(props.row.sid)">
                     <q-item-label caption class="ellipsis">名称</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.name }}</q-item-label>
                   </q-item-section>
-                  <q-item-section avatar style="width: 100px">
+                  <q-item-section avatar style="min-width: 74px">
                     <q-tooltip anchor="top middle" self="center middle">
                       最后启动时间：{{ GoTimeFormat(props.row.lastStartAt) }}<br>
                       最后停止时间：{{ GoTimeFormat(props.row.lastStopAt) }}
@@ -185,14 +190,14 @@ function handleGotoServer(tab) {
                       {{ RunnerStateCodeToString(props.row.stateCode) }}
                     </q-item-label>
                   </q-item-section>
-                  <q-item-section avatar style="width: 100px">
+                  <q-item-section avatar style="min-width: 70px">
                     <q-item-label caption class="ellipsis">Streamer</q-item-label>
                     <q-item-label class="ellipsis">{{
                         props.row.streamerConnected ? "已连接" : "未连接"
                       }}
                     </q-item-label>
                   </q-item-section>
-                  <q-item-section avatar style="width: 100px">
+                  <q-item-section style="">
                     <q-item-label caption class="ellipsis">进程号</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.pid }}</q-item-label>
                   </q-item-section>

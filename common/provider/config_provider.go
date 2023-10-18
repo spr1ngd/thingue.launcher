@@ -15,7 +15,7 @@ var AppConfig = new(Config)
 var configFile = path.Join(constants.SAVE_DIR, constants.CONFIG_NAME)
 
 type Config struct {
-	RegisterUrl    string         `json:"registerUrl" yaml:"registerUrl"`
+	ServerURL      string         `json:"serverURL" yaml:"serverURL"`
 	LocalServer    LocalServer    `json:"localServer" yaml:"localServer"`
 	SystemSettings SystemSettings `json:"systemSettings" yaml:"systemSettings"`
 }
@@ -52,6 +52,7 @@ func InitFlagConfig() {
 }
 
 func InitConfigFromFile() {
+	viper.SetDefault("serverURL", "http://localhost:8877/")
 	viper.SetDefault("localserver.bindAddr", "0.0.0.0:8877")
 	viper.SetDefault("localserver.contentPath", "/")
 	viper.SetDefault("localserver.useExternalStatic", false)
