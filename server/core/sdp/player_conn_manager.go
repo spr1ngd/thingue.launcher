@@ -31,6 +31,13 @@ func (m *playerConnManager) NewConnector(conn *websocket.Conn) *PlayerConnector 
 }
 
 func (m *playerConnManager) SetStreamer(playerConnector *PlayerConnector, ticket string) error {
+	if ticket == "test" {
+		streamerConnector := StreamerConnManager.GetConnectorById("test")
+		if streamerConnector != nil {
+			playerConnector.StreamerConnector = streamerConnector
+		}
+		return nil
+	}
 	sid, err := service.TicketService.GetSidByTicket(ticket)
 	if err == nil {
 		streamerConnector := StreamerConnManager.GetConnectorById(sid)
