@@ -32,8 +32,6 @@ func (s *nodeService) GetInstanceSid(nodeId uint, instanceId uint) (string, erro
 	parse, _ := url.Parse(provider.AppConfig.ServerURL)
 	result, err := util.HttpGet(parse.JoinPath("/api/instance/getInstanceSid").String() +
 		fmt.Sprintf("?nodeId=%d&instanceId=%d", nodeId, instanceId))
-	fmt.Println("result", string(result))
-	fmt.Println("err", err)
 	if err == nil {
 		res := response.Response{}
 		err = json.Unmarshal(result, &res)

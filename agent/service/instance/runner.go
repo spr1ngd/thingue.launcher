@@ -9,15 +9,15 @@ import (
 	"runtime"
 	"strconv"
 	"thingue-launcher/agent/global"
+	"thingue-launcher/common/domain"
 	"thingue-launcher/common/message"
-	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"time"
 )
 
 type Runner struct {
-	*model.ClientInstance
+	*domain.Instance
 	ExitSignalChannel chan error `json:"-"`
 	process           *os.Process
 	faultCount        uint

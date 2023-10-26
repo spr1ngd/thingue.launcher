@@ -28,13 +28,8 @@ func (s *serverApi) Init(ctx context.Context) {
 	if provider.AppConfig.LocalServer.AutoStart {
 		s.LocalServerStart()
 	}
-	if provider.AppConfig.ServerURL != "" {
-		err := s.ConnectServer(provider.AppConfig.ServerURL)
-		if err != nil {
-			//service.ServerConnManager.StartReconnect()
-		}
-	}
-	// 监听连接状态
+	service.ServerConnManager.Init()
+	// 监听server连接状态
 	go func() {
 		for {
 			wsUrl := <-service.ServerConnManager.ServerConnUpdateChanel
@@ -104,22 +99,20 @@ func (s *serverApi) GetConnectServerOptions() []string {
 }
 
 func (s *serverApi) ConnectServer(httpUrl string) error {
-	// 修改配置
-	if provider.AppConfig.ServerURL != "" {
-		s.DisconnectServer()
+	if service.ServerConnManager.IsConnected {
+		service.ServerConnManager.Disconnect()
 	}
-	provider.AppConfig.ServerURL = httpUrl
-	provider.WriteConfigToFile()
-	return service.ServerConnManager.Connect(httpUrl)
+	err := service.ServerConnManager.SetServerAddr(httpUrl)
+	if err == nil {
+		service.ServerConnManager.StartConnectTask()
+	}
+	return err
 }
 
 func (s *serverApi) DisconnectServer() {
-	// 修改配置
-	provider.AppConfig.ServerURL = ""
-	provider.WriteConfigToFile()
 	// 关闭已启动实例
 	instance.RunnerManager.CloseAllRunner()
-	_ = service.ServerConnManager.Disconnect()
+	service.ServerConnManager.Disconnect()
 }
 
 func (s *serverApi) GetLocalServerUrl() (*url.URL, error) {
@@ -150,13 +143,16 @@ func (s *serverApi) OpenLocalServerUrl() {
 }
 
 func (s *serverApi) OpenInstancePreviewUrl(sid string) {
-	parse, err := url.Parse(s.GetActiveServerUrl())
+	serverUrl, err := service.ServerConnManager.GetConnectedUrl()
 	if err == nil {
-		path := parse.JoinPath("/static/player.html")
+		path := serverUrl.JoinPath("/static/player.html")
 		runtime.BrowserOpenURL(s.ctx, fmt.Sprintf("%s?sid=%s", path.String(), sid))
 	}
 }
 
-func (s *serverApi) GetActiveServerUrl() string {
-	return service.ServerConnManager.ActiveAddrUrl
+func (s *serverApi) GetServerConnInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"isConnected": service.ServerConnManager.IsConnected,
+		"serverAddr":  service.ServerConnManager.ServerAddr,
+	}
 }

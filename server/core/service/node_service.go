@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bluele/gcache"
+	"github.com/google/uuid"
+	"github.com/mitchellh/mapstructure"
 	"math"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/message/types"
@@ -31,7 +33,13 @@ func (s *nodeService) NodeRegister(registerInfo *request.NodeRegisterInfo) error
 	node.SetDeviceInfo(*registerInfo.DeviceInfo)
 	var serverInstances = make([]*model.ServerInstance, 0)
 	for _, instance := range registerInfo.Instances {
-		serverInstances = append(serverInstances, instance.ToServerInstance())
+		var serverInstance = &model.ServerInstance{}
+		mapstructure.Decode(instance, serverInstance)
+		if serverInstance.SID == "" {
+			sid, _ := uuid.NewUUID()
+			serverInstance.SID = sid.String()
+		}
+		serverInstances = append(serverInstances, serverInstance)
 	}
 	node.Instances = serverInstances
 	global.SERVER_DB.Save(&node)

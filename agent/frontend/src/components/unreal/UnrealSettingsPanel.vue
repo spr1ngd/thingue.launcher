@@ -88,25 +88,27 @@ async function save() {
       await SaveInstance(props.data.settings)
       emit('openListPanel')
     } catch (err) {
-      // if (err === "实例运行中无法修改配置") {
-      //   $q.dialog({
-      //     title: '确认',
-      //     message: err + '，你想要立即停止当前实例吗?',
-      //     cancel: true,
-      //     persistent: true
-      //   }).onOk(() => {
-      //     StopInstance(props.data.settings.cid).then(() => {
-      //       Notify.create("进程退出成功")
-      //     }).catch(err => {
-      //       Notify.create(err)
-      //     })
-      //     console.log(props.data.settings.cid)
-      //   })
-      // } else {
+      if (err === "实例运行中无法修改配置") {
+        $q.dialog({
+          title: '确认',
+          message: err + '，你想要立即停止当前实例吗?',
+          cancel: true,
+          persistent: true
+        }).onOk(() => {
+          StopInstance(props.data.settings.cid).then(() => {
+            Notify.create("进程退出成功")
+            console.log("进程退出成功")
+          }).catch(err => {
+            console.log(err)
+            Notify.create(err)
+          })
+          console.log(props.data.settings.cid)
+        })
+      } else {
         Notify.create({
           message: err
         })
-      // }
+      }
     }
   }
 }

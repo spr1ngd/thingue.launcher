@@ -3,8 +3,10 @@ package instance
 import (
 	"errors"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"os"
 	"path/filepath"
+	"thingue-launcher/common/domain"
 	"thingue-launcher/common/model"
 	"time"
 )
@@ -17,7 +19,7 @@ type runnerManager struct {
 	IsInternalInstanceStarted  bool
 }
 
-var RunnerManager = runnerManager{
+var RunnerManager = &runnerManager{
 	IdRunnerMap:                make(map[uint]*Runner),
 	RunnerUnexpectedExitChanel: make(chan uint),
 	RunnerStatusUpdateChanel:   make(chan uint),
@@ -44,7 +46,7 @@ func (m *runnerManager) Init() {
 				} else {
 					instance.ExecPath = filepath.Join(pwd, entry.Name())
 					_ = m.NewRunner(instance)
-					_ = InstanceManager.Save(instance)
+					_ = InstanceManager.SaveConfig(instance)
 				}
 			}
 		}
@@ -59,8 +61,8 @@ func (m *runnerManager) Init() {
 	}
 }
 
-func (m *runnerManager) List() []*model.ClientInstance {
-	var instances = make([]*model.ClientInstance, 0)
+func (m *runnerManager) List() []*domain.Instance {
+	var instances = make([]*domain.Instance, 0)
 	for _, instance := range InstanceManager.List() {
 		runner := m.GetRunnerById(instance.CID)
 		if runner != nil {
@@ -68,19 +70,21 @@ func (m *runnerManager) List() []*model.ClientInstance {
 				continue
 			}
 			//todo 排查这里为什么会NullPointerException
-			instances = append(instances, runner.ClientInstance)
+			instances = append(instances, runner.Instance)
 		}
 	}
 	return instances
 }
 
-func (m *runnerManager) NewRunner(instance *model.ClientInstance) error {
-	if _, ok := m.IdRunnerMap[instance.CID]; ok {
+func (m *runnerManager) NewRunner(clientInstance *model.ClientInstance) error {
+	if _, ok := m.IdRunnerMap[clientInstance.CID]; ok {
 		return errors.New("无法重复创建")
 	}
+	var instance = &domain.Instance{}
+	mapstructure.Decode(clientInstance, instance)
 	r := &Runner{
-		ClientInstance:    instance,
-		ExitSignalChannel: make(chan error),
+		Instance:          instance,
+		ExitSignalChannel: make(chan error, 1),
 	}
 	m.IdRunnerMap[r.CID] = r
 	return nil

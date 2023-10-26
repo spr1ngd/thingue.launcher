@@ -30,10 +30,10 @@ func (l *FileLogger) Print(message string) {
 	//输出一条日志
 	myLog.Print(message)
 	//if _, err := f.WriteString(message); err != nil {
-	//	f.Close()
+	//	f.Disconnect()
 	//	log.Fatal(err)
 	//}
-	//f.Close()
+	//f.Disconnect()
 }
 
 func (l *FileLogger) Println(message string) {

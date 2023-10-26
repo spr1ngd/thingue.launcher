@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"thingue-launcher/agent/service"
 	"thingue-launcher/common/constants"
+	"thingue-launcher/common/domain"
 	"thingue-launcher/common/model"
 )
 
@@ -38,7 +39,7 @@ func (u *instanceApi) GetInstanceById(id uint) *model.ClientInstance {
 	return service.InstanceManager.GetById(id)
 }
 
-func (u *instanceApi) ListInstance() []*model.ClientInstance {
+func (u *instanceApi) ListInstance() []*domain.Instance {
 	return service.RunnerManager.List()
 }
 
@@ -46,7 +47,7 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	service.InstanceManager.Create(instance)
 	err := service.RunnerManager.NewRunner(instance)
 	if err == nil {
-		service.ServerConnManager.Disconnect()
+		service.ServerConnManager.Reconnect()
 	} else {
 		service.InstanceManager.Delete(instance.CID)
 	}
@@ -54,9 +55,9 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 }
 
 func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
-	err := service.InstanceManager.Save(instance)
+	err := service.InstanceManager.SaveConfig(instance)
 	if err == nil {
-		service.ServerConnManager.Disconnect()
+		service.ServerConnManager.Reconnect()
 	}
 	return err
 }
@@ -64,7 +65,7 @@ func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 func (u *instanceApi) DeleteInstance(cid uint) error {
 	err := service.RunnerManager.DeleteRunner(cid)
 	if err == nil {
-		service.ServerConnManager.Disconnect()
+		service.ServerConnManager.Reconnect()
 		service.InstanceManager.Delete(cid)
 	}
 	return err

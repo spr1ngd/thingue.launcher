@@ -9,7 +9,6 @@ import (
 )
 
 func MsgReceive(msg message.Message) error {
-	//var err error
 	switch msg.Type {
 	case types.ServerConnectCallback:
 		nodeId := msg.Data.(float64)

@@ -2,7 +2,6 @@ package request
 
 import (
 	"thingue-launcher/common/domain"
-	"thingue-launcher/common/model"
 )
 
 type TicketSelector struct {
@@ -16,7 +15,7 @@ type TicketSelector struct {
 type NodeRegisterInfo struct {
 	NodeID     uint
 	DeviceInfo *domain.DeviceInfo
-	Instances  []*model.ClientInstance
+	Instances  []*domain.Instance
 }
 
 type ProcessControl struct {

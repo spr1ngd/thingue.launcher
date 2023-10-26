@@ -2,6 +2,7 @@ package instance
 
 import (
 	"errors"
+	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/common/model"
@@ -40,13 +41,13 @@ func (m *instanceManager) GetInternal() (*model.ClientInstance, error) {
 	return &instance, nil
 }
 
-func (m *instanceManager) Save(instance *model.ClientInstance) error {
+func (m *instanceManager) SaveConfig(instance *model.ClientInstance) error {
 	runner := RunnerManager.GetRunnerById(instance.CID)
 	if runner.StateCode == 1 {
 		return errors.New("实例运行中无法修改配置")
 	}
 	global.APP_DB.Save(instance)
-	runner.ClientInstance = instance
+	mapstructure.Decode(instance, runner.Instance)
 	return nil
 }
 

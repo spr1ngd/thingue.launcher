@@ -1,8 +1,14 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
 import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
-import {GetAppConfig, OpenExplorer} from "@wails/go/api/systemApi.js";
-import {ConnectServer, DisconnectServer, GetConnectServerOptions, OpenInstancePreviewUrl,GetActiveServerUrl} from "@wails/go/api/serverApi";
+import {OpenExplorer} from "@wails/go/api/systemApi.js";
+import {
+  ConnectServer,
+  DisconnectServer,
+  GetConnectServerOptions,
+  GetServerConnInfo,
+  OpenInstancePreviewUrl
+} from "@wails/go/api/serverApi";
 
 import {Notify} from "quasar";
 import {GoTimeFormat, RunnerStateCodeToString} from "@/utils";
@@ -10,7 +16,7 @@ import {GoTimeFormat, RunnerStateCodeToString} from "@/utils";
 const emit = defineEmits(["openSettingsPanel", "gotoServer"])
 
 const rows = ref([])
-
+const selected = ref(null)
 const columns = [
   {name: 'Name', field: 'name', label: '实例标识'},
   {name: 'ExecPath', field: 'execPath', label: '启动位置'},
@@ -18,8 +24,8 @@ const columns = [
 
 const options = ref([])
 
-const currentServer = ref(null)
-const selected = ref(null)
+const serverAddr = ref(null)
+const isConnected = ref(null)
 
 onMounted(async () => {
   await list()
@@ -30,7 +36,9 @@ onMounted(async () => {
 
   //注册事件监听
   window.runtime.EventsOn("remote_server_conn_update", async () => {
-    currentServer.value = await GetActiveServerUrl()
+    const connInfo = await GetServerConnInfo()
+    serverAddr.value = connInfo.serverAddr
+    isConnected.value = connInfo.isConnected
   })
   window.runtime.EventsOn("runner_unexpected_exit", () => {
     list()
@@ -38,7 +46,9 @@ onMounted(async () => {
   window.runtime.EventsOn("runner_status_update", () => {
     list()
   })
-  currentServer.value = await GetActiveServerUrl()
+  const connInfo = await GetServerConnInfo()
+  serverAddr.value = connInfo.serverAddr
+  isConnected.value = connInfo.isConnected
 })
 
 onUnmounted(() => {
@@ -47,7 +57,6 @@ onUnmounted(() => {
 
 async function list() {
   rows.value = await ListInstance()
-  console.log(rows.value)
 }
 
 function handleNewSettings() {
@@ -90,14 +99,15 @@ async function handleOpenDir(path) {
 }
 
 async function handleSelectChange() {
-  if (currentServer.value) {
-    try {
-      await ConnectServer(currentServer.value);
-      Notify.create("服务连接成功")
-    } catch (e) {
-      currentServer.value = ""
-      Notify.create(`服务连接失败信息 ${e}`);
-    }
+  if (serverAddr.value) {
+    await ConnectServer(serverAddr.value);
+    // try {
+    //   await ConnectServer(serverAddr.value);
+    //   Notify.create("服务连接成功")
+    // } catch (e) {
+    //   serverAddr.value = ""
+    //   Notify.create(`服务连接失败信息 ${e}`);
+    // }
   }
 }
 
@@ -139,11 +149,11 @@ function handleGotoServer(tab) {
       </template>
       <template v-slot:top-right>
         <div style="min-width: 100px">
-          <q-select size="sm" dense clearable :options="options" options-dense v-model="currentServer"
+          <q-select size="sm" dense clearable :options="options" options-dense v-model="serverAddr"
                     @clear="DisconnectServer" @update:model-value="handleSelectChange">
-            <template v-slot:prepend v-if="currentServer">
-              <q-btn dense flat round icon="lens" size="8.5px" color="green">
-                <q-tooltip>服务已连接</q-tooltip>
+            <template v-slot:prepend v-if="serverAddr">
+              <q-btn dense flat round icon="lens" size="8.5px" :color="isConnected?'green':'red'">
+                <q-tooltip>{{ isConnected ? "已连接" : "未连接，自动重连中"}}</q-tooltip>
               </q-btn>
             </template>
             <template v-slot:no-option>
@@ -205,7 +215,8 @@ function handleGotoServer(tab) {
                 <q-item>
                   <q-item-section @click="handleOpenDir(props.row.execPath)">
                     <q-item-label caption class="ellipsis cursor-pointer">
-                      启动位置 <q-badge outline color="blue" v-if="props.row.isInternal">自动配置</q-badge>
+                      启动位置
+                      <q-badge outline color="blue" v-if="props.row.isInternal">自动配置</q-badge>
                     </q-item-label>
                     <q-item-label class="ellipsis cursor-pointer">
                       {{ props.row.execPath }}

@@ -1,18 +1,18 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "ThingUE-Launcher",
-  "outputfilename": "ThingUE-Launcher",
+  "name": "ThingUELauncher",
+  "outputfilename": "ThingUELauncher",
   "frontend:dir": "agent/frontend",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "info": {
-    "companyName": "uino",
-    "productName": "ThingUE启动器",
+    "companyName": "UINO优锘科技",
+    "productName": "ThingUE启动程序",
     "productVersion": "0.0.1",
     "copyright": "北京优锘科技股份有限公司版权所有",
-    "comments": "ThingUE启动器"
+    "comments": "ThingUE启动程序"
   },
   "author": {
     "name": "杨晋升",
