@@ -53,11 +53,11 @@ func InitFlagConfig() {
 
 func InitConfigFromFile() {
 	viper.SetDefault("serverURL", "http://localhost:8877/")
-	viper.SetDefault("localserver.bindAddr", "0.0.0.0:8877")
-	viper.SetDefault("localserver.contentPath", "/")
-	viper.SetDefault("localserver.useExternalStatic", false)
-	viper.SetDefault("localserver.staticDir", "./thingue-launcher/static")
-	viper.SetDefault("localserver.autoStart", true)
+	viper.SetDefault("localServer.bindAddr", "0.0.0.0:8877")
+	viper.SetDefault("localServer.contentPath", "/")
+	viper.SetDefault("localServer.useExternalStatic", false)
+	viper.SetDefault("localServer.staticDir", "./thingue-launcher/static")
+	viper.SetDefault("localServer.autoStart", true)
 	// 加载配置文件
 	viper.SetConfigFile(configFile)
 	_ = viper.ReadInConfig()

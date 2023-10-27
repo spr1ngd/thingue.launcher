@@ -74,12 +74,16 @@ func (m *connManager) connect() error {
 }
 
 func (m *connManager) Reconnect() {
-	_ = m.conn.Close()
+	if m.conn != nil {
+		_ = m.conn.Close()
+	}
 }
 
 func (m *connManager) Disconnect() {
-	_ = m.conn.Close()
 	m.ServerAddr = ""
+	if m.conn != nil {
+		_ = m.conn.Close()
+	}
 	provider.AppConfig.ServerURL = m.ServerAddr
 	provider.WriteConfigToFile()
 }
