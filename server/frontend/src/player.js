@@ -12,7 +12,7 @@ document.body.onload = function () {
             OfferToReceive: true,
             HoveringMouse: true,
             StartVideoMuted: true,
-            MatchViewportRes: true,
+            MatchViewportRes: false,
         }
     });
     const stream = new PixelStreaming(config, {

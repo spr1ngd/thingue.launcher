@@ -229,18 +229,18 @@ function handleGotoServer(tab) {
               <div class="q-gutter-md">
                 <q-btn padding="none" color="green" :loading="false" flat dense icon="sym_o_play_circle"
                        @click="handleStartInstance(props.row.cid)">
-                  <q-tooltip :delay="1000">启动</q-tooltip>
+                  <q-tooltip :delay="600">启动</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="red" :loading="props.row.loading" flat dense icon="sym_o_stop_circle"
                        @click="handleStopInstance(props.row)">
-                  <q-tooltip :delay="1000">停止</q-tooltip>
+                  <q-tooltip :delay="600">停止</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="blue" flat dense icon="sym_o_settings"
                        @click="handleEditSettings(props.row)">
-                  <q-tooltip :delay="1000">编辑或查看设置</q-tooltip>
+                  <q-tooltip :delay="600">编辑或查看设置</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="grey" flat dense icon="sym_o_delete" push>
-                  <q-tooltip :delay="1000">删除</q-tooltip>
+                  <q-tooltip :delay="600">删除</q-tooltip>
                   <q-menu>
                     <div class="q-pa-sm">
                       确定要删除？
@@ -249,6 +249,10 @@ function handleGotoServer(tab) {
                     </div>
                   </q-menu>
                 </q-btn>
+<!--                <q-icon class="flashing" color="primary" name="sym_o_cloud_upload" size="sm"></q-icon>-->
+<!--                <q-icon class="flashing" color="blue" name="sym_o_cloud_download" size="sm"></q-icon>-->
+<!--                <q-icon size="sm" color="green" name="sym_o_cloud_done"></q-icon>-->
+<!--                <q-icon size="sm" color="grey" name="sym_o_cloud_off"></q-icon>-->
               </div>
             </q-card-actions>
           </q-card>
@@ -259,5 +263,17 @@ function handleGotoServer(tab) {
 </template>
 
 <style scoped>
+.flashing {
+  animation: flashAnimation 1s ease infinite;
+}
 
+@keyframes flashAnimation {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
 </style>

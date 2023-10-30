@@ -29,7 +29,7 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 	if err == nil {
 		for {
 			// 读取客户端发送的消息
-			msgType, msgByte, err := conn.ReadMessage()
+			msgType, _, err := conn.ReadMessage()
 			if err != nil {
 				fmt.Println("WebSocket read error:", err)
 				break
@@ -39,7 +39,8 @@ func (g *HandlerGroup) NodeWebSocketHandler(c *gin.Context) {
 				conn.WriteMessage(websocket.PongMessage, []byte("ping pong"))
 			}
 			// 处理接收到的消息
-			fmt.Println(string(msgByte))
+			// todo
+			//fmt.Println(string(msgByte))
 		}
 	}
 	conn.Close()
