@@ -111,3 +111,18 @@ func (r *Runner) updateStateCode(stateCode int8) {
 		StateCode: stateCode,
 	})
 }
+
+func (r *Runner) OpenLog() error {
+	file, err := getLogFile(r.Instance)
+	if err == nil {
+		var cmdName string
+		if provider.AppConfig.SystemSettings.ExternalEditorPath == "" {
+			cmdName = "code"
+		} else {
+			cmdName = provider.AppConfig.SystemSettings.ExternalEditorPath
+		}
+		cmd := exec.Command(cmdName, file)
+		return cmd.Run()
+	}
+	return err
+}

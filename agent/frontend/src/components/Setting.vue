@@ -1,11 +1,18 @@
 <script setup>
 
 import {onMounted, reactive, ref, watch} from "vue";
-import {ControlRestartTask, GetAppConfig, UpdateSystemSettings, GetVersionInfo} from "@wails/go/api/systemApi";
+import {
+  ControlRestartTask,
+  GetAppConfig,
+  GetVersionInfo,
+  OpenFileDialog,
+  UpdateSystemSettings
+} from "@wails/go/api/systemApi";
 import {Notify} from "quasar";
 
 const systemSettings = reactive({
-  RestartTaskCron: ''
+  RestartTaskCron: '',
+  ExternalEditorPath: ''
 })
 
 const enableRestartTask = ref(false)
@@ -15,9 +22,10 @@ onMounted(async () => {
   const appConfig = await GetAppConfig();
   versionInfo.value = await GetVersionInfo();
   systemSettings.RestartTaskCron = appConfig.systemSettings.restartTaskCron
+  systemSettings.ExternalEditorPath = appConfig.systemSettings.externalEditorPath
   enableRestartTask.value = appConfig.systemSettings.enableRestartTask
   watch(systemSettings, async (value, oldValue, onCleanup) => {
-    UpdateSystemSettings(systemSettings)
+    await UpdateSystemSettings(systemSettings)
   })
 })
 
@@ -28,6 +36,22 @@ async function updateEnableRestartTask(value, ev) {
     enableRestartTask.value = !value
     Notify.create("任务开启失败，" + err)
   }
+}
+
+function select() {
+  OpenFileDialog("选择文件", "*.exe").then(result => {
+    if (result) {
+      systemSettings.ExternalEditorPath = result;
+    } else {
+      Notify.create({
+        message: '文件选择取消'
+      })
+    }
+  }).catch(err => {
+    Notify.create({
+      message: '文件选择出错,' + err
+    })
+  })
 }
 
 </script>
@@ -59,6 +83,18 @@ async function updateEnableRestartTask(value, ev) {
             </q-item-section>
           </q-item>
         </q-expansion-item>
+        <q-item>
+          <q-item-section avatar>
+            <div class="text-subtitle2">外部日志查看器路径(默认使用vscode)</div>
+          </q-item-section>
+          <q-item-section>
+            <q-input dense v-model="systemSettings.ExternalEditorPath">
+              <template v-slot:append>
+                <q-btn padding="none" icon="sym_o_file_open" flat dense @click="select"/>
+              </template>
+            </q-input>
+          </q-item-section>
+        </q-item>
         <q-expansion-item label="关于">
           <q-list dense class="q-pl-lg q-pa-sm">
             <q-item>
@@ -66,7 +102,7 @@ async function updateEnableRestartTask(value, ev) {
                 <q-item-label>Version:</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label>{{versionInfo.Version}}</q-item-label>
+                <q-item-label>{{ versionInfo.Version }}</q-item-label>
               </q-item-section>
             </q-item>
             <q-item>
@@ -74,7 +110,7 @@ async function updateEnableRestartTask(value, ev) {
                 <q-item-label>BuildDate:</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label>{{versionInfo.BuildDate}}</q-item-label>
+                <q-item-label>{{ versionInfo.BuildDate }}</q-item-label>
               </q-item-section>
             </q-item>
             <q-item>
@@ -82,7 +118,7 @@ async function updateEnableRestartTask(value, ev) {
                 <q-item-label>GitCommit:</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label>{{versionInfo.GitCommit}}</q-item-label>
+                <q-item-label>{{ versionInfo.GitCommit }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>

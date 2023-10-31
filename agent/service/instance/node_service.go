@@ -87,9 +87,9 @@ func (s *nodeService) UpdateStreamerConnected(msg *message.ServerStreamerConnect
 func (s *nodeService) CollectLogs(traceId string) {
 	fmt.Println("traceId", traceId)
 	var filesToCompress []string
-	instances := InstanceManager.List()
+	instances := RunnerManager.List()
 	for _, instance := range instances {
-		filesToCompress = append(filesToCompress, getLogFiles(&instance)...)
+		filesToCompress = append(filesToCompress, getLogFiles(instance)...)
 	}
 
 	var buf bytes.Buffer

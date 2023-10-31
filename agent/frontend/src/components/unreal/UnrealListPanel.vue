@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
-import {DeleteInstance, ListInstance, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
+import {DeleteInstance, ListInstance, OpenInstanceLog, StartInstance, StopInstance} from "@wails/go/api/instanceApi";
 import {OpenExplorer} from "@wails/go/api/systemApi.js";
 import {
   ConnectServer,
@@ -111,6 +111,14 @@ async function handleSelectChange() {
   }
 }
 
+function handleOpenInstanceLog(cid) {
+  OpenInstanceLog(cid).then(() => {
+    Notify.create("操作成功")
+  }).catch(err => {
+    Notify.create(err)
+  })
+}
+
 function handleStartInstance(cid) {
   StartInstance(cid).then(() => {
     Notify.create("操作成功")
@@ -153,7 +161,7 @@ function handleGotoServer(tab) {
                     @clear="DisconnectServer" @update:model-value="handleSelectChange">
             <template v-slot:prepend v-if="serverAddr">
               <q-btn dense flat round icon="lens" size="8.5px" :color="isConnected?'green':'red'">
-                <q-tooltip>{{ isConnected ? "已连接" : "未连接，自动重连中"}}</q-tooltip>
+                <q-tooltip>{{ isConnected ? "已连接" : "未连接，自动重连中" }}</q-tooltip>
               </q-btn>
             </template>
             <template v-slot:no-option>
@@ -249,10 +257,14 @@ function handleGotoServer(tab) {
                     </div>
                   </q-menu>
                 </q-btn>
-<!--                <q-icon class="flashing" color="primary" name="sym_o_cloud_upload" size="sm"></q-icon>-->
-<!--                <q-icon class="flashing" color="blue" name="sym_o_cloud_download" size="sm"></q-icon>-->
-<!--                <q-icon size="sm" color="green" name="sym_o_cloud_done"></q-icon>-->
-<!--                <q-icon size="sm" color="grey" name="sym_o_cloud_off"></q-icon>-->
+                <q-btn padding="none" color="info" flat dense icon="sym_o_description"
+                       @click="handleOpenInstanceLog(props.row.cid)">
+                  <q-tooltip :delay="600">打开实例日志</q-tooltip>
+                </q-btn>
+                <!--                <q-icon class="flashing" color="primary" name="sym_o_cloud_upload" size="sm"></q-icon>-->
+                <!--                <q-icon class="flashing" color="blue" name="sym_o_cloud_download" size="sm"></q-icon>-->
+                <!--                <q-icon size="sm" color="green" name="sym_o_cloud_done"></q-icon>-->
+                <!--                <q-icon size="sm" color="grey" name="sym_o_cloud_off"></q-icon>-->
               </div>
             </q-card-actions>
           </q-card>

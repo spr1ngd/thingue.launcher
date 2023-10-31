@@ -1,15 +1,15 @@
 package instance
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-	"thingue-launcher/common/model"
+	"thingue-launcher/common/domain"
 )
 
-func getLogFiles(instance *model.ClientInstance) []string {
-	var logFiles []string
+func getLogDir(instance *domain.Instance) (string, error) {
 	execDir := filepath.Dir(instance.ExecPath)
 	execName := strings.TrimSuffix(filepath.Base(instance.ExecPath), filepath.Ext(instance.ExecPath))
 	files, err := os.ReadDir(execDir)
@@ -35,6 +35,38 @@ func getLogFiles(instance *model.ClientInstance) []string {
 	} else {
 		logsDir = filepath.Join(filepath.Dir(filepath.Dir(execDir)), "Saved/Logs")
 	}
+	return logsDir, err
+}
+
+func getLogFile(instance *domain.Instance) (string, error) {
+	var logFiles []string
+	logsDir, err := getLogDir(instance)
+	if err != nil {
+		return "", err
+	}
+	logFile, err := os.ReadDir(logsDir)
+	if err == nil {
+		for _, entry := range logFile {
+			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".log") && (entry.Name() == instance.Name+".log" || strings.HasPrefix(entry.Name(), instance.Name+"_")) {
+				logFiles = append(logFiles, filepath.Join(logsDir, entry.Name()))
+			}
+		}
+	}
+	if len(logFiles) > 0 {
+		return logFiles[0], err
+	} else {
+		return "", errors.New("找不到日志")
+	}
+}
+
+func getLogFiles(instance *domain.Instance) []string {
+	var logFiles []string
+	logsDir, err := getLogDir(instance)
+	if err != nil {
+		return logFiles
+	} else {
+		fmt.Println("找不到logs目录")
+	}
 	logFile, err := os.ReadDir(logsDir)
 	if err == nil {
 		for _, entry := range logFile {
@@ -42,8 +74,6 @@ func getLogFiles(instance *model.ClientInstance) []string {
 				logFiles = append(logFiles, filepath.Join(logsDir, entry.Name()))
 			}
 		}
-	} else {
-		fmt.Println("找不到logs目录")
 	}
 	return logFiles
 }

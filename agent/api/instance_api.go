@@ -88,3 +88,8 @@ func (u *instanceApi) StopInstance(id uint) error {
 		return errors.New("实例不存在")
 	}
 }
+
+func (u *instanceApi) OpenInstanceLog(id uint) error {
+	runner := service.RunnerManager.GetRunnerById(id)
+	return runner.OpenLog()
+}

@@ -29,8 +29,9 @@ type LocalServer struct {
 }
 
 type SystemSettings struct {
-	EnableRestartTask bool   `json:"enableRestartTask" yaml:"enableRestartTask"`
-	RestartTaskCron   string `json:"restartTaskCron" yaml:"restartTaskCron"`
+	EnableRestartTask  bool   `json:"enableRestartTask" yaml:"enableRestartTask"`
+	RestartTaskCron    string `json:"restartTaskCron" yaml:"restartTaskCron"`
+	ExternalEditorPath string `json:"externalEditorPath" yaml:"externalEditorPath"`
 }
 
 func InitFlagConfig() {
