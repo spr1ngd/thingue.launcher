@@ -3,6 +3,9 @@ package sdp
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
+	"gopkg.in/yaml.v3"
+	"thingue-launcher/common/domain"
+	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/core/service"
 	"time"
@@ -55,6 +58,17 @@ func (s *StreamerConnector) HandleMessage(msgStr []byte) {
 }
 
 func (s *StreamerConnector) SendConfig() {
+	if provider.AppConfig.PeerConnectionOptions != "" {
+		var options domain.PeerConnectionOptions
+		err := yaml.Unmarshal([]byte(provider.AppConfig.PeerConnectionOptions), &options)
+		if err == nil {
+			s.SendMessage(util.MapToJson(map[string]interface{}{
+				"type":                  "config",
+				"peerConnectionOptions": options,
+			}))
+			return
+		}
+	}
 	s.SendMessage(util.MapToJson(map[string]interface{}{
 		"type":                  "config",
 		"peerConnectionOptions": map[string]interface{}{},

@@ -1,17 +1,22 @@
 <script setup>
-import {onMounted, reactive, ref, watch} from 'vue'
+import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import {
   GetLocalServerStatus,
   LocalServerShutdown,
   LocalServerStart,
+  OpenLocalServerUrl,
   UpdateLocalServerConfig,
-  OpenLocalServerUrl
+  UpdatePeerConnectionOptions
 } from "@wails/go/api/serverApi.js";
 import {GetAppConfig} from "@wails/go/api/systemApi";
 import {Notify} from "quasar";
+import * as monaco from "monaco-editor";
 
 
 const tab = ref("local")
+
+let editor = null
+const PeerConnectionOptionsRef = ref()
 
 const localServerConfig = reactive({
   bindAddr: "",
@@ -33,10 +38,31 @@ async function serverShutdown() {
   localServerStatus.value = await GetLocalServerStatus()
 }
 
+async function savePeerConnectionOptions() {
+  await UpdatePeerConnectionOptions(editor.getValue())
+  Notify.create(`保存成功，已启动实例重启后生效`)
+}
+
+function fillSampleCode() {
+  editor.setValue("#配置示例\r\niceServers:\r\n  - urls:\r\n    - stun:10.100.40.6:19303\r\n    - turn:10.100.40.6:19303\r\n    username: username\r\n    credential: password")
+}
+
 onMounted(async () => {
+  editor = monaco.editor.create(PeerConnectionOptionsRef.value, {
+    value: "",
+    language: 'yaml',
+    lineNumbers: 'off',
+    theme: 'vs-dark',
+    minimap: {
+      enabled: false // 是否启用预览图
+    },
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+  });
+  editor.getModel().updateOptions({tabSize: 2})
   // 获取本地server配置
   let appConfig = await GetAppConfig();
-  console.log(appConfig)
+  editor.setValue(appConfig.peerConnectionOptions)
   localServerConfig.bindAddr = appConfig.localServer.bindAddr
   localServerConfig.contentPath = appConfig.localServer.contentPath
   localServerConfig.autoStart = appConfig.localServer.autoStart
@@ -60,14 +86,14 @@ onMounted(async () => {
   })
 })
 
-onMounted(() => {
+onUnmounted(() => {
   window.runtime.EventsOff("local_server_close")
 })
 </script>
 
 <template>
-<!--  <div class="row">-->
-<!--    <div class="col-6">-->
+  <div class="row">
+    <div class="col-6">
       <q-card style="width: 300px">
         <q-card-section class="q-pa-sm">
           <div class="row no-wrap items-center q-pa-sm">
@@ -113,7 +139,8 @@ onMounted(() => {
                 <q-btn dense label="启动" color="positive" @click="serverStart" :disable="localServerStatus"></q-btn>
               </q-item-section>
               <q-item-section>
-                <q-btn dense label="关闭" color="negative" @click="serverShutdown" :disable="!localServerStatus"></q-btn>
+                <q-btn dense label="关闭" color="negative" @click="serverShutdown"
+                       :disable="!localServerStatus"></q-btn>
               </q-item-section>
               <q-item-section avatar>
                 <q-btn flat round icon="open_in_new" @click="OpenLocalServerUrl"/>
@@ -122,22 +149,29 @@ onMounted(() => {
           </q-list>
         </q-card-section>
       </q-card>
-<!--    </div>-->
-<!--    <div class="col-6">-->
-<!--      <q-card style="width: 300px">-->
-<!--        <q-card-section class="q-pa-sm">-->
-<!--          <div class="row no-wrap items-center q-pa-sm">-->
-<!--            <div class="text-h6">中继服务地址配置</div>-->
-<!--          </div>-->
-<!--        </q-card-section>-->
-<!--        <q-card-section class="q-pa-none q-pt-sm">-->
-
-<!--        </q-card-section>-->
-<!--      </q-card>-->
-<!--    </div>-->
-<!--  </div>-->
+    </div>
+    <div class="col-6">
+      <q-card style="">
+        <q-card-section class="q-pa-sm">
+          <div class="row no-wrap items-center q-pa-sm">
+            <div class="text-h6">中继服务器配置</div>
+            <q-space/>
+              <q-btn-group outline>
+                <q-btn size="sm"  @click="fillSampleCode">填充示例</q-btn>
+                <q-btn size="sm" color="primary" @click="savePeerConnectionOptions">保存</q-btn>
+              </q-btn-group>
+          </div>
+        </q-card-section>
+        <q-card-section class="q-pa-sm q-pt-none">
+          <div class="editor" ref="PeerConnectionOptionsRef"></div>
+        </q-card-section>
+      </q-card>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-
+.editor {
+  height: 240px;
+}
 </style>

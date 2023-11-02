@@ -32,11 +32,9 @@ async function playerUrlBuilder() {
     if (urlParams.has("ticket")) {
         return `${origin}${path}/ws/player/${urlParams.get("ticket")}`;
     }
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
     const response = await fetch(path + "/api/instance/ticketSelect", {
         method: 'POST',
-        headers: myHeaders,
+        headers: [["Content-Type", "application/json"]],
         body: JSON.stringify({
             sid: urlParams.get("sid"),
             name: urlParams.get("name"),

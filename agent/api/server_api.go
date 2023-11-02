@@ -59,8 +59,12 @@ func (s *serverApi) GetLocalServerStatus() bool {
 }
 
 func (s *serverApi) UpdateLocalServerConfig(localServerConfig provider.LocalServer) {
-	appConfig := provider.AppConfig
-	appConfig.LocalServer = localServerConfig
+	provider.AppConfig.LocalServer = localServerConfig
+	provider.WriteConfigToFile()
+}
+
+func (s *serverApi) UpdatePeerConnectionOptions(options string) {
+	provider.AppConfig.PeerConnectionOptions = options
 	provider.WriteConfigToFile()
 }
 

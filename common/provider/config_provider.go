@@ -15,9 +15,10 @@ var AppConfig = new(Config)
 var configFile = path.Join(constants.SAVE_DIR, constants.CONFIG_NAME)
 
 type Config struct {
-	ServerURL      string         `json:"serverURL" yaml:"serverURL"`
-	LocalServer    LocalServer    `json:"localServer" yaml:"localServer"`
-	SystemSettings SystemSettings `json:"systemSettings" yaml:"systemSettings"`
+	ServerURL             string         `json:"serverURL" yaml:"serverURL"`
+	LocalServer           LocalServer    `json:"localServer" yaml:"localServer"`
+	SystemSettings        SystemSettings `json:"systemSettings" yaml:"systemSettings"`
+	PeerConnectionOptions string         `json:"peerConnectionOptions" yaml:"peerConnectionOptions"`
 }
 
 type LocalServer struct {

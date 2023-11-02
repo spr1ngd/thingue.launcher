@@ -2,6 +2,9 @@ package sdp
 
 import (
 	"github.com/gorilla/websocket"
+	"gopkg.in/yaml.v3"
+	"thingue-launcher/common/domain"
+	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 )
 
@@ -12,6 +15,17 @@ type PlayerConnector struct {
 }
 
 func (p *PlayerConnector) SendConfig() {
+	if provider.AppConfig.PeerConnectionOptions != "" {
+		var options domain.PeerConnectionOptions
+		err := yaml.Unmarshal([]byte(provider.AppConfig.PeerConnectionOptions), &options)
+		if err == nil {
+			p.SendMessage(util.MapToJson(map[string]interface{}{
+				"type":                  "config",
+				"peerConnectionOptions": options,
+			}))
+			return
+		}
+	}
 	p.SendMessage(util.MapToJson(map[string]interface{}{
 		"type":                  "config",
 		"peerConnectionOptions": map[string]interface{}{},
