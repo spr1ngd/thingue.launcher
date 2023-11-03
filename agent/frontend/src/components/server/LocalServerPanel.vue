@@ -39,8 +39,12 @@ async function serverShutdown() {
 }
 
 async function savePeerConnectionOptions() {
-  await UpdatePeerConnectionOptions(editor.getValue())
-  Notify.create(`保存成功，已启动实例重启后生效`)
+  try {
+    await UpdatePeerConnectionOptions(editor.getValue())
+    Notify.create(`保存成功，已启动实例重启后生效`)
+  } catch (e) {
+    Notify.create(`保存失败，${e}`)
+  }
 }
 
 function fillSampleCode() {
@@ -154,12 +158,22 @@ onUnmounted(() => {
       <q-card style="">
         <q-card-section class="q-pa-sm">
           <div class="row no-wrap items-center q-pa-sm">
-            <div class="text-h6">中继服务器配置</div>
+            <div class="text-h6">WebRTC中继配置</div>
+            <q-icon name="sym_o_help" color="grey" class="q-pl-sm" size="xs">
+              <q-tooltip max-width="200px">
+                如果实例和浏览器之间的WebRTC连接被防火墙阻止或者是复杂网络环境下的跨网段相互访问，需要在这里配置中继服务
+              </q-tooltip>
+            </q-icon>
             <q-space/>
-              <q-btn-group outline>
-                <q-btn size="sm"  @click="fillSampleCode">填充示例</q-btn>
-                <q-btn size="sm" color="primary" @click="savePeerConnectionOptions">保存</q-btn>
-              </q-btn-group>
+            <q-btn-dropdown split class="glossy" color="teal" label="保存" @click="savePeerConnectionOptions">
+              <q-list>
+                <q-item clickable v-close-popup @click="fillSampleCode" dense>
+                  <q-item-section>
+                    <q-item-label>填充示例</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
           </div>
         </q-card-section>
         <q-card-section class="q-pa-sm q-pt-none">

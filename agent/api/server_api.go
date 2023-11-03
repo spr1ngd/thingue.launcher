@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"gopkg.in/yaml.v3"
 	"net"
 	"net/url"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"thingue-launcher/agent/service"
 	"thingue-launcher/agent/service/instance"
 	"thingue-launcher/common/constants"
+	"thingue-launcher/common/domain"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/server/initialize"
@@ -63,9 +65,15 @@ func (s *serverApi) UpdateLocalServerConfig(localServerConfig provider.LocalServ
 	provider.WriteConfigToFile()
 }
 
-func (s *serverApi) UpdatePeerConnectionOptions(options string) {
-	provider.AppConfig.PeerConnectionOptions = options
-	provider.WriteConfigToFile()
+func (s *serverApi) UpdatePeerConnectionOptions(options string) error {
+	err := yaml.Unmarshal([]byte(options), &domain.PeerConnectionOptions{})
+	if err != nil {
+		return errors.New("格式不正确")
+	} else {
+		provider.AppConfig.PeerConnectionOptions = options
+		provider.WriteConfigToFile()
+		return nil
+	}
 }
 
 func (s *serverApi) ListRemoteServer() []model.RemoteServer {

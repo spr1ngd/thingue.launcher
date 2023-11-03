@@ -1,4 +1,4 @@
-package instance
+package rest
 
 import (
 	"bytes"
@@ -11,7 +11,9 @@ import (
 	"thingue-launcher/server/core"
 )
 
-func (g *HandlerGroup) NodeRegister(c *gin.Context) {
+type InstanceGroup struct{}
+
+func (g *InstanceGroup) NodeRegister(c *gin.Context) {
 	var registerInfo request.NodeRegisterInfo
 	err := c.ShouldBindJSON(&registerInfo)
 	fmt.Printf("%+v\n", registerInfo)
@@ -23,7 +25,7 @@ func (g *HandlerGroup) NodeRegister(c *gin.Context) {
 	response.OkWithMessage("注册成功", c)
 }
 
-func (g *HandlerGroup) InstanceSelect(c *gin.Context) {
+func (g *InstanceGroup) InstanceSelect(c *gin.Context) {
 	var selectCond request.SelectorCond
 	err := c.ShouldBindJSON(&selectCond)
 	SelectedInstances, err := core.InstanceService.InstanceSelect(selectCond)
@@ -34,7 +36,7 @@ func (g *HandlerGroup) InstanceSelect(c *gin.Context) {
 	}
 }
 
-func (g *HandlerGroup) GetInstanceSid(c *gin.Context) {
+func (g *InstanceGroup) GetInstanceSid(c *gin.Context) {
 	nodeId := c.Query("nodeId")
 	instanceId := c.Query("instanceId")
 	sid, err := core.NodeService.GetInstanceSid(nodeId, instanceId)
@@ -45,14 +47,14 @@ func (g *HandlerGroup) GetInstanceSid(c *gin.Context) {
 	response.OkWithData(sid, c)
 }
 
-func (g *HandlerGroup) NodeList(c *gin.Context) {
+func (g *InstanceGroup) NodeList(c *gin.Context) {
 	list := core.NodeService.NodeList()
 	response.OkWithDetailed(response.PageResult{
 		List: list,
 	}, "", c)
 }
 
-func (g *HandlerGroup) UpdateProcessState(c *gin.Context) {
+func (g *InstanceGroup) UpdateProcessState(c *gin.Context) {
 	var msg message.NodeProcessStateUpdate
 	err := c.ShouldBindJSON(&msg)
 	if err != nil {
@@ -63,7 +65,7 @@ func (g *HandlerGroup) UpdateProcessState(c *gin.Context) {
 	response.Ok(c)
 }
 
-func (g *HandlerGroup) ProcessControl(c *gin.Context) {
+func (g *InstanceGroup) ProcessControl(c *gin.Context) {
 	var req request.ProcessControl
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
@@ -74,7 +76,7 @@ func (g *HandlerGroup) ProcessControl(c *gin.Context) {
 	response.Ok(c)
 }
 
-func (g *HandlerGroup) PakControl(c *gin.Context) {
+func (g *InstanceGroup) PakControl(c *gin.Context) {
 	var req request.PakControl
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
@@ -89,7 +91,7 @@ func (g *HandlerGroup) PakControl(c *gin.Context) {
 	response.Ok(c)
 }
 
-func (g *HandlerGroup) CollectLogs(c *gin.Context) {
+func (g *InstanceGroup) CollectLogs(c *gin.Context) {
 	var req request.LogsCollect
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
@@ -104,7 +106,7 @@ func (g *HandlerGroup) CollectLogs(c *gin.Context) {
 	response.Ok(c)
 }
 
-func (g *HandlerGroup) UploadLogs(c *gin.Context) {
+func (g *InstanceGroup) UploadLogs(c *gin.Context) {
 	traceId := c.Request.Header.Get("traceId")
 	buf := new(bytes.Buffer)
 	_, err := io.Copy(buf, c.Request.Body)
@@ -120,7 +122,7 @@ func (g *HandlerGroup) UploadLogs(c *gin.Context) {
 	response.Ok(c)
 }
 
-func (g *HandlerGroup) DownloadLogs(c *gin.Context) {
+func (g *InstanceGroup) DownloadLogs(c *gin.Context) {
 	traceId := c.Query("traceId")
 	err, buf := core.NodeService.DownloadLogs(traceId)
 	if err != nil {
@@ -129,5 +131,25 @@ func (g *HandlerGroup) DownloadLogs(c *gin.Context) {
 		c.Header("Content-Type", "application/zip")
 		c.Header("Content-Disposition", "attachment; filename="+traceId+".zip")
 		c.Writer.Write(buf.Bytes())
+	}
+}
+
+func (g *InstanceGroup) TicketSelect(c *gin.Context) {
+	var selectCond request.SelectorCond
+	err := c.ShouldBindJSON(&selectCond)
+	ticket, err := core.TicketService.TicketSelect(selectCond)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(ticket, c)
+	}
+}
+
+func (g *InstanceGroup) GetTicketById(c *gin.Context) {
+	ticket, err := core.TicketService.GetTicketById(c.Query("sid"))
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(ticket, c)
 	}
 }

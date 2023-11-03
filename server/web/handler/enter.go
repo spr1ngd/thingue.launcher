@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"thingue-launcher/server/web/handler/instance"
+	"thingue-launcher/server/web/handler/rest"
 	"thingue-launcher/server/web/handler/ws"
 )
 
 var (
-	InstanceGroup = new(instance.HandlerGroup)
+	InstanceGroup = new(rest.InstanceGroup)
+	SyncGroup     = new(rest.SyncGroup)
 	WsGroup       = new(ws.HandlerGroup)
 )

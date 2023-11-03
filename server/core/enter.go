@@ -9,6 +9,7 @@ var (
 	NodeService         = service.NodeService
 	InstanceService     = service.InstanceService
 	TicketService       = service.TicketService
+	SyncService         = service.SyncService
 	StreamerConnManager = sdp.StreamerConnManager
 	PlayerConnManager   = sdp.PlayerConnManager
 )

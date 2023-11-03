@@ -98,6 +98,10 @@ async function handleOpenDir(path) {
   await OpenExplorer(path)
 }
 
+async function handleCloudUpload(path) {
+  // await OpenExplorer(path)
+}
+
 async function handleSelectChange() {
   if (serverAddr.value) {
     await ConnectServer(serverAddr.value);
@@ -261,10 +265,15 @@ function handleGotoServer(tab) {
                        @click="handleOpenInstanceLog(props.row.cid)">
                   <q-tooltip :delay="600">打开实例日志</q-tooltip>
                 </q-btn>
-                <!--                <q-icon class="flashing" color="primary" name="sym_o_cloud_upload" size="sm"></q-icon>-->
-                <!--                <q-icon class="flashing" color="blue" name="sym_o_cloud_download" size="sm"></q-icon>-->
-                <!--                <q-icon size="sm" color="green" name="sym_o_cloud_done"></q-icon>-->
-                <!--                <q-icon size="sm" color="grey" name="sym_o_cloud_off"></q-icon>-->
+                <q-btn padding="none" color="primary" flat dense icon="sym_o_cloud_upload"
+                       @click="handleCloudUpload(props.row.cid)">
+                  <q-tooltip :delay="600">上传</q-tooltip>
+                </q-btn>
+<!--                <q-icon class="flashing" color="primary" name="sym_o_cloud_upload" size="sm"></q-icon>-->
+<!--                <q-icon class="flashing" color="blue" name="sym_o_cloud_download" size="sm"></q-icon>-->
+<!--                <q-icon size="sm" color="green" name="sym_o_cloud_done"></q-icon>-->
+<!--                <q-icon size="sm" color="grey" name="sym_o_cloud_off"></q-icon>-->
+<!--                <q-icon size="sm" color="secondary" name="sym_o_cloud_sync"></q-icon>-->
               </div>
             </q-card-actions>
           </q-card>

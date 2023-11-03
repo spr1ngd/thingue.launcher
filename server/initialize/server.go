@@ -25,7 +25,8 @@ var Server = new(server)
 func (s *server) Serve() {
 	if !s.isInitialized { //如果是第一次没有初始化
 		//s.router = router.BuildRouter(s.StaticFiles) //构建路由
-		InitGorm() // 初始化gorm
+		InitServerDB()  // 初始化gorm
+		InitStorageDB() // 初始化gorm
 		s.isInitialized = true
 	}
 	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Node{})

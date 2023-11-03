@@ -19,8 +19,9 @@ func BuildRouter() *gin.Engine {
 	//初始化base/api路由组
 	apiGroup := baseGroup.Group("/api")
 	{
-		//初始化base/api/instance路由组
+		//初始化base/api/*路由组
 		InstanceRouter.BuildRouter(apiGroup)
+		SyncRouter.BuildRouter(apiGroup)
 	}
 	return Router
 }
