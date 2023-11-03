@@ -22,7 +22,7 @@ var TicketService = ticketService{
 	cache: gcache.New(math.MaxInt64).LRU().Build(),
 }
 
-func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (response.InstanceTicket, error) {
+func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.InstanceTicket, error) {
 	ticket := response.InstanceTicket{}
 	// 数据库查询
 	//query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
@@ -46,9 +46,11 @@ func (s *ticketService) TicketSelect(selectCond request.TicketSelector) (respons
 		return ticket, errors.New("没有匹配的实例")
 	}
 	// 筛选掉未启动且未开启自动启停的实例
+	offset := 0
 	for i, instance := range serverInstances {
 		if instance.StateCode != 1 && instance.AutoControl == false {
-			serverInstances = append(serverInstances[:i], serverInstances[i+1:]...)
+			serverInstances = append(serverInstances[:i-offset], serverInstances[i+1-offset:]...)
+			offset++
 		}
 	}
 	if len(serverInstances) == 0 {

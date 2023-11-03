@@ -8,7 +8,7 @@ import (
 )
 
 func (g *HandlerGroup) TicketSelect(c *gin.Context) {
-	var selectCond request.TicketSelector
+	var selectCond request.SelectorCond
 	err := c.ShouldBindJSON(&selectCond)
 	ticket, err := core.TicketService.TicketSelect(selectCond)
 	if err != nil {

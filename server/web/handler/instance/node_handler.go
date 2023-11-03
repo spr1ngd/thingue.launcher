@@ -23,6 +23,17 @@ func (g *HandlerGroup) NodeRegister(c *gin.Context) {
 	response.OkWithMessage("注册成功", c)
 }
 
+func (g *HandlerGroup) InstanceSelect(c *gin.Context) {
+	var selectCond request.SelectorCond
+	err := c.ShouldBindJSON(&selectCond)
+	SelectedInstances, err := core.InstanceService.InstanceSelect(selectCond)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(SelectedInstances, c)
+	}
+}
+
 func (g *HandlerGroup) GetInstanceSid(c *gin.Context) {
 	nodeId := c.Query("nodeId")
 	instanceId := c.Query("instanceId")

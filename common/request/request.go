@@ -4,7 +4,7 @@ import (
 	"thingue-launcher/common/domain"
 )
 
-type TicketSelector struct {
+type SelectorCond struct {
 	SID               string `json:"sid"`
 	Name              string `json:"name"`
 	PlayerCount       int    `json:"playerCount"`

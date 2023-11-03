@@ -18,6 +18,7 @@ func (s *instanceRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		instanceRouter.POST("processControl", handler.InstanceGroup.ProcessControl)
 		instanceRouter.POST("pakControl", handler.InstanceGroup.PakControl)
 		instanceRouter.POST("ticketSelect", handler.InstanceGroup.TicketSelect)
+		instanceRouter.POST("instanceSelect", handler.InstanceGroup.InstanceSelect)
 		instanceRouter.GET("getTicketById", handler.InstanceGroup.GetTicketById)
 		instanceRouter.POST("updateProcessState", handler.InstanceGroup.UpdateProcessState)
 		instanceRouter.POST("collectLogs", handler.InstanceGroup.CollectLogs)
