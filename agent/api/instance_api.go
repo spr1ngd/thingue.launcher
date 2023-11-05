@@ -93,3 +93,11 @@ func (u *instanceApi) OpenInstanceLog(id uint) error {
 	runner := service.RunnerManager.GetRunnerById(id)
 	return runner.OpenLog()
 }
+
+func (u *instanceApi) StartUpload(id uint) error {
+	return service.SyncManager.StartUpload(id)
+}
+
+func (u *instanceApi) StartDownload(id uint) error {
+	return service.SyncManager.StartDownload(id)
+}

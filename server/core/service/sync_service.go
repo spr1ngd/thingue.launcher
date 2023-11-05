@@ -30,21 +30,25 @@ func (s *syncService) GetSyncConfig() []string {
 	return files
 }
 
-func (s *syncService) GetCloudFiles(resourceName string) []model.CloudFile {
+func (s *syncService) GetCloudFiles(res string) []model.CloudFile {
 	var cloudFiles []model.CloudFile
-	global.STORAGE_DB.Where("resource_name = ?", resourceName).Find(&cloudFiles)
+	global.STORAGE_DB.Where("res = ?", res).Find(&cloudFiles)
 	return cloudFiles
 }
 
-func (s *syncService) UpdateCloudFiles(resourceName string, files []*model.CloudFile) {
-	global.STORAGE_DB.Where("resource_name = ?", resourceName).Delete(&model.CloudFile{})
+func (s *syncService) UpdateCloudFiles(files []*model.CloudFile) {
+	if len(files) <= 0 {
+		return
+	}
+	res := files[0].Res
+	global.STORAGE_DB.Where("res = ?", res).Delete(&model.CloudFile{})
 	for _, file := range files {
-		file.ResourceName = resourceName
+		file.Res = res
 	}
 	global.STORAGE_DB.Save(files)
 
-	resource := model.CloudResource{
-		Name: resourceName,
+	resource := model.CloudRes{
+		Name: res,
 	}
 	global.STORAGE_DB.Find(&resource)
 	resource.LastUpdateAt = time.Now()

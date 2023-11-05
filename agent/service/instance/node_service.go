@@ -6,9 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"thingue-launcher/common/message"
+	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
@@ -103,6 +106,73 @@ func (s *nodeService) CollectLogs(traceId string) {
 	apiUrl := s.BaseUrl.JoinPath("/api/instance/uploadLogs").String()
 	req, _ := http.NewRequest("POST", apiUrl, &buf)
 	req.Header.Set("traceId", traceId)
+	client := http.Client{}
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+}
+
+func (s *nodeService) SyncGetSyncConfig() []any {
+	apiUrl := s.BaseUrl.JoinPath("/api/sync/getSyncConfig").String()
+	resp, err := util.HttpGet(apiUrl)
+	if err == nil {
+		res := response.Response{}
+		err = json.Unmarshal(resp, &res)
+		if err == nil {
+			if res.Code != 200 {
+				//err = errors.New("获取sid失败")
+			} else {
+				fmt.Println("res", res.Data)
+				return res.Data.([]any)
+			}
+		}
+	}
+	return nil
+}
+
+func (s *nodeService) SyncGetCloudFiles(res string) []any {
+	apiUrl := s.BaseUrl.JoinPath("/api/sync/getCloudFiles").String()
+	params := url.Values{}
+	params.Add("res", res)
+	resp, err := util.HttpGet(apiUrl + "?" + params.Encode())
+	if err == nil {
+		res := response.Response{}
+		err = json.Unmarshal(resp, &res)
+		if err == nil {
+			if res.Code != 200 {
+				//err = errors.New("获取sid失败")
+			} else {
+				fmt.Println("res", res.Data)
+				return res.Data.([]any)
+			}
+		}
+	}
+	return nil
+}
+
+func (s *nodeService) SyncUpdateCloudFiles(res string, files []model.CloudFile) {
+	reqData, _ := json.Marshal(files)
+	//apiUrl := s.BaseUrl.JoinPath("/api/sync/updateCloudFiles?res=" + res).String()
+	apiUrl := s.BaseUrl.JoinPath("/api/sync/updateCloudFiles").String()
+	_, _ = util.HttpPost(apiUrl, reqData)
+}
+
+func (s *nodeService) SyncUploadFile(path string, res string, filePath string) {
+	var buf bytes.Buffer
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = io.Copy(&buf, file)
+	defer file.Close()
+
+	apiUrl := s.BaseUrl.JoinPath("/api/sync/uploadFile").String()
+	req, _ := http.NewRequest("POST", apiUrl, &buf)
+	req.Header.Set("path", path)
+	req.Header.Set("res", res)
 	client := http.Client{}
 	resp, err := client.Do(req)
 	defer resp.Body.Close()

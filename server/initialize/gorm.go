@@ -32,7 +32,7 @@ func InitStorageDB() {
 	global.STORAGE_DB = db
 	if err = db.AutoMigrate(
 		&model.CloudFile{},
-		&model.CloudResource{},
+		&model.CloudRes{},
 	); err != nil {
 		fmt.Println(err)
 	}

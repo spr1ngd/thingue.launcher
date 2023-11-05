@@ -12,7 +12,7 @@ type staticRouter struct{}
 var StaticRouter = new(staticRouter)
 
 func (s *staticRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
-	Router.Static("/storage", "./storage")
+	Router.Static("/storage", "./thingue-launcher/storage")
 	if provider.AppConfig.LocalServer.UseExternalStatic {
 		Router.Static("/static", provider.AppConfig.LocalServer.StaticDir)
 	} else {
