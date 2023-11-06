@@ -25,4 +25,5 @@ type Instance struct {
 	PlayerIds         []string  `json:"playerIds"`
 	PlayerCount       uint      `json:"playerCount"`
 	IsInternal        bool      `json:"isInternal"`
+	CloudRes          string    `json:"cloudRes"`
 }

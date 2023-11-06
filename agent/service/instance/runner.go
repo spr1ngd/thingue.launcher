@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"thingue-launcher/agent/global"
 	"thingue-launcher/common/domain"
-	"thingue-launcher/common/message"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"time"
@@ -35,7 +34,7 @@ func (r *Runner) Start() error {
 		wsUrl := util.HttpUrlToWsUrl(provider.AppConfig.ServerURL, "/ws/streamer")
 		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.SID)
 	} else {
-		return errors.New("服务未连接")
+		return err
 	}
 	// 设置日志文件名称为实例名称
 	if r.Name != "" {
@@ -106,10 +105,7 @@ func (r *Runner) Stop() error {
 
 func (r *Runner) updateStateCode(stateCode int8) {
 	r.StateCode = stateCode
-	NodeService.SendProcessState(&message.NodeProcessStateUpdate{
-		SID:       r.SID,
-		StateCode: stateCode,
-	})
+	NodeService.SendProcessState(r.SID, stateCode)
 }
 
 func (r *Runner) OpenLog() error {

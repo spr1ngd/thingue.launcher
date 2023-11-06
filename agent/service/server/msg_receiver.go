@@ -24,6 +24,9 @@ func MsgReceive(msg message.Message) error {
 	case types.ServerCollectNodeLogs:
 		traceId := msg.Data.(string)
 		instance.NodeService.CollectLogs(traceId)
+	case types.SyncUpdate:
+		res := msg.Data.(string)
+		instance.SyncManager.UpdateCloudRes(res)
 	default:
 		return errors.New("不支持的消息类型")
 	}

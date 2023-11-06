@@ -34,6 +34,7 @@ type ServerInstance struct {
 	Labels            labels.Labels `json:"labels" gorm:"-"`
 	Paks              []domain.Pak  `json:"paks" gorm:"-"`
 	PakName           string        `json:"pakName" gorm:"-"`
+	CloudRes          string        `json:"cloudRes"`
 }
 
 func (instance *ServerInstance) AfterFind(tx *gorm.DB) (err error) {

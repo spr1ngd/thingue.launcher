@@ -22,6 +22,15 @@ func (p *nodeConnProvider) SendToNode(nodeId uint, message *message.Message) err
 	}
 }
 
+func (p *nodeConnProvider) SendToAllNode(message *message.Message) {
+	for _, conn := range p.ConnMap {
+		err := conn.WriteMessage(websocket.TextMessage, message.GetBytes())
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
 func (p *nodeConnProvider) CloseAllConnection() {
 	for _, conn := range p.ConnMap {
 		err := conn.Close()

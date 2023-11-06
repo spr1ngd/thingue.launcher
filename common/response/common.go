@@ -12,10 +12,10 @@ type PageResult struct {
 	PageSize int         `json:"pageSize"`
 }
 
-type Response struct {
-	Code int         `json:"code"`
-	Data interface{} `json:"data"`
-	Msg  string      `json:"msg"`
+type Response[T any] struct {
+	Code int    `json:"code"`
+	Data T      `json:"data"`
+	Msg  string `json:"msg"`
 }
 
 const (
@@ -23,9 +23,9 @@ const (
 	SUCCESS = 200
 )
 
-func Result(code int, data interface{}, msg string, c *gin.Context) {
+func Result[T any](code int, data T, msg string, c *gin.Context) {
 	// 开始时间
-	c.JSON(http.StatusOK, Response{
+	c.JSON(http.StatusOK, Response[T]{
 		code,
 		data,
 		msg,
@@ -40,11 +40,11 @@ func OkWithMessage(message string, c *gin.Context) {
 	Result(SUCCESS, map[string]interface{}{}, message, c)
 }
 
-func OkWithData(data interface{}, c *gin.Context) {
+func OkWithData[T any](data T, c *gin.Context) {
 	Result(SUCCESS, data, "查询成功", c)
 }
 
-func OkWithDetailed(data interface{}, message string, c *gin.Context) {
+func OkWithDetailed[T any](data T, message string, c *gin.Context) {
 	Result(SUCCESS, data, message, c)
 }
 
@@ -56,6 +56,6 @@ func FailWithMessage(message string, c *gin.Context) {
 	Result(ERROR, map[string]interface{}{}, message, c)
 }
 
-func FailWithDetailed(data interface{}, message string, c *gin.Context) {
+func FailWithDetailed[T any](data T, message string, c *gin.Context) {
 	Result(ERROR, data, message, c)
 }

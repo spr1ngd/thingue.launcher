@@ -21,10 +21,10 @@ func (g *SyncGroup) GetCloudFiles(c *gin.Context) {
 }
 
 func (g *SyncGroup) UpdateCloudFiles(c *gin.Context) {
-	//res := c.Query("res")
+	res := c.Query("res")
 	var files []*model.CloudFile
 	_ = c.ShouldBindJSON(&files)
-	core.SyncService.UpdateCloudFiles(files)
+	core.SyncService.UpdateCloudFiles(res, files)
 	response.Ok(c)
 }
 

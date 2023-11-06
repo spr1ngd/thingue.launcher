@@ -4,9 +4,9 @@ import {
   DeleteInstance,
   ListInstance,
   OpenInstanceLog,
+  StartDownload,
   StartInstance,
   StartUpload,
-  StartDownload,
   StopInstance
 } from "@wails/go/api/instanceApi";
 import {OpenExplorer} from "@wails/go/api/systemApi.js";
@@ -78,6 +78,7 @@ function handleNewSettings() {
         "-ResX=1920",
         "-ResY=1080",
       ],
+      cloudRes: "",
       faultRecover: false,
       enableH265: false,
       autoResizeRes: false,
@@ -107,28 +108,33 @@ async function handleOpenDir(path) {
 }
 
 async function handleCloudUpload(path) {
-  await StartUpload(path)
+  try {
+    await StartUpload(path)
+  } catch (e) {
+    Notify.create(e)
+  }
+}
+
+async function handleCloudDownload(path) {
+  try {
+    await StartDownload(path)
+  } catch (e) {
+    Notify.create(e)
+  }
 }
 
 async function handleSelectChange() {
   if (serverAddr.value) {
     await ConnectServer(serverAddr.value);
-    // try {
-    //   await ConnectServer(serverAddr.value);
-    //   Notify.create("服务连接成功")
-    // } catch (e) {
-    //   serverAddr.value = ""
-    //   Notify.create(`服务连接失败信息 ${e}`);
-    // }
   }
 }
 
-function handleOpenInstanceLog(cid) {
-  OpenInstanceLog(cid).then(() => {
-    Notify.create("操作成功")
-  }).catch(err => {
+async function handleOpenInstanceLog(cid) {
+  try {
+    await OpenInstanceLog(cid)
+  } catch (err) {
     Notify.create(err)
-  })
+  }
 }
 
 function handleStartInstance(cid) {
@@ -274,11 +280,11 @@ function handleGotoServer(tab) {
                   <q-tooltip :delay="600">打开实例日志</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="primary" flat dense icon="sym_o_cloud_upload"
-                       @click="StartUpload(props.row.cid)">
+                       @click="handleCloudUpload(props.row.cid)">
                   <q-tooltip :delay="600">上传</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="blue" flat dense icon="sym_o_cloud_download"
-                       @click="StartDownload(props.row.cid)">
+                       @click="handleCloudDownload(props.row.cid)">
                   <q-tooltip :delay="600">下载</q-tooltip>
                 </q-btn>
                 <!--                <q-icon class="flashing" color="primary" name="sym_o_cloud_upload" size="sm"></q-icon>-->

@@ -22,6 +22,7 @@ type ClientInstance struct {
 	EnableH265      bool        `json:"enableH265"`
 	AutoResizeRes   bool        `json:"autoResizeRes"`
 	IsInternal      bool        `json:"isInternal"`
+	CloudRes        string      `json:"cloudRes"`
 }
 
 func (clientInstance *ClientInstance) ToServerInstance() *ServerInstance {

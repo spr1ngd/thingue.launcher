@@ -41,7 +41,7 @@ func (g *InstanceGroup) GetInstanceSid(c *gin.Context) {
 	instanceId := c.Query("instanceId")
 	sid, err := core.NodeService.GetInstanceSid(nodeId, instanceId)
 	if err != nil {
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithDetailed("", err.Error(), c)
 		return
 	}
 	response.OkWithData(sid, c)

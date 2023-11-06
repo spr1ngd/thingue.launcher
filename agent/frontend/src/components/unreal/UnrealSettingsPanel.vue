@@ -102,7 +102,6 @@ async function save() {
             console.log(err)
             Notify.create(err)
           })
-          console.log(props.data.settings.cid)
         })
       } else {
         Notify.create({
@@ -130,27 +129,39 @@ async function save() {
       <q-list>
         <q-item>
           <q-item-section>
-            <q-item-label>实例名称</q-item-label>
+            <q-item-label>实例名称
+              <q-icon v-show="" name="sym_o_help" color="grey" class="q-mb-xs" size="xs">
+              </q-icon>
+            </q-item-label>
             <q-input dense outlined square v-model="props.data.settings.name"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label>&nbsp</q-item-label>
-            <div class="row">
-              <div class="col-6">
-                <q-tooltip anchor="top middle" self="center middle" :delay="1000">
-                  启用h265编码以支持8K，需要配合ThingBrowser使用
+            <q-item-label>云资源标识
+              <q-icon name="sym_o_help" color="grey" class="q-mb-xs" size="xs">
+                <q-tooltip anchor="top middle" self="center middle">
+                  具有相同云资源标识的实例之间可以同步云文件
                 </q-tooltip>
-                <q-toggle label="H265编码" v-model="props.data.settings.enableH265"/>
-              </div>
-<!--              <div class="col-6">-->
-<!--                <q-tooltip anchor="top middle" self="center middle" :delay="1000">-->
-<!--                  启用分辨率自适应前端会自动根据浏览器窗口大小调整分辨率-->
-<!--                </q-tooltip>-->
-<!--                <q-toggle label="分辨率自适应" v-model="props.data.settings.autoResizeRes"/>-->
-<!--              </div>-->
-            </div>
+              </q-icon>
+            </q-item-label>
+            <q-input dense outlined square v-model="props.data.settings.cloudRes"/>
           </q-item-section>
-          <q-item-section side>
+          <q-item-section>
+            <q-item-label>&nbsp</q-item-label>
+            <div class="col-6">
+              <q-tooltip anchor="top middle" self="center middle" :delay="1000">
+                启用h265编码以支持8K，需要配合ThingBrowser使用
+              </q-tooltip>
+              <q-toggle label="H265编码" v-model="props.data.settings.enableH265"/>
+            </div>
+            <div class="row">
+
+              <!--              <div class="col-6">-->
+              <!--                <q-tooltip anchor="top middle" self="center middle" :delay="1000">-->
+              <!--                  启用分辨率自适应前端会自动根据浏览器窗口大小调整分辨率-->
+              <!--                </q-tooltip>-->
+              <!--                <q-toggle label="分辨率自适应" v-model="props.data.settings.autoResizeRes"/>-->
+              <!--              </div>-->
+            </div>
           </q-item-section>
         </q-item>
         <q-item>
@@ -201,7 +212,7 @@ async function save() {
             </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-input  dense v-model="props.data.settings.stopDelay" label="关闭延迟时间（秒）" type="number"/>
+            <q-input dense v-model="props.data.settings.stopDelay" label="关闭延迟时间（秒）" type="number"/>
           </q-item-section>
         </q-item>
       </q-list>

@@ -5,4 +5,5 @@ var (
 	ServerConnectCallback         = "ServerConnectCallback"
 	ServerStreamerConnectedUpdate = "ServerStreamerConnectedUpdate"
 	ServerCollectNodeLogs         = "ServerCollectNodeLogs"
+	SyncUpdate                    = "SyncUpdate"
 )

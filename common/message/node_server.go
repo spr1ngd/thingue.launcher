@@ -58,3 +58,12 @@ func (msg *Message) RecvServerStreamerConnectedUpdate() *ServerStreamerConnected
 	mapstructure.Decode(msg.Data, &data)
 	return &data
 }
+
+type SyncUpdate string
+
+func (data SyncUpdate) Pack() *Message {
+	msg := Message{}
+	msg.Type = types.SyncUpdate
+	msg.Data = data
+	return &msg
+}

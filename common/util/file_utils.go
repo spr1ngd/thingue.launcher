@@ -2,12 +2,13 @@ package util
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"io"
 	"log"
 	"os"
 )
 
-func CalculateFileHash(filePath string) []byte {
+func CalculateFileHash(filePath string) string {
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
@@ -20,5 +21,5 @@ func CalculateFileHash(filePath string) []byte {
 	}
 
 	hash := hasher.Sum(nil)
-	return hash
+	return hex.EncodeToString(hash)
 }

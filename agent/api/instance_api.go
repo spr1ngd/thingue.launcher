@@ -99,5 +99,5 @@ func (u *instanceApi) StartUpload(id uint) error {
 }
 
 func (u *instanceApi) StartDownload(id uint) error {
-	return service.SyncManager.StartDownload(id)
+	return service.SyncManager.StartUpdate(id)
 }

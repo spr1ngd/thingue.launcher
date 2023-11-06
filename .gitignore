@@ -4,5 +4,6 @@ agent/frontend/dist
 server/frontend/dist
 /agent/frontend/wailsjs/go/
 thingue-launcher
+.idea
 config.yaml
 config.db

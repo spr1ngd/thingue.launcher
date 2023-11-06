@@ -54,3 +54,9 @@ func (m *instanceManager) SaveConfig(instance *model.ClientInstance) error {
 func (m *instanceManager) Delete(id uint) {
 	global.APP_DB.Delete(&model.ClientInstance{}, id)
 }
+
+func (m *instanceManager) GetByCloudRes(res string) []model.ClientInstance {
+	var instances []model.ClientInstance
+	global.APP_DB.Where(&model.ClientInstance{CloudRes: res}).Find(&instances)
+	return instances
+}

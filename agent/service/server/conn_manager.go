@@ -50,6 +50,7 @@ func (m *connManager) connect() error {
 	if err == nil {
 		m.IsConnected = true
 		m.conn = conn
+		instance.BaseRequest.SetBaseUrl(provider.AppConfig.ServerURL)
 		m.ServerConnUpdateChanel <- wsUrl
 		m.StartHeartbeatTask()
 		go func() {
@@ -64,6 +65,7 @@ func (m *connManager) connect() error {
 			}
 			_ = m.conn.Close()
 			m.IsConnected = false
+			instance.BaseRequest.UnsetBaseUrl()
 			m.ServerConnUpdateChanel <- wsUrl
 			if m.ServerAddr != "" {
 				m.StartConnectTask()
@@ -93,7 +95,6 @@ func (m *connManager) SetServerAddr(serverAddr string) error {
 		return errors.New("连接未断开")
 	} else {
 		m.ServerAddr = serverAddr
-		instance.NodeService.SetBaseUrl(serverAddr)
 		provider.AppConfig.ServerURL = m.ServerAddr
 		provider.WriteConfigToFile()
 		return nil

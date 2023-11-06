@@ -5,7 +5,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
+	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/global"
 	"time"
 )
@@ -36,11 +38,10 @@ func (s *syncService) GetCloudFiles(res string) []model.CloudFile {
 	return cloudFiles
 }
 
-func (s *syncService) UpdateCloudFiles(files []*model.CloudFile) {
+func (s *syncService) UpdateCloudFiles(res string, files []*model.CloudFile) {
 	if len(files) <= 0 {
 		return
 	}
-	res := files[0].Res
 	global.STORAGE_DB.Where("res = ?", res).Delete(&model.CloudFile{})
 	for _, file := range files {
 		file.Res = res
@@ -53,6 +54,8 @@ func (s *syncService) UpdateCloudFiles(files []*model.CloudFile) {
 	global.STORAGE_DB.Find(&resource)
 	resource.LastUpdateAt = time.Now()
 	global.STORAGE_DB.Save(&resource)
+	updateMsg := message.SyncUpdate(res)
+	provider.NodeConnProvider.SendToAllNode(updateMsg.Pack())
 }
 
 func (s *syncService) UploadFile(res string, _path string, reader io.ReadCloser) error {
