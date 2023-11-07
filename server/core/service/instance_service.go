@@ -94,7 +94,7 @@ func (s *instanceService) PakControl(control request.PakControl) error {
 	return provider.StreamerConnProvider.SendCommand(control.SID, &command)
 }
 
-func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]model.ServerInstance, error) {
+func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*model.ServerInstance, error) {
 	// 数据库查询
 	//query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
 	query := global.SERVER_DB
@@ -107,33 +107,32 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]mod
 	if selectCond.Name != "" {
 		query = query.Where("name = ?", selectCond.Name)
 	}
-	if selectCond.PlayerCount >= 0 {
+	if selectCond.PlayerCount != nil && *selectCond.PlayerCount >= 0 {
 		query = query.Where("player_count = ?", selectCond.PlayerCount)
 	}
-	var serverInstances []model.ServerInstance
-	query.Find(&serverInstances)
+	var findInstances []*model.ServerInstance
+	query.Find(&findInstances)
 	// 筛选掉未启动且未开启自动启停的实例
-	offset := 0
-	for i, instance := range serverInstances {
-		if instance.StateCode != 1 && instance.AutoControl == false {
-			serverInstances = append(serverInstances[:i-offset], serverInstances[i+1-offset:]...)
-			offset++
+	var readyInstances []*model.ServerInstance
+	for _, instance := range findInstances {
+		if instance.StateCode == 1 || instance.AutoControl == true {
+			readyInstances = append(readyInstances, instance)
 		}
 	}
-	if len(serverInstances) > 0 && selectCond.LabelSelector != "" {
+	if len(readyInstances) > 0 && selectCond.LabelSelector != "" {
 		// label匹配
 		selector, err := labels.Parse(selectCond.LabelSelector)
 		if err != nil {
 			return nil, err // label解析失败
 		}
-		var matchInstances []model.ServerInstance
-		for _, instance := range serverInstances {
+		var matchInstances []*model.ServerInstance
+		for _, instance := range readyInstances {
 			if selector.Matches(instance.Labels) {
 				matchInstances = append(matchInstances, instance)
 			}
 		}
 		return matchInstances, nil
 	} else {
-		return serverInstances, nil
+		return readyInstances, nil
 	}
 }

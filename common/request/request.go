@@ -7,7 +7,7 @@ import (
 type SelectorCond struct {
 	SID               string `json:"sid"`
 	Name              string `json:"name"`
-	PlayerCount       int    `json:"playerCount"`
+	PlayerCount       *int   `json:"playerCount"`
 	LabelSelector     string `json:"labelSelector"`
 	StreamerConnected bool   `json:"streamerConnected"`
 }

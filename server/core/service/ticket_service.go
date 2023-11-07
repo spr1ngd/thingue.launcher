@@ -36,24 +36,23 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 	if selectCond.Name != "" {
 		query = query.Where("name = ?", selectCond.Name)
 	}
-	if selectCond.PlayerCount >= 0 {
+	if selectCond.PlayerCount != nil && *selectCond.PlayerCount >= 0 {
 		query = query.Where("player_count = ?", selectCond.PlayerCount)
 	}
-	var serverInstances []model.ServerInstance
-	query.Find(&serverInstances)
+	var findInstances []*model.ServerInstance
+	query.Find(&findInstances)
 	// 判断查询后是否有结果
-	if len(serverInstances) == 0 {
+	if len(findInstances) == 0 {
 		return ticket, errors.New("没有匹配的实例")
 	}
 	// 筛选掉未启动且未开启自动启停的实例
-	offset := 0
-	for i, instance := range serverInstances {
-		if instance.StateCode != 1 && instance.AutoControl == false {
-			serverInstances = append(serverInstances[:i-offset], serverInstances[i+1-offset:]...)
-			offset++
+	var readyInstances []*model.ServerInstance
+	for _, instance := range findInstances {
+		if instance.StateCode == 1 || instance.AutoControl == true {
+			readyInstances = append(readyInstances, instance)
 		}
 	}
-	if len(serverInstances) == 0 {
+	if len(readyInstances) == 0 {
 		return ticket, errors.New("实例未启动且未开启自动启停")
 	}
 	if selectCond.LabelSelector != "" {
@@ -62,13 +61,13 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 		if err != nil {
 			return ticket, err // label解析失败
 		}
-		for _, instance := range serverInstances {
+		for _, instance := range readyInstances {
 			if selector.Matches(instance.Labels) {
 				//生成ticket
 				ticketId, _ := uuid.NewUUID()
 				//添加缓存
 				s.cache.SetWithExpire(ticketId.String(), instance.SID, 10*time.Second)
-				ticket.SetInstanceInfo(&instance)
+				ticket.SetInstanceInfo(instance)
 				ticket.Ticket = ticketId.String()
 				return ticket, nil
 			}
@@ -78,8 +77,8 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 		//不需要label匹配，挑选第一个生成ticket
 		ticketId, _ := uuid.NewUUID()
 		//添加缓存
-		s.cache.SetWithExpire(ticketId.String(), serverInstances[0].SID, 10*time.Second)
-		ticket.SetInstanceInfo(&serverInstances[0])
+		s.cache.SetWithExpire(ticketId.String(), readyInstances[0].SID, 10*time.Second)
+		ticket.SetInstanceInfo(readyInstances[0])
 		ticket.Ticket = ticketId.String()
 		return ticket, nil
 	}
