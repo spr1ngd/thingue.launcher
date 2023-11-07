@@ -94,10 +94,10 @@ func (u *instanceApi) OpenInstanceLog(id uint) error {
 	return runner.OpenLog()
 }
 
-func (u *instanceApi) StartUpload(id uint) error {
+func (u *instanceApi) StartUpload(id uint) (string, error) {
 	return service.SyncManager.StartUpload(id)
 }
 
-func (u *instanceApi) StartDownload(id uint) error {
+func (u *instanceApi) StartDownload(id uint) (string, error) {
 	return service.SyncManager.StartUpdate(id)
 }

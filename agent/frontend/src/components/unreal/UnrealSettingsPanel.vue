@@ -129,15 +129,13 @@ async function save() {
       <q-list>
         <q-item>
           <q-item-section>
-            <q-item-label>实例名称
-              <q-icon v-show="" name="sym_o_help" color="grey" class="q-mb-xs" size="xs">
-              </q-icon>
-            </q-item-label>
+            <q-item-label>实例名称</q-item-label>
             <q-input dense outlined square v-model="props.data.settings.name"/>
           </q-item-section>
           <q-item-section>
-            <q-item-label>云资源标识
-              <q-icon name="sym_o_help" color="grey" class="q-mb-xs" size="xs">
+            <q-item-label style="display: flex;align-items: center">
+              <span>云资源标识</span>
+              <q-icon name="sym_o_help" color="grey" class="q-pl-xs" size="xs">
                 <q-tooltip anchor="top middle" self="center middle">
                   具有相同云资源标识的实例之间可以同步云文件
                 </q-tooltip>

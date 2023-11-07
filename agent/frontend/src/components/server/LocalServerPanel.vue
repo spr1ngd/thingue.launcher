@@ -96,9 +96,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="row">
-    <div class="col-6">
-      <q-card style="width: 300px">
+  <div class="row reverse-wrap">
+    <div class="col-auto q-pa-sm" style="width: 300px">
+      <q-card>
         <q-card-section class="q-pa-sm">
           <div class="row no-wrap items-center q-pa-sm">
             <div class="text-h6">内置信令服务配置</div>
@@ -154,8 +154,8 @@ onUnmounted(() => {
         </q-card-section>
       </q-card>
     </div>
-    <div class="col-6">
-      <q-card style="">
+    <div class="col q-pa-sm" style="min-width: 320px">
+      <q-card>
         <q-card-section class="q-pa-sm">
           <div class="row no-wrap items-center q-pa-sm">
             <div class="text-h6">WebRTC中继配置</div>

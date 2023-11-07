@@ -2,18 +2,17 @@ package instance
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"thingue-launcher/common/model"
 	"thingue-launcher/common/util"
 )
 
-type syncManager struct {
-}
+type syncManager struct{}
 
 type FileInfo struct {
 	FilePath string
@@ -21,96 +20,81 @@ type FileInfo struct {
 	Hash     string
 }
 
-func (m *syncManager) StartUpload(id uint) error {
-	runner := RunnerManager.GetRunnerById(id)
-	res := strings.TrimSpace(runner.CloudRes)
-	if res == "" {
-		return errors.New("云资源标识未设置")
-	}
-	configs, err := SyncRequest.GetSyncConfig()
-	SyncRequest.GetCloudFiles(res)
-	var cloudFiles []model.CloudFile
-	var uploadFiles []string
-	var relFiles []string
-	for _, config := range configs {
-		absSyncPath := filepath.Join(filepath.Dir(runner.Instance.ExecPath), config)
-		stat, err := os.Stat(absSyncPath)
-		if os.IsNotExist(err) {
-			continue
-		}
-		if stat.IsDir() {
-			filepath.WalkDir(absSyncPath, func(path string, d fs.DirEntry, err error) error {
-				if !d.IsDir() {
-					rel, _ := filepath.Rel(absSyncPath, path)
-					uploadFiles = append(uploadFiles, path)
-					relFiles = append(relFiles, filepath.Join(config, rel))
-					cloudFiles = append(cloudFiles, model.CloudFile{
-						FileName: filepath.Join(config, rel),
-						Hash:     util.CalculateFileHash(path),
-					})
-				}
-				return err
-			})
-		} else {
-			uploadFiles = append(uploadFiles, absSyncPath)
-			relFiles = append(relFiles, config)
-			cloudFiles = append(cloudFiles, model.CloudFile{
-				FileName: config,
-				Hash:     util.CalculateFileHash(absSyncPath),
-			})
-		}
-	}
-	// 上传文件
-	for i, uploadFile := range uploadFiles {
-		SyncRequest.UploadFile(relFiles[i], res, uploadFile)
-	}
-	// 更新记录
-	SyncRequest.UpdateCloudFiles(res, cloudFiles)
-	return err
-}
-
-func (m *syncManager) StartDownload(id uint) error {
-	var err error
-	runner := RunnerManager.GetRunnerById(id)
-	res := strings.TrimSpace(runner.CloudRes)
-	if res == "" {
-		err = errors.New("云资源标识未设置")
-	}
-	files, err := SyncRequest.GetCloudFiles(res)
-	for _, cloudFile := range files {
-		downfile := filepath.Join(filepath.Dir(runner.ExecPath), cloudFile.FileName)
-		_, err := os.Stat(filepath.Dir(downfile))
-		if os.IsNotExist(err) {
-			err = os.MkdirAll(filepath.Dir(downfile), os.ModePerm)
-		}
-		out, _ := os.Create(downfile + ".tmp")
-
-		apiUrl := SyncRequest.BaseUrl.JoinPath("/storage", cloudFile.Res, strings.ReplaceAll(cloudFile.FileName, "\\", "/")).String()
-		resp, err := http.Get(apiUrl)
-		if err != nil {
-			continue
-		}
-		defer resp.Body.Close()
-		io.Copy(out, resp.Body)
-		out.Close()
-		os.Rename(downfile+".tmp", downfile)
-	}
-	return err
-}
-
-func (m *syncManager) StartUpdate(id uint) error {
+func (m *syncManager) StartUpload(id uint) (string, error) {
 	var err error
 	runner := RunnerManager.GetRunnerById(id)
 	cloudRes := strings.TrimSpace(runner.CloudRes)
 	if cloudRes == "" {
-		err = errors.New("云资源标识未设置")
+		return "", errors.New("云资源标识未设置")
 	}
-	cloudFileSet, cloudFileInfos, err := m.getCloudFiles(cloudRes)
-	err = m.UpdatePackage(cloudRes, filepath.Dir(runner.ExecPath), cloudFileSet, cloudFileInfos)
-	return err
+
+	cloudFileInfoSet, _, err := m.getCloudFiles(cloudRes)
+	if err != nil {
+		return "", err
+	}
+	localFileInfoSet, localFileInfos, err := m.getLocalFiles(filepath.Dir(runner.ExecPath))
+	if err != nil {
+		return "", err
+	}
+	var NewFileNames []string
+	var DeleteFiles []string
+	var ModFileNames []string
+	// 检查删除了哪些文件
+	for fileName := range cloudFileInfoSet {
+		_, ok := localFileInfoSet[fileName]
+		if !ok {
+			DeleteFiles = append(DeleteFiles, fileName)
+		}
+	}
+	// 检查新增修改了哪些文件
+	for fileName, localFileInfo := range localFileInfoSet {
+		cloudFileInfo, ok := cloudFileInfoSet[fileName]
+		if ok {
+			if localFileInfo.Hash != cloudFileInfo.Hash {
+				SyncRequest.UploadFile(fileName, cloudRes, localFileInfo.FilePath)
+				ModFileNames = append(ModFileNames, fileName)
+			}
+		} else {
+			SyncRequest.UploadFile(fileName, cloudRes, localFileInfo.FilePath)
+			NewFileNames = append(NewFileNames, fileName)
+		}
+	}
+	var results []string
+	if len(DeleteFiles) > 0 {
+		results = append(results, fmt.Sprintf("删除%d个文件", len(DeleteFiles)))
+		SyncRequest.DeleteCloudFiles(DeleteFiles, cloudRes)
+	}
+	if len(NewFileNames) > 0 {
+		results = append(results, fmt.Sprintf("新增%d个文件", len(NewFileNames)))
+	}
+	if len(ModFileNames) > 0 {
+		results = append(results, fmt.Sprintf("修改%d个文件", len(ModFileNames)))
+	}
+	if len(NewFileNames)+len(ModFileNames) > 0 || len(DeleteFiles) > 0 {
+		// 更新记录
+		SyncRequest.UpdateCloudFiles(cloudRes, localFileInfos)
+	} else {
+		results = append(results, "没有文件需要同步")
+	}
+	return strings.Join(results, "，"), nil
+}
+
+func (m *syncManager) StartUpdate(id uint) (string, error) {
+	var err error
+	runner := RunnerManager.GetRunnerById(id)
+	cloudRes := strings.TrimSpace(runner.CloudRes)
+	if cloudRes == "" {
+		return "", errors.New("云资源标识未设置")
+	}
+	cloudFileInfoSet, _, err := m.getCloudFiles(cloudRes)
+	if err != nil {
+		return "", err
+	}
+	return m.updatePackage(cloudRes, filepath.Dir(runner.ExecPath), cloudFileInfoSet)
 }
 
 func (m *syncManager) UpdateCloudRes(cloudRes string) error {
+	fmt.Println("检查更新")
 	instances := InstanceManager.GetByCloudRes(cloudRes)
 	// 筛除使用相同包的实例
 	uniqueMap := make(map[string]int)
@@ -121,25 +105,24 @@ func (m *syncManager) UpdateCloudRes(cloudRes string) error {
 			uniquePackages = append(uniquePackages, instance.ExecPath)
 		}
 	}
+	cloudFileSet, _, err := m.getCloudFiles(cloudRes)
 	// 对每个包进行更新
-	cloudFileSet, cloudFileInfos, err := m.getCloudFiles(cloudRes)
 	if err == nil {
 		for _, packagePath := range uniquePackages {
-			_ = m.UpdatePackage(cloudRes, packagePath, cloudFileSet, cloudFileInfos)
+			_, _ = m.updatePackage(cloudRes, filepath.Dir(packagePath), cloudFileSet)
 		}
 	}
 	return err
 }
 
-func (m *syncManager) UpdatePackage(cloudRes string, packagePath string, cloudFileSet map[string]*FileInfo, cloudFileInfos []*FileInfo) error {
+func (m *syncManager) updatePackage(cloudRes string, packagePath string, cloudFileSet map[string]*FileInfo) (string, error) {
 	localFileInfoSet, _, err := m.getLocalFiles(packagePath)
 	if err != nil {
-		return err
+		return "", err
 	}
 	var NewFileNames []string
 	var DeleteFiles []string
 	var ModFileNames []string
-
 	// 检查删除了哪些文件
 	for name, localFileInfo := range localFileInfoSet {
 		_, ok := cloudFileSet[name]
@@ -147,7 +130,6 @@ func (m *syncManager) UpdatePackage(cloudRes string, packagePath string, cloudFi
 			DeleteFiles = append(DeleteFiles, localFileInfo.FilePath)
 		}
 	}
-
 	// 检查新增修改了哪些文件
 	for name, cloudFileInfo := range cloudFileSet {
 		localFileInfo, ok := localFileInfoSet[name]
@@ -159,25 +141,29 @@ func (m *syncManager) UpdatePackage(cloudRes string, packagePath string, cloudFi
 			NewFileNames = append(NewFileNames, cloudFileInfo.FileName)
 		}
 	}
-
+	var results []string
 	if len(NewFileNames) > 0 {
 		for _, fileName := range NewFileNames {
 			m.downloadFile(cloudRes, fileName, packagePath)
 		}
+		results = append(results, fmt.Sprintf("新增%d个文件", len(NewFileNames)))
 	}
-
 	if len(ModFileNames) > 0 {
 		for _, fileName := range ModFileNames {
 			m.downloadFile(cloudRes, fileName, packagePath)
 		}
+		results = append(results, fmt.Sprintf("修改%d个文件", len(ModFileNames)))
 	}
-
 	if len(DeleteFiles) > 0 {
 		for _, deleteFile := range DeleteFiles {
 			os.Remove(deleteFile)
 		}
+		results = append(results, fmt.Sprintf("删除%d个文件", len(DeleteFiles)))
 	}
-	return err
+	if len(results) == 0 {
+		results = append(results, "没有文件需要同步")
+	}
+	return strings.Join(results, "，"), err
 }
 
 func (m *syncManager) getLocalFiles(packagePath string) (map[string]*FileInfo, []*FileInfo, error) {

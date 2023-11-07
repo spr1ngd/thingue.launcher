@@ -58,9 +58,9 @@ func (s *syncService) UpdateCloudFiles(res string, files []*model.CloudFile) {
 	provider.NodeConnProvider.SendToAllNode(updateMsg.Pack())
 }
 
-func (s *syncService) UploadFile(res string, _path string, reader io.ReadCloser) error {
+func (s *syncService) UploadFile(res string, name string, reader io.ReadCloser) error {
 	defer reader.Close()
-	outPath := filepath.Join("thingue-launcher/storage/", res, _path)
+	outPath := filepath.Join("thingue-launcher/storage/", res, name)
 	_, err := os.Stat(filepath.Dir(outPath))
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(filepath.Dir(outPath), os.ModePerm)
@@ -71,4 +71,10 @@ func (s *syncService) UploadFile(res string, _path string, reader io.ReadCloser)
 		_, err = io.Copy(out, reader)
 	}
 	return err
+}
+
+func (s *syncService) DeleteFiles(res string, names []string) {
+	for _, name := range names {
+		os.Remove(filepath.Join("thingue-launcher/storage/", res, name))
+	}
 }

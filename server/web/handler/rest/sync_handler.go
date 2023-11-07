@@ -28,10 +28,17 @@ func (g *SyncGroup) UpdateCloudFiles(c *gin.Context) {
 	response.Ok(c)
 }
 
+func (g *SyncGroup) DeleteCloudFiles(c *gin.Context) {
+	res := c.Query("res")
+	var names []string
+	_ = c.ShouldBindJSON(&names)
+	core.SyncService.DeleteFiles(res, names)
+	response.Ok(c)
+}
 func (g *SyncGroup) UploadFile(c *gin.Context) {
-	path := c.Request.Header.Get("path")
+	name := c.Request.Header.Get("name")
 	res := c.Request.Header.Get("res")
-	err := core.SyncService.UploadFile(res, path, c.Request.Body)
+	err := core.SyncService.UploadFile(res, name, c.Request.Body)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

@@ -55,14 +55,14 @@ func (s *syncRequest) GetCloudFiles(res string) ([]*model.CloudFile, error) {
 	return nil, err
 }
 
-func (s *syncRequest) UpdateCloudFiles(res string, files []model.CloudFile) {
+func (s *syncRequest) UpdateCloudFiles(cloudRes string, files []*FileInfo) {
 	reqData, _ := json.Marshal(files)
 	params := url.Values{}
-	params.Add("res", res)
+	params.Add("res", cloudRes)
 	_, _ = s.HttpPostWithParams("/api/sync/updateCloudFiles", params, reqData)
 }
 
-func (s *syncRequest) UploadFile(path string, res string, filePath string) {
+func (s *syncRequest) UploadFile(fileName string, cloudRes string, filePath string) {
 	var buf bytes.Buffer
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -73,8 +73,8 @@ func (s *syncRequest) UploadFile(path string, res string, filePath string) {
 
 	apiUrl := s.BaseUrl.JoinPath("/api/sync/uploadFile").String()
 	req, _ := http.NewRequest("POST", apiUrl, &buf)
-	req.Header.Set("path", path)
-	req.Header.Set("res", res)
+	req.Header.Set("name", fileName)
+	req.Header.Set("res", cloudRes)
 	client := http.Client{}
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
@@ -82,4 +82,11 @@ func (s *syncRequest) UploadFile(path string, res string, filePath string) {
 		fmt.Println("Error:", err)
 		return
 	}
+}
+
+func (s *syncRequest) DeleteCloudFiles(fileNames []string, cloudRes string) {
+	reqData, _ := json.Marshal(fileNames)
+	params := url.Values{}
+	params.Add("res", cloudRes)
+	_, _ = s.HttpPostWithParams("/api/sync/deleteCloudFiles", params, reqData)
 }

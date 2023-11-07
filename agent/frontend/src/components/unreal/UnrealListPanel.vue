@@ -109,7 +109,7 @@ async function handleOpenDir(path) {
 
 async function handleCloudUpload(path) {
   try {
-    await StartUpload(path)
+    Notify.create(await StartUpload(path))
   } catch (e) {
     Notify.create(e)
   }
@@ -117,7 +117,7 @@ async function handleCloudUpload(path) {
 
 async function handleCloudDownload(path) {
   try {
-    await StartDownload(path)
+    Notify.create(await StartDownload(path))
   } catch (e) {
     Notify.create(e)
   }

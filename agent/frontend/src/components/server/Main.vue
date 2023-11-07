@@ -39,7 +39,7 @@ watch(tab, () => {
       transition-prev="jump-up"
       transition-next="jump-up"
   >
-    <q-tab-panel name="local" class="q-pa-md">
+    <q-tab-panel name="local" class="q-pa-sm">
       <local-server/>
     </q-tab-panel>
     <q-tab-panel name="remote" class="q-pa-sm">
