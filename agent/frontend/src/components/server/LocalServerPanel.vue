@@ -19,11 +19,13 @@ let editor = null
 const PeerConnectionOptionsRef = ref()
 
 const localServerConfig = reactive({
-  bindAddr: "",
-  contentPath: "",
-  autoStart: false,
-  useExternalStatic: false,
-  staticDir: ""
+  data: {
+    bindAddr: "",
+    contentPath: "",
+    autoStart: false,
+    useExternalStatic: false,
+    staticDir: ""
+  }
 })
 
 let localServerStatus = ref(false)
@@ -51,6 +53,11 @@ function fillSampleCode() {
   editor.setValue("#配置示例\r\niceServers:\r\n  - urls:\r\n    - stun:10.100.40.6:19303\r\n    - turn:10.100.40.6:19303\r\n    username: username\r\n    credential: password")
 }
 
+async function rollbackChange() {
+  let appConfig = await GetAppConfig();
+  editor.setValue(appConfig.peerConnectionOptions)
+}
+
 onMounted(async () => {
   editor = monaco.editor.create(PeerConnectionOptionsRef.value, {
     value: "",
@@ -67,26 +74,16 @@ onMounted(async () => {
   // 获取本地server配置
   let appConfig = await GetAppConfig();
   editor.setValue(appConfig.peerConnectionOptions)
-  localServerConfig.bindAddr = appConfig.localServer.bindAddr
-  localServerConfig.contentPath = appConfig.localServer.contentPath
-  localServerConfig.autoStart = appConfig.localServer.autoStart
-  localServerConfig.useExternalStatic = appConfig.localServer.useExternalStatic
-  localServerConfig.staticDir = appConfig.localServer.staticDir
+  localServerConfig.data = appConfig.localServer
   // 获取本地server状态
   localServerStatus.value = await GetLocalServerStatus()
   //注册事件监听
   window.runtime.EventsOn("local_server_close", (err) => {
     localServerStatus.value = false
-    Notify.create(`服务关闭退出信息 ${err}`)
+    Notify.create(`服务关闭退出 ${err}`)
   })
   watch(localServerConfig, async (value, oldValue, onCleanup) => {
-    UpdateLocalServerConfig({
-      contentPath: localServerConfig.contentPath,
-      bindAddr: localServerConfig.bindAddr,
-      autoStart: localServerConfig.autoStart,
-      useExternalStatic: localServerConfig.useExternalStatic,
-      staticDir: localServerConfig.staticDir,
-    })
+    UpdateLocalServerConfig(localServerConfig.data)
   })
 })
 
@@ -110,32 +107,32 @@ onUnmounted(() => {
               <q-item-section>
                 <q-item-label>监听地址</q-item-label>
                 <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.bindAddr"/>
+                         v-model="localServerConfig.data.bindAddr"/>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section>
                 <q-item-label>服务路径</q-item-label>
                 <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.contentPath"/>
+                         v-model="localServerConfig.data.contentPath"/>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section avatar>
                 <q-toggle left-label :disable="localServerStatus"
-                          v-model="localServerConfig.useExternalStatic" label="使用外部静态资源"/>
+                          v-model="localServerConfig.data.useExternalStatic" label="使用外部静态资源"/>
               </q-item-section>
             </q-item>
             <q-item v-if="localServerConfig.useExternalStatic">
               <q-item-section>
                 <q-item-label>静态资源路径</q-item-label>
                 <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.staticDir"/>
+                         v-model="localServerConfig.data.staticDir"/>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section avatar>
-                <q-toggle left-label v-model="localServerConfig.autoStart" label="随应用启动"/>
+                <q-toggle left-label v-model="localServerConfig.data.autoStart" label="随应用启动"/>
               </q-item-section>
             </q-item>
             <q-item>
@@ -170,6 +167,11 @@ onUnmounted(() => {
                 <q-item clickable v-close-popup @click="fillSampleCode" dense>
                   <q-item-section>
                     <q-item-label>填充示例</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="rollbackChange" dense>
+                  <q-item-section>
+                    <q-item-label>还原更改</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>

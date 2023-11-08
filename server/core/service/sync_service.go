@@ -39,9 +39,6 @@ func (s *syncService) GetCloudFiles(res string) []model.CloudFile {
 }
 
 func (s *syncService) UpdateCloudFiles(res string, files []*model.CloudFile) {
-	if len(files) <= 0 {
-		return
-	}
 	global.STORAGE_DB.Where("res = ?", res).Delete(&model.CloudFile{})
 	for _, file := range files {
 		file.Res = res

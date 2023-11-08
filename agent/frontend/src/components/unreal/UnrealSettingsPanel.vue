@@ -27,7 +27,30 @@ onMounted(async () => {
     },
     automaticLayout: true,
     scrollBeyondLastLine: false,
-  });
+  })
+  editor.launchArgumentsEditor.addAction({
+    id: "id1",
+    label: "填充示例",
+    precondition: null,
+    keybindingContext: null,
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 1.5,
+    run: function (ed) {
+      editor.launchArgumentsEditor.setValue("-AudioMixer\n-RenderOffScreen\n-ForceRes\n-ResX=1920\n-ResY=1080")
+    },
+  })
+  editor.launchArgumentsEditor.addAction({
+    id: "id2",
+    label: "还原更改",
+    precondition: null,
+    keybindingContext: null,
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 2,
+    run: function (ed) {
+      editor.launchArgumentsEditor.setValue(props.data.settings.launchArguments.join('\n'))
+    },
+  })
+
   editor.metadataEditor = monaco.editor.create(metadataEditorRef.value, {
     value: props.data.settings.metadata,
     language: 'yaml',
@@ -38,7 +61,31 @@ onMounted(async () => {
     },
     automaticLayout: true,
     scrollBeyondLastLine: false
-  });
+  })
+  editor.metadataEditor.getModel().updateOptions({tabSize: 2})
+  editor.metadataEditor.addAction({
+    id: "id1",
+    label: "填充示例",
+    precondition: null,
+    keybindingContext: null,
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 1.5,
+    run: function (ed) {
+      editor.metadataEditor.setValue("labels: #以下是key: value格式\n  key1: value1\n  key2: value2")
+    },
+  })
+  editor.metadataEditor.addAction({
+    id: "id2",
+    label: "还原更改",
+    precondition: null,
+    keybindingContext: null,
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 2,
+    run: function (ed) {
+      editor.metadataEditor.setValue(props.data.settings.metadata)
+    },
+  })
+
   editor.paksConfigEditor = monaco.editor.create(paksConfigEditorRef.value, {
     value: props.data.settings.paksConfig,
     language: 'yaml',
@@ -49,17 +96,32 @@ onMounted(async () => {
     },
     automaticLayout: true,
     scrollBeyondLastLine: false
-  });
+  })
+  editor.paksConfigEditor.getModel().updateOptions({tabSize: 2})
+  editor.paksConfigEditor.addAction({
+    id: "id1",
+    label: "填充示例",
+    precondition: null,
+    keybindingContext: null,
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 1.5,
+    run: function (ed) {
+      editor.paksConfigEditor.setValue("paks:\n  - name: 宜宾换流站    #列表里显示名称\n    value: yibin       #pak目录名称 \n" +
+          "  - name: 雁门关换流站\n    value: yanmenguan\n  - name: 中都换流站\n    value: zhongdu")
+    },
+  })
+  editor.paksConfigEditor.addAction({
+    id: "id2",
+    label: "还原更改",
+    precondition: null,
+    keybindingContext: null,
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 2,
+    run: function (ed) {
+      editor.paksConfigEditor.setValue(props.data.settings.paksConfig)
+    },
+  })
 
-  editor.launchArgumentsEditor.onDidChangeModelContent((event) => {
-    props.data.settings.launchArguments = editor.launchArgumentsEditor.getValue().split('\n')
-  })
-  editor.metadataEditor.onDidChangeModelContent((event) => {
-    props.data.settings.metadata = editor.metadataEditor.getValue()
-  })
-  editor.paksConfigEditor.onDidChangeModelContent((event) => {
-    props.data.settings.paksConfig = editor.paksConfigEditor.getValue()
-  })
 })
 
 function select() {
@@ -79,13 +141,17 @@ function select() {
 }
 
 async function save() {
-  props.data.settings.stopDelay = Number(props.data.settings.stopDelay)
+  const settings = JSON.parse(JSON.stringify(props.data.settings))
+  settings.stopDelay = Number(settings.stopDelay)
+  settings.launchArguments = editor.launchArgumentsEditor.getValue().split('\n')
+  settings.metadata = editor.metadataEditor.getValue()
+  settings.paksConfig = editor.paksConfigEditor.getValue()
   if (props.data.type === 'new') {
-    await CreateInstance(props.data.settings)
+    await CreateInstance(settings)
     emit('openListPanel')
   } else if (props.data.type === 'edit') {
     try {
-      await SaveInstance(props.data.settings)
+      await SaveInstance(settings)
       emit('openListPanel')
     } catch (err) {
       if (err === "实例运行中无法修改配置") {
@@ -95,11 +161,9 @@ async function save() {
           cancel: true,
           persistent: true
         }).onOk(() => {
-          StopInstance(props.data.settings.cid).then(() => {
-            Notify.create("进程退出成功")
-            console.log("进程退出成功")
+          StopInstance(settings.cid).then(() => {
+            Notify.create("进程退出成功，请重新保存")
           }).catch(err => {
-            console.log(err)
             Notify.create(err)
           })
         })
@@ -150,15 +214,6 @@ async function save() {
                 启用h265编码以支持8K，需要配合ThingBrowser使用
               </q-tooltip>
               <q-toggle label="H265编码" v-model="props.data.settings.enableH265"/>
-            </div>
-            <div class="row">
-
-              <!--              <div class="col-6">-->
-              <!--                <q-tooltip anchor="top middle" self="center middle" :delay="1000">-->
-              <!--                  启用分辨率自适应前端会自动根据浏览器窗口大小调整分辨率-->
-              <!--                </q-tooltip>-->
-              <!--                <q-toggle label="分辨率自适应" v-model="props.data.settings.autoResizeRes"/>-->
-              <!--              </div>-->
             </div>
           </q-item-section>
         </q-item>
