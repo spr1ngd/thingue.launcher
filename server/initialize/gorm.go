@@ -16,7 +16,7 @@ func InitServerDB() {
 	}
 	global.SERVER_DB = db
 	if err = db.AutoMigrate(
-		&model.Node{},
+		&model.Client{},
 		&model.ServerInstance{},
 	); err != nil {
 		fmt.Println(err)

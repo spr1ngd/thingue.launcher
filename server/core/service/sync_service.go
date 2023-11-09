@@ -52,7 +52,7 @@ func (s *syncService) UpdateCloudFiles(res string, files []*model.CloudFile) {
 	resource.LastUpdateAt = time.Now()
 	global.STORAGE_DB.Save(&resource)
 	updateMsg := message.SyncUpdate(res)
-	provider.NodeConnProvider.SendToAllNode(updateMsg.Pack())
+	provider.ClientConnProvider.SendToAllClients(updateMsg.Pack())
 }
 
 func (s *syncService) UploadFile(res string, name string, reader io.ReadCloser) error {

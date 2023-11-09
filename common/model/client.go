@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-type Node struct {
+type Client struct {
 	ID         uint              `json:"id" gorm:"primarykey"`
 	CreatedAt  time.Time         `json:"createdAt"`
 	UpdatedAt  time.Time         `json:"updatedAt"`
-	Instances  []*ServerInstance `json:"instances" gorm:"foreignKey:NodeID"`
+	Instances  []*ServerInstance `json:"instances" gorm:"foreignKey:ClientID"`
 	Version    string            `json:"version"`
 	Workdir    string            `json:"workdir"`
 	Hostname   string            `json:"hostname"`
@@ -23,6 +23,6 @@ type Node struct {
 	SystemUser string            `json:"systemUser"`
 }
 
-func (node *Node) SetDeviceInfo(info domain.DeviceInfo) {
-	mapstructure.Decode(&info, node)
+func (client *Client) SetDeviceInfo(info domain.DeviceInfo) {
+	mapstructure.Decode(&info, client)
 }

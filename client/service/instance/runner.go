@@ -3,16 +3,17 @@ package instance
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
-	"thingue-launcher/agent/global"
+	"thingue-launcher/client/global"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"time"
+
+	"golang.org/x/sys/windows"
 )
 
 type Runner struct {
@@ -28,7 +29,7 @@ func (r *Runner) Start() error {
 	}
 	var launchArguments []string
 	// 设置PixelStreamingURL
-	sid, err := NodeService.GetInstanceSid(global.NODE_ID, r.CID)
+	sid, err := ClientService.GetInstanceSid(global.CLIENT_ID, r.CID)
 	if err == nil {
 		r.SID = sid
 		wsUrl := util.HttpUrlToWsUrl(provider.AppConfig.ServerURL, "/ws/streamer")
@@ -105,7 +106,7 @@ func (r *Runner) Stop() error {
 
 func (r *Runner) updateStateCode(stateCode int8) {
 	r.StateCode = stateCode
-	NodeService.SendProcessState(r.SID, stateCode)
+	ClientService.SendProcessState(r.SID, stateCode)
 }
 
 func (r *Runner) OpenLog() error {

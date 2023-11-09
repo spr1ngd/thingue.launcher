@@ -3,14 +3,15 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"net/url"
 	"sync"
-	"thingue-launcher/agent/service/instance"
+	"thingue-launcher/client/service/instance"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type connManager struct {
@@ -45,7 +46,7 @@ func (m *connManager) connect() error {
 	if m.IsConnected {
 		return nil
 	}
-	wsUrl := util.HttpUrlToWsUrl(m.ServerAddr, "/ws/agent")
+	wsUrl := util.HttpUrlToWsUrl(m.ServerAddr, "/ws/client")
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err == nil {
 		m.IsConnected = true

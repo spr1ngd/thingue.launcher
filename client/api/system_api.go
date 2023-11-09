@@ -2,12 +2,13 @@ package api
 
 import (
 	"context"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os/exec"
 	"path/filepath"
-	"thingue-launcher/agent/service"
+	"thingue-launcher/client/service"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/provider"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type systemApi struct {

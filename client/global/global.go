@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	APP_DB  *gorm.DB
-	APP_VP  *viper.Viper
-	lock    sync.RWMutex
-	NODE_ID uint
+	APP_DB    *gorm.DB
+	APP_VP    *viper.Viper
+	lock      sync.RWMutex
+	CLIENT_ID uint
 )

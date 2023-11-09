@@ -13,11 +13,11 @@ import (
 
 type InstanceGroup struct{}
 
-func (g *InstanceGroup) NodeRegister(c *gin.Context) {
-	var registerInfo request.NodeRegisterInfo
+func (g *InstanceGroup) ClientRegister(c *gin.Context) {
+	var registerInfo request.ClientRegisterInfo
 	err := c.ShouldBindJSON(&registerInfo)
 	fmt.Printf("%+v\n", registerInfo)
-	err = core.NodeService.NodeRegister(&registerInfo)
+	err = core.ClientService.ClientRegister(&registerInfo)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -37,9 +37,9 @@ func (g *InstanceGroup) InstanceSelect(c *gin.Context) {
 }
 
 func (g *InstanceGroup) GetInstanceSid(c *gin.Context) {
-	nodeId := c.Query("nodeId")
+	clientId := c.Query("clientId")
 	instanceId := c.Query("instanceId")
-	sid, err := core.NodeService.GetInstanceSid(nodeId, instanceId)
+	sid, err := core.ClientService.GetInstanceSid(clientId, instanceId)
 	if err != nil {
 		response.FailWithDetailed("", err.Error(), c)
 		return
@@ -47,15 +47,15 @@ func (g *InstanceGroup) GetInstanceSid(c *gin.Context) {
 	response.OkWithData(sid, c)
 }
 
-func (g *InstanceGroup) NodeList(c *gin.Context) {
-	list := core.NodeService.NodeList()
+func (g *InstanceGroup) ClientList(c *gin.Context) {
+	list := core.ClientService.ClientList()
 	response.OkWithDetailed(response.PageResult{
 		List: list,
 	}, "", c)
 }
 
 func (g *InstanceGroup) UpdateProcessState(c *gin.Context) {
-	var msg message.NodeProcessStateUpdate
+	var msg message.ClientProcessStateUpdate
 	err := c.ShouldBindJSON(&msg)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -98,7 +98,7 @@ func (g *InstanceGroup) CollectLogs(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = core.NodeService.CollectLogs(req)
+	err = core.ClientService.CollectLogs(req)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -114,7 +114,7 @@ func (g *InstanceGroup) UploadLogs(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = core.NodeService.UploadLogs(traceId, buf)
+	err = core.ClientService.UploadLogs(traceId, buf)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -124,7 +124,7 @@ func (g *InstanceGroup) UploadLogs(c *gin.Context) {
 
 func (g *InstanceGroup) DownloadLogs(c *gin.Context) {
 	traceId := c.Query("traceId")
-	err, buf := core.NodeService.DownloadLogs(traceId)
+	err, buf := core.ClientService.DownloadLogs(traceId)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {

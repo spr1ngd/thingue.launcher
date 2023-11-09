@@ -2,8 +2,8 @@ package server
 
 import (
 	"errors"
-	"thingue-launcher/agent/global"
-	"thingue-launcher/agent/service/instance"
+	"thingue-launcher/client/global"
+	"thingue-launcher/client/service/instance"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/message/types"
 )
@@ -11,19 +11,19 @@ import (
 func MsgReceive(msg message.Message) error {
 	switch msg.Type {
 	case types.ServerConnectCallback:
-		nodeId := msg.Data.(float64)
-		global.NODE_ID = uint(nodeId)
-		instance.NodeService.RegisterNode(global.NODE_ID)
+		clientId := msg.Data.(float64)
+		global.CLIENT_ID = uint(clientId)
+		instance.ClientService.RegisterClient(global.CLIENT_ID)
 	case types.ServerProcessControl:
 		processControl := msg.RecvServerProcessControl()
 		instance.RunnerManager.ExecCommand(
 			processControl.CID, processControl.Command)
 	case types.ServerStreamerConnectedUpdate:
 		update := msg.RecvServerStreamerConnectedUpdate()
-		instance.NodeService.UpdateStreamerConnected(update)
-	case types.ServerCollectNodeLogs:
+		instance.ClientService.UpdateStreamerConnected(update)
+	case types.ServerCollectClientLogs:
 		traceId := msg.Data.(string)
-		instance.NodeService.CollectLogs(traceId)
+		instance.ClientService.CollectLogs(traceId)
 	case types.SyncUpdate:
 		res := msg.Data.(string)
 		instance.SyncManager.UpdateCloudRes(res)

@@ -1,8 +1,8 @@
 import request from '@/request';
 
-export function getNodeList() {
+export function getClientList() {
     return request({
-        url: `/instance/nodeList`,
+        url: `/instance/clientList`,
         method: 'GET'
     });
 }

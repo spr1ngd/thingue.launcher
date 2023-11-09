@@ -10,7 +10,7 @@ import (
 
 type ServerInstance struct {
 	CID               uint          `json:"cid" gorm:"primarykey"`
-	NodeID            uint          `json:"nodeID" gorm:"primarykey"`
+	ClientID          uint          `json:"ClientID" gorm:"primarykey"`
 	SID               string        `json:"sid" gorm:"unique"`
 	Name              string        `json:"name"`
 	ExecPath          string        `json:"execPath"`

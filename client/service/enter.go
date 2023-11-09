@@ -1,8 +1,8 @@
 package service
 
 import (
-	"thingue-launcher/agent/service/instance"
-	"thingue-launcher/agent/service/server"
+	"thingue-launcher/client/service/instance"
+	"thingue-launcher/client/service/server"
 )
 
 var (

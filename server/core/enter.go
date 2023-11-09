@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	NodeService     = service.NodeService
+	ClientService   = service.ClientService
 	InstanceService = service.InstanceService
 	TicketService   = service.TicketService
 	SyncService     = service.SyncService

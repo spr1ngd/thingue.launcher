@@ -29,7 +29,7 @@ func (s *server) Serve() {
 		InitStorageDB() // 初始化gorm
 		s.isInitialized = true
 	}
-	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Node{})
+	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Client{})
 	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
 	s.server = http.Server{
 		Addr:    provider.AppConfig.LocalServer.BindAddr,
@@ -56,7 +56,7 @@ func (s *server) Start() {
 
 func (s *server) Stop() {
 	err := s.server.Close()
-	coreprovider.NodeConnProvider.CloseAllConnection()
+	coreprovider.ClientConnProvider.CloseAllConnection()
 	coreprovider.AdminConnProvider.CloseAllConnection()
 	if err != nil {
 		fmt.Printf("server shutdown failed: %v\n", err)

@@ -12,8 +12,8 @@ type SelectorCond struct {
 	StreamerConnected bool   `json:"streamerConnected"`
 }
 
-type NodeRegisterInfo struct {
-	NodeID     uint
+type ClientRegisterInfo struct {
+	ClientID   uint
 	DeviceInfo *domain.DeviceInfo
 	Instances  []*domain.Instance
 }
@@ -30,7 +30,7 @@ type PakControl struct {
 }
 
 type LogsCollect struct {
-	WsId    int    `json:"wsId"`
-	TraceId string `json:"traceId"`
-	NodeId  uint   `json:"nodeId"`
+	WsId     int    `json:"wsId"`
+	TraceId  string `json:"traceId"`
+	ClientId uint   `json:"clientId"`
 }

@@ -4,19 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"gopkg.in/yaml.v3"
 	"net"
 	"net/url"
 	"strings"
-	"thingue-launcher/agent/global"
-	"thingue-launcher/agent/service"
-	"thingue-launcher/agent/service/instance"
+	"thingue-launcher/client/global"
+	"thingue-launcher/client/service"
+	"thingue-launcher/client/service/instance"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/server/initialize"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"gopkg.in/yaml.v3"
 )
 
 type serverApi struct {

@@ -42,10 +42,10 @@ func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 		CID:       instance.CID,
 		Connected: connected,
 	}
-	provider.NodeConnProvider.SendToNode(instance.NodeID, updateMsg.Pack())
+	provider.ClientConnProvider.SendToClient(instance.ClientID, updateMsg.Pack())
 }
 
-func (s *instanceService) UpdateProcessState(msg *message.NodeProcessStateUpdate) {
+func (s *instanceService) UpdateProcessState(msg *message.ClientProcessStateUpdate) {
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Update("state_code", msg.StateCode)
 	provider.AdminConnProvider.BroadcastUpdate()
 }
@@ -66,7 +66,7 @@ func (s *instanceService) ProcessControl(processControl request.ProcessControl) 
 		CID:     instance.CID,
 		Command: processControl.Command,
 	}
-	provider.NodeConnProvider.SendToNode(instance.NodeID, control.Pack())
+	provider.ClientConnProvider.SendToClient(instance.ClientID, control.Pack())
 }
 
 func (s *instanceService) PakControl(control request.PakControl) error {

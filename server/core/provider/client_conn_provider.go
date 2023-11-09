@@ -3,26 +3,27 @@ package provider
 import (
 	"errors"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"thingue-launcher/common/message"
+
+	"github.com/gorilla/websocket"
 )
 
-type nodeConnProvider struct {
+type clientConnProvider struct {
 	ConnMap map[uint]*websocket.Conn
 }
 
-var NodeConnProvider = nodeConnProvider{ConnMap: make(map[uint]*websocket.Conn)}
+var ClientConnProvider = clientConnProvider{ConnMap: make(map[uint]*websocket.Conn)}
 
-func (p *nodeConnProvider) SendToNode(nodeId uint, message *message.Message) error {
-	conn := p.ConnMap[nodeId]
+func (p *clientConnProvider) SendToClient(clientId uint, message *message.Message) error {
+	conn := p.ConnMap[clientId]
 	if conn != nil {
 		return conn.WriteMessage(websocket.TextMessage, message.GetBytes())
 	} else {
-		return errors.New("节点不存在")
+		return errors.New("客户端不存在")
 	}
 }
 
-func (p *nodeConnProvider) SendToAllNode(message *message.Message) {
+func (p *clientConnProvider) SendToAllClients(message *message.Message) {
 	for _, conn := range p.ConnMap {
 		err := conn.WriteMessage(websocket.TextMessage, message.GetBytes())
 		if err != nil {
@@ -31,7 +32,7 @@ func (p *nodeConnProvider) SendToAllNode(message *message.Message) {
 	}
 }
 
-func (p *nodeConnProvider) CloseAllConnection() {
+func (p *clientConnProvider) CloseAllConnection() {
 	for _, conn := range p.ConnMap {
 		err := conn.Close()
 		if err != nil {

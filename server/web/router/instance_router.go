@@ -12,8 +12,8 @@ var InstanceRouter = new(instanceRouter)
 func (s *instanceRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	instanceRouter := Router.Group("instance")
 	{
-		instanceRouter.POST("nodeRegister", handler.InstanceGroup.NodeRegister)
-		instanceRouter.GET("nodeList", handler.InstanceGroup.NodeList)
+		instanceRouter.POST("clientRegister", handler.InstanceGroup.ClientRegister)
+		instanceRouter.GET("clientList", handler.InstanceGroup.ClientList)
 		instanceRouter.GET("getInstanceSid", handler.InstanceGroup.GetInstanceSid)
 		instanceRouter.POST("processControl", handler.InstanceGroup.ProcessControl)
 		instanceRouter.POST("pakControl", handler.InstanceGroup.PakControl)

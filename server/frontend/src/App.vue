@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import NodeList from '@/components/NodeList.vue';
-import NodeInfo from '@/components/NodeInfo.vue';
+import InstanceList from '@/components/InstanceList.vue';
+import ClientInfo from '@/components/ClientInfo.vue';
 import InstanceInfo from '@/components/InstanceInfo.vue';
 
 const rightDrawerOpen = ref(false);
@@ -11,7 +11,7 @@ const sessionIdProp = ref('');
 
 let currentTab = '';
 const tabs = {
-  'agent': NodeInfo,
+  'client': ClientInfo,
   'instance': InstanceInfo
 };
 
@@ -45,7 +45,7 @@ function showInfo(row, sessionId, type) {
       <component :is="tabs[currentTab]" :row="rowProp" :sessionId="sessionIdProp" @close="rightDrawerOpen = false"></component>
     </q-drawer>
     <q-page-container>
-      <node-list @someEvent="showInfo" />
+      <InstanceList @someEvent="showInfo" />
     </q-page-container>
   </q-layout>
 </template>

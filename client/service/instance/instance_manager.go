@@ -2,10 +2,11 @@ package instance
 
 import (
 	"errors"
+	"thingue-launcher/client/global"
+	"thingue-launcher/common/model"
+
 	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
-	"thingue-launcher/agent/global"
-	"thingue-launcher/common/model"
 )
 
 type instanceManager struct{}

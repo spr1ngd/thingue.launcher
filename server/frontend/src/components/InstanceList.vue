@@ -1,14 +1,14 @@
 <script setup>
 import {onMounted, ref, watch} from 'vue';
 import {getPaksName, processStateToText} from '@/utils';
-import {controlProcess, getNodeList, sendPakControl} from '@/api';
+import {controlProcess, getClientList, sendPakControl} from '@/api';
 import {Notify} from 'quasar';
 import {emitter} from "@/ws";
 
 const rows = ref([])
 
 const columns = [
-  {name: 'id', label: '节点编号', field: 'id', align: 'center'},
+  {name: 'id', label: '客户端编号', field: 'id', align: 'center'},
   {name: 'hostname', label: '主机名', field: 'hostname', align: 'center'},
   {name: 'ips', label: 'IP地址', field: 'ips', align: 'center'},
   {
@@ -71,7 +71,7 @@ function handleClear(value) {
 }
 
 async function list() {
-  const data = await getNodeList()
+  const data = await getClientList()
   rows.value = data.data.list;
 }
 
@@ -92,7 +92,7 @@ onMounted(() => {
 
 </script>
 <template>
-  <q-table title="节点列表" :rows="rows" :columns="columns" row-key="id" v-model:expanded="expanded">
+  <q-table title="实例列表" :rows="rows" :columns="columns" row-key="id" v-model:expanded="expanded">
     <template v-slot:header="props">
       <q-tr :props="props">
         <q-th align="center"/>
@@ -113,7 +113,9 @@ onMounted(() => {
           {{ col.value }}
         </q-td>
         <q-td :align="'center'">
-          <q-btn size="sm" dense color="primary" @click="$emit('someEvent', props.row, props.row.sessionId, 'agent')">更多信息</q-btn>
+          <q-btn size="sm" dense color="primary" @click="$emit('someEvent', props.row, props.row.sessionId, 'client')">
+            更多信息
+          </q-btn>
         </q-td>
       </q-tr>
       <!-- 子列表 -->

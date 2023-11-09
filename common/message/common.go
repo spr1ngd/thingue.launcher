@@ -2,7 +2,7 @@ package message
 
 import "encoding/json"
 
-// Message Server与Node通信消息格式
+// Message Server与Client通信消息格式
 type Message struct {
 	Type string `json:"type"`
 	Data any    `json:"data"`

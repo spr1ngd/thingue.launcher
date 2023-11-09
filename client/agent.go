@@ -1,9 +1,9 @@
-package agent
+package client
 
 import (
 	"embed"
-	"thingue-launcher/agent/initialize"
-	"thingue-launcher/agent/service"
+	"thingue-launcher/client/initialize"
+	"thingue-launcher/client/service"
 )
 
 //go:embed all:frontend/dist

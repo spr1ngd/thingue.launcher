@@ -2,12 +2,13 @@ package provider
 
 import (
 	"fmt"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"thingue-launcher/common/constants"
+
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 var AppConfig = new(Config)
@@ -63,7 +64,6 @@ func InitConfigFromFile() {
 	// 加载配置文件
 	viper.SetConfigFile(configFile)
 	_ = viper.ReadInConfig()
-	//_ = viper.UnmarshalKey("agent", &AppConfig)
 	viper.Unmarshal(&AppConfig)
 }
 

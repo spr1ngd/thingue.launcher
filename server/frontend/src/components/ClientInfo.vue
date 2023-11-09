@@ -11,7 +11,7 @@ async function handleCollectClick() {
   const traceId = uuidv4()
   let res = await collectLogs({
     wsId: wsId,
-    nodeId: props.row.id,
+    clientId: props.row.id,
     traceId
   });
   if (res.code === 200) {
@@ -69,7 +69,7 @@ function doLogsDownload(traceId) {
   <div class="q-pa-md q-gutter-md">
     <q-list>
       <q-item-label header>
-        <div class="text-h5">节点详细信息</div>
+        <div class="text-h5">客户端详细信息</div>
       </q-item-label>
       <q-item>
         <q-item-section>
@@ -126,7 +126,7 @@ function doLogsDownload(traceId) {
         </q-item-section>
       </q-item>
     </q-list>
-    <q-btn color="white" text-color="primary" label="收集节点日志" @click="handleCollectClick"/>
+    <q-btn color="white" text-color="primary" label="收集客户端日志" @click="handleCollectClick"/>
     <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')"/>
   </div>
 </template>

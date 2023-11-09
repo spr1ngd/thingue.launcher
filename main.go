@@ -3,7 +3,7 @@ package main
 import (
 	"embed"
 	"os"
-	"thingue-launcher/agent"
+	"thingue-launcher/client"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/provider"
 )
@@ -23,6 +23,6 @@ func main() {
 	}
 	provider.InitConfigFromFile()
 	provider.SetWebStatic("server/frontend/dist", staticFiles)
-	agent.Startup()
-	agent.Shutdown()
+	client.Startup()
+	client.Shutdown()
 }

@@ -17,20 +17,20 @@ import (
 	"time"
 )
 
-type nodeService struct {
+type clientService struct {
 	WsIdMap     map[string]int
 	BufferCache gcache.Cache
 }
 
-var NodeService = nodeService{
+var ClientService = clientService{
 	WsIdMap:     make(map[string]int),
 	BufferCache: gcache.New(math.MaxInt64).LRU().Build(),
 }
 
-func (s *nodeService) NodeRegister(registerInfo *request.NodeRegisterInfo) error {
-	var node model.Node
-	global.SERVER_DB.Find(&node, registerInfo.NodeID)
-	node.SetDeviceInfo(*registerInfo.DeviceInfo)
+func (s *clientService) ClientRegister(registerInfo *request.ClientRegisterInfo) error {
+	var client model.Client
+	global.SERVER_DB.Find(&client, registerInfo.ClientID)
+	client.SetDeviceInfo(*registerInfo.DeviceInfo)
 	var serverInstances = make([]*model.ServerInstance, 0)
 	for _, instance := range registerInfo.Instances {
 		var serverInstance = &model.ServerInstance{}
@@ -41,31 +41,31 @@ func (s *nodeService) NodeRegister(registerInfo *request.NodeRegisterInfo) error
 		}
 		serverInstances = append(serverInstances, serverInstance)
 	}
-	node.Instances = serverInstances
-	global.SERVER_DB.Save(&node)
+	client.Instances = serverInstances
+	global.SERVER_DB.Save(&client)
 	provider.AdminConnProvider.BroadcastUpdate()
 	return nil
 }
 
-func (s *nodeService) NodeList() []model.Node {
-	var nodeList []model.Node
-	global.SERVER_DB.Preload("Instances").Find(&nodeList)
-	return nodeList
+func (s *clientService) ClientList() []model.Client {
+	var clients []model.Client
+	global.SERVER_DB.Preload("Instances").Find(&clients)
+	return clients
 }
 
-func (s *nodeService) NodeOnline(node *model.Node) {
-	global.SERVER_DB.Create(&node)
+func (s *clientService) ClientOnline(client *model.Client) {
+	global.SERVER_DB.Create(&client)
 }
 
-func (s *nodeService) NodeOffline(node *model.Node) {
-	global.SERVER_DB.Delete(&node)
-	global.SERVER_DB.Where("node_id = ?", node.ID).Delete(&model.ServerInstance{})
+func (s *clientService) ClientOffline(client *model.Client) {
+	global.SERVER_DB.Delete(&client)
+	global.SERVER_DB.Where("client_id = ?", client.ID).Delete(&model.ServerInstance{})
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
-func (s *nodeService) GetInstanceSid(nodeId string, instanceId string) (string, error) {
+func (s *clientService) GetInstanceSid(clientId string, instanceId string) (string, error) {
 	var instance model.ServerInstance
-	err := global.SERVER_DB.Where("node_id = ? AND c_id = ?", nodeId, instanceId).First(&instance).Error
+	err := global.SERVER_DB.Where("client_id = ? AND c_id = ?", clientId, instanceId).First(&instance).Error
 	if err == nil {
 		return instance.SID, err
 	} else {
@@ -73,15 +73,15 @@ func (s *nodeService) GetInstanceSid(nodeId string, instanceId string) (string, 
 	}
 }
 
-func (s *nodeService) CollectLogs(req request.LogsCollect) error {
+func (s *clientService) CollectLogs(req request.LogsCollect) error {
 	s.WsIdMap[req.TraceId] = req.WsId
-	return provider.NodeConnProvider.SendToNode(req.NodeId, &message.Message{
-		Type: types.ServerCollectNodeLogs,
+	return provider.ClientConnProvider.SendToClient(req.ClientId, &message.Message{
+		Type: types.ServerCollectClientLogs,
 		Data: req.TraceId,
 	})
 }
 
-func (s *nodeService) UploadLogs(traceId string, buf *bytes.Buffer) error {
+func (s *clientService) UploadLogs(traceId string, buf *bytes.Buffer) error {
 	err := s.BufferCache.SetWithExpire(traceId, buf, time.Second*60)
 	if err != nil {
 		fmt.Println(err)
@@ -92,7 +92,7 @@ func (s *nodeService) UploadLogs(traceId string, buf *bytes.Buffer) error {
 	return nil
 }
 
-func (s *nodeService) DownloadLogs(traceId string) (error, *bytes.Buffer) {
+func (s *clientService) DownloadLogs(traceId string) (error, *bytes.Buffer) {
 	value, err := s.BufferCache.Get(traceId)
 	if err != nil {
 		return errors.New("缓冲区数据超时被清除"), nil

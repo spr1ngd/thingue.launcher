@@ -15,15 +15,15 @@ import (
 	"thingue-launcher/common/util"
 )
 
-type nodeService struct {
+type clientService struct {
 	*baseRequest
 }
 
-var NodeService = nodeService{BaseRequest}
+var ClientService = clientService{BaseRequest}
 
-func (s *nodeService) GetInstanceSid(nodeId uint, instanceId uint) (string, error) {
+func (s *clientService) GetInstanceSid(clientId uint, instanceId uint) (string, error) {
 	params := url.Values{}
-	params.Add("nodeId", strconv.Itoa(int(nodeId)))
+	params.Add("clientId", strconv.Itoa(int(clientId)))
 	params.Add("instanceId", strconv.Itoa(int(instanceId)))
 	result, err := s.HttpGetWithParams("/api/instance/getInstanceSid", params)
 	if err == nil {
@@ -40,14 +40,14 @@ func (s *nodeService) GetInstanceSid(nodeId uint, instanceId uint) (string, erro
 	return "", err
 }
 
-func (s *nodeService) RegisterNode(nodeId uint) {
-	registerInfo := request.NodeRegisterInfo{
-		NodeID:     nodeId,
+func (s *clientService) RegisterClient(clientId uint) {
+	registerInfo := request.ClientRegisterInfo{
+		ClientID:   clientId,
 		DeviceInfo: GetDeviceInfo(),
 		Instances:  RunnerManager.List(), //todo 去除不必要信息
 	}
 	reqData, _ := json.Marshal(registerInfo)
-	result, err := s.HttpPost("/api/instance/nodeRegister", reqData)
+	result, err := s.HttpPost("/api/instance/clientRegister", reqData)
 	if err == nil {
 		res := response.Response[any]{}
 		err = json.Unmarshal(result, &res)
@@ -61,8 +61,8 @@ func (s *nodeService) RegisterNode(nodeId uint) {
 	}
 }
 
-func (s *nodeService) SendProcessState(sid string, stateCode int8) {
-	reqData, _ := json.Marshal(&message.NodeProcessStateUpdate{
+func (s *clientService) SendProcessState(sid string, stateCode int8) {
+	reqData, _ := json.Marshal(&message.ClientProcessStateUpdate{
 		SID:       sid,
 		StateCode: stateCode,
 	})
@@ -72,7 +72,7 @@ func (s *nodeService) SendProcessState(sid string, stateCode int8) {
 	}
 }
 
-func (s *nodeService) UpdateStreamerConnected(msg *message.ServerStreamerConnectedUpdate) {
+func (s *clientService) UpdateStreamerConnected(msg *message.ServerStreamerConnectedUpdate) {
 	runner := RunnerManager.GetRunnerById(msg.CID)
 	if runner != nil {
 		runner.StreamerConnected = msg.Connected
@@ -80,7 +80,7 @@ func (s *nodeService) UpdateStreamerConnected(msg *message.ServerStreamerConnect
 	}
 }
 
-func (s *nodeService) CollectLogs(traceId string) {
+func (s *clientService) CollectLogs(traceId string) {
 	var filesToCompress []string
 	instances := RunnerManager.List()
 	for _, instance := range instances {

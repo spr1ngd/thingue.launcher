@@ -2,10 +2,11 @@ package initialize
 
 import (
 	"fmt"
+	"thingue-launcher/client/global"
+	"thingue-launcher/common/model"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"thingue-launcher/agent/global"
-	"thingue-launcher/common/model"
 )
 
 func InitGorm() {
