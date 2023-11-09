@@ -14,31 +14,23 @@ type instanceService struct{}
 
 var InstanceService = new(instanceService)
 
-func (s *instanceService) GetInstanceBySid(sid string) model.ServerInstance {
-	var instance model.ServerInstance
-	global.SERVER_DB.Where("s_id = ?", sid).First(&instance)
+func (s *instanceService) GetInstanceBySid(sid string) *model.ServerInstance {
+	instance := &model.ServerInstance{}
+	global.SERVER_DB.Where("s_id = ?", sid).First(instance)
 	return instance
 }
 
-func (s *instanceService) AddPlayer(sid string, playerId string) {
-	instance := s.GetInstanceBySid(sid)
-	instance.PlayerIds = append(instance.PlayerIds, playerId)
-	instance.PlayerCount = instance.PlayerCount + 1
-	global.SERVER_DB.Save(&instance)
-	provider.AdminConnProvider.BroadcastUpdate()
-}
-
-func (s *instanceService) RemovePlayer(sid string, playerId string) (bool, uint) {
-	instance := s.GetInstanceBySid(sid)
-	for i, id := range instance.PlayerIds {
-		if id == playerId {
-			instance.PlayerIds = append(instance.PlayerIds[:i], instance.PlayerIds[i+1:]...)
-		}
+func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *model.ServerInstance {
+	instance := s.GetInstanceBySid(streamer.SID)
+	var playerIds []uint
+	for _, connector := range streamer.PlayerConnectors {
+		playerIds = append(playerIds, connector.PlayerId)
 	}
-	instance.PlayerCount = instance.PlayerCount - 1
+	instance.PlayerIds = playerIds
+	instance.PlayerCount = uint(len(streamer.PlayerConnectors))
 	global.SERVER_DB.Save(&instance)
 	provider.AdminConnProvider.BroadcastUpdate()
-	return instance.AutoControl, instance.StopDelay
+	return instance
 }
 
 func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
@@ -91,7 +83,11 @@ func (s *instanceService) PakControl(control request.PakControl) error {
 	} else {
 		return errors.New("不支持的消息类型")
 	}
-	return provider.StreamerConnProvider.SendCommand(control.SID, &command)
+	streamer, err := provider.SdpConnProvider.GetStreamer(control.SID)
+	if err == nil {
+		streamer.SendCommand(&command)
+	}
+	return err
 }
 
 func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*model.ServerInstance, error) {

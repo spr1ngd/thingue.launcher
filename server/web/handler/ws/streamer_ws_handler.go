@@ -3,7 +3,9 @@ package ws
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/server/core"
+	"thingue-launcher/common/util"
+	"thingue-launcher/server/core/provider"
+	"thingue-launcher/server/core/service"
 )
 
 func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
@@ -13,19 +15,41 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	streamer := core.StreamerConnManager.NewStreamerConnector(id, conn)
+	streamer := provider.SdpConnProvider.NewStreamer(id, conn)
 	streamer.SendConfig()
-
+	service.SdpService.OnStreamerConnect(streamer)
 	for {
-		// 读取客户端发送的消息
-		_, msg, err := conn.ReadMessage()
+		// 接收消息
+		_, msgStr, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("WebSocket read error:", err)
 			break
 		}
-		// 将接收到的消息交给Streamer处理
-		streamer.HandleMessage(msg)
+		msg := util.JsonStrToMapData(msgStr)
+		// 处理不同消息类型
+		msgType := msg["type"].(string)
+		if msgType == "ping" {
+			streamer.SendPong(msg)
+		} else if msgType == "offer" { // for new streamer
+			streamer.ForwardMessage(msg)
+		} else if msgType == "answer" { // for old streamer
+			streamer.ForwardMessage(msg)
+		} else if msgType == "iceCandidate" {
+			streamer.ForwardMessage(msg)
+		} else if msgType == "disconnectPlayer" {
+			// todo
+			fmt.Println(msg)
+		} else if msgType == "state" {
+			// todo
+			fmt.Println(msg)
+		} else if msgType == "rendering" {
+			service.InstanceService.UpdateRendering(streamer.SID, msg["value"].(bool))
+		} else if msgType == "hotReloadComplete" {
+			service.InstanceService.UpdatePak(streamer.SID, "")
+		} else if msgType == "loadComplete" {
+			service.InstanceService.UpdatePak(streamer.SID, msg["bundleName"].(string))
+		} else {
+			streamer.SendCloseMsg(1008, "不支持的消息类型")
+		}
 	}
-	conn.Close()
-	core.StreamerConnManager.OnStreamerDisconnect(streamer)
+	service.SdpService.OnStreamerDisconnect(streamer)
 }

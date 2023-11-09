@@ -3,7 +3,9 @@ package ws
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/server/core"
+	"thingue-launcher/common/util"
+	"thingue-launcher/server/core/provider"
+	"thingue-launcher/server/core/service"
 	"time"
 )
 
@@ -13,27 +15,46 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 		fmt.Println("WebSocket upgrade error:", err)
 		return
 	}
-
-	playerConnector := core.PlayerConnManager.NewConnector(conn)
-	// 关联Streamer
-	ticket := c.Param("ticket")
-	err = core.PlayerConnManager.SetStreamer(playerConnector, ticket)
+	player := provider.SdpConnProvider.NewPlayer(conn)
+	// 连接Streamer
+	err = service.SdpService.ConnectStreamer(player, c.Param("ticket"))
 	if err == nil {
-		playerConnector.SendConfig()
+		player.SendConfig()
 		for {
-			// 读取客户端发送的消息
-			_, msg, err := conn.ReadMessage()
+			// 接收消息
+			_, msgStr, err := conn.ReadMessage()
 			if err != nil {
-				fmt.Println("WebSocket read error:", err)
 				break
 			}
-			// 处理接收到的消息
-			playerConnector.HandleMessage(msg)
+			msg := util.JsonStrToMapData(msgStr)
+			// 处理不同消息类型
+			msgType := msg["type"].(string)
+			if msgType == "ping" {
+				player.SendPong(msg)
+			} else if msgType == "listStreamers" {
+				player.ListStreamers()
+			} else if msgType == "offer" { // for old streamer
+				player.Offer(msg)
+				service.SdpService.OnPlayerPaired(player)
+			} else if msgType == "subscribe" { // for new streamer
+				player.Subscribe()
+				service.SdpService.OnPlayerPaired(player)
+			} else if msgType == "answer" { // for new streamer
+				player.ForwardMessage(msg)
+			} else if msgType == "iceCandidate" {
+				player.ForwardMessage(msg)
+			} else if msgType == "stats" {
+				//todo
+			} else if msgType == "kick" {
+				player.Kick()
+			} else {
+				player.SendCloseMsg(1008, "不支持的消息类型")
+			}
 		}
-		playerConnector.Close()
-		core.PlayerConnManager.OnPlayerDisConnect(playerConnector)
+		service.SdpService.OnPlayerDisConnect(player)
 	} else {
-		time.Sleep(5 * time.Second)
-		playerConnector.Close()
+		// 无法连接Streamer
+		time.Sleep(3 * time.Second)
+		player.Close()
 	}
 }

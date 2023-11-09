@@ -23,7 +23,7 @@ type ServerInstance struct {
 	Pid               int           `json:"pid"`
 	StateCode         int8          `json:"stateCode"`
 	StreamerConnected bool          `json:"streamerConnected"`
-	PlayerIds         StringSlice   `json:"playerIds"`
+	PlayerIds         UintSlice     `json:"playerIds"`
 	PlayerCount       uint          `json:"playerCount"`
 	CurrentPak        string        `json:"currentPak"`
 	Rendering         bool          `json:"rendering"`

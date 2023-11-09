@@ -17,6 +17,16 @@ func (t StringSlice) Value() (driver.Value, error) {
 	return json.Marshal(t)
 }
 
+type UintSlice []uint
+
+func (t *UintSlice) Scan(value interface{}) error {
+	bytesValue, _ := value.([]byte)
+	return json.Unmarshal(bytesValue, t)
+}
+func (t UintSlice) Value() (driver.Value, error) {
+	return json.Marshal(t)
+}
+
 type JSON json.RawMessage
 
 // Scan 实现 sql.Scanner 接口，Scan 将 value 扫描至 Jsonb
