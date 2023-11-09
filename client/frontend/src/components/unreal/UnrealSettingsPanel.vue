@@ -193,12 +193,19 @@ async function save() {
       <q-list>
         <q-item>
           <q-item-section>
-            <q-item-label>实例名称</q-item-label>
+            <q-item-label style="display: flex;align-items: center">
+              <span>实例名称</span>
+              <q-icon name="sym_o_help" color="grey" class="q-pl-xs" size="xs">
+                <q-tooltip anchor="top middle" self="center middle">
+                  设置有意义的实例名称作为标识
+                </q-tooltip>
+              </q-icon>
+            </q-item-label>
             <q-input dense outlined square v-model="props.data.settings.name"/>
           </q-item-section>
           <q-item-section>
             <q-item-label style="display: flex;align-items: center">
-              <span>云资源标识</span>
+              <span>云资源</span>
               <q-icon name="sym_o_help" color="grey" class="q-pl-xs" size="xs">
                 <q-tooltip anchor="top middle" self="center middle">
                   具有相同云资源标识的实例之间可以同步云文件
@@ -243,6 +250,17 @@ async function save() {
           </q-card>
         </q-expansion-item>
         <q-separator/>
+        <q-item tag="label" v-ripple>
+          <q-item-section side top>
+            <q-checkbox v-model="props.data.settings.enableRelay"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>使用WebRTC中继</q-item-label>
+            <q-item-label caption>
+              当中继服务可用时开启此配置就可以通过中继的方式访问UE实例
+            </q-item-label>
+          </q-item-section>
+        </q-item>
         <q-item tag="label" v-ripple>
           <q-item-section side top>
             <q-checkbox v-model="props.data.settings.faultRecover"/>

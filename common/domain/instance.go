@@ -13,6 +13,7 @@ type Instance struct {
 	Metadata          string    `json:"metadata"`
 	PaksConfig        string    `json:"paksConfig"`
 	FaultRecover      bool      `json:"faultRecover"`
+	EnableRelay       bool      `json:"enableRelay"`
 	LastStartAt       time.Time `json:"lastStartAt"`
 	LastStopAt        time.Time `json:"lastStopAt"`
 	AutoControl       bool      `json:"autoControl"`

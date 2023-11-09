@@ -83,7 +83,8 @@ function handleNewSettings() {
       enableH265: false,
       autoResizeRes: false,
       autoControl: false,
-      stopDelay: 5
+      stopDelay: 5,
+      enableRelay: true
     }
   })
 }

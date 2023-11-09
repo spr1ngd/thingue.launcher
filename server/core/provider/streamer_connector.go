@@ -16,6 +16,7 @@ type StreamerConnector struct {
 	conn             *websocket.Conn
 	heartbeatTimer   *time.Timer
 	AutoStopTimer    *time.Timer
+	EnableRelay      bool
 }
 
 func (s *StreamerConnector) SendPong(msg map[string]any) {
@@ -36,7 +37,7 @@ func (s *StreamerConnector) State(msg map[string]any) {
 }
 
 func (s *StreamerConnector) SendConfig() {
-	if provider.AppConfig.PeerConnectionOptions != "" {
+	if s.EnableRelay && provider.AppConfig.PeerConnectionOptions != "" {
 		var options domain.PeerConnectionOptions
 		err := yaml.Unmarshal([]byte(provider.AppConfig.PeerConnectionOptions), &options)
 		if err == nil {

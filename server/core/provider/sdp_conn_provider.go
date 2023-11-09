@@ -17,12 +17,13 @@ var SdpConnProvider = sdpConnProvider{
 	idPlayerMap:   make(map[uint]*PlayerConnector),
 }
 
-func (sdp *sdpConnProvider) NewStreamer(sid string, conn *websocket.Conn) *StreamerConnector {
+func (sdp *sdpConnProvider) NewStreamer(sid string, conn *websocket.Conn, enableRelay bool) *StreamerConnector {
 	streamer := &StreamerConnector{
 		SID:              sid,
 		conn:             conn,
 		PlayerConnectors: make([]*PlayerConnector, 0),
 		AutoStopTimer:    time.NewTimer(999 * time.Second),
+		EnableRelay:      enableRelay,
 	}
 	streamer.AutoStopTimer.Stop()
 	sdp.idStreamerMap[streamer.SID] = streamer

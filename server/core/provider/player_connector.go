@@ -15,7 +15,7 @@ type PlayerConnector struct {
 }
 
 func (p *PlayerConnector) SendConfig() {
-	if provider.AppConfig.PeerConnectionOptions != "" {
+	if p.StreamerConnector.EnableRelay && provider.AppConfig.PeerConnectionOptions != "" {
 		var options domain.PeerConnectionOptions
 		err := yaml.Unmarshal([]byte(provider.AppConfig.PeerConnectionOptions), &options)
 		if err == nil {

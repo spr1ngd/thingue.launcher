@@ -69,7 +69,7 @@ function doLogsDownload(traceId) {
   <div class="q-pa-md q-gutter-md">
     <q-list>
       <q-item-label header>
-        <div class="text-h5">客户端详细信息</div>
+        <div class="text-h5">客户端信息</div>
       </q-item-label>
       <q-item>
         <q-item-section>
