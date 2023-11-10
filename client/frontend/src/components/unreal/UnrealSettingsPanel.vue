@@ -125,7 +125,7 @@ onMounted(async () => {
 })
 
 function select() {
-  OpenFileDialog("选择文件", "ThingUE (*.exe)", "*.exe").then(result => {
+  OpenFileDialog("选择文件", "ThingUE (*.exe, *.sh)", "*.exe;*.sh").then(result => {
     if (result) {
       props.data.settings.execPath = result;
     } else {

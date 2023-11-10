@@ -2,13 +2,13 @@ package api
 
 import (
 	"context"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os/exec"
 	"path/filepath"
+	goruntime "runtime"
 	"thingue-launcher/client/service"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/provider"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type systemApi struct {
@@ -35,7 +35,12 @@ func (a *systemApi) OpenFileDialog(title string, displayName string, pattern str
 }
 
 func (a *systemApi) OpenExplorer(path string) error {
-	cmd := exec.Command("explorer", filepath.Dir(path))
+	var cmd *exec.Cmd
+	if goruntime.GOOS == "windows" {
+		cmd = exec.Command("explorer", filepath.Dir(path))
+	} else if goruntime.GOOS == "linux" {
+		cmd = exec.Command("open", filepath.Dir(path))
+	}
 	err := cmd.Run()
 	return err
 }

@@ -12,8 +12,6 @@ import (
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"time"
-
-	"golang.org/x/sys/windows"
 )
 
 type Runner struct {
@@ -91,14 +89,12 @@ func (r *Runner) Stop() error {
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("taskkill", "/F", "/T", "/PID", strconv.Itoa(r.Pid))
 	} else if runtime.GOOS == "linux" {
-		cmd = exec.Command("kill", "-TERM", strconv.Itoa(r.Pid))
+		cmd = exec.Command("pkill", "-TERM", "-P", strconv.Itoa(r.Pid))
 	} else {
 		return errors.New("不支持的系统")
 	}
-	cmd.SysProcAttr = &windows.SysProcAttr{HideWindow: true}
 	cmd.Stdout = os.Stdout
 	err := cmd.Start()
-	//err := r.process.Signal(syscall.SIGKILL)
 	exitStatus := <-r.ExitSignalChannel
 	fmt.Printf("%s进程退出%s\n", r.Name, exitStatus)
 	return err

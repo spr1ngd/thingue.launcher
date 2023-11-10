@@ -31,7 +31,7 @@ func (m *runnerManager) Init() {
 	files, _ := os.ReadDir(pwd)
 	for _, entry := range files {
 		if !entry.IsDir() {
-			if "ThingUE.exe" == entry.Name() {
+			if "ThingUE.exe" == entry.Name() || "ThingUE.sh" == entry.Name() {
 				m.HaveInternalInstance = true
 				instance, err := InstanceManager.GetInternal()
 				if err != nil {
