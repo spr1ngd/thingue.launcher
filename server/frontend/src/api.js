@@ -7,6 +7,44 @@ export function getClientList() {
     });
 }
 
+export function getInstanceList() {
+    return request({
+        url: `/instance/instanceList`,
+        method: 'GET'
+    });
+}
+
+export function listCloudRes() {
+    return request({
+        url: `/sync/listCloudRes`,
+        method: 'GET'
+    });
+}
+
+export function createCloudRes(data) {
+    return request({
+        url: `/sync/createCloudRes`,
+        method: 'POST',
+        data
+    });
+}
+
+export function updateCloudRes(data) {
+    return request({
+        url: `/sync/updateCloudRes`,
+        method: 'POST',
+        data
+    });
+}
+
+export function deleteCloudRes(data) {
+    return request({
+        url: `/sync/deleteCloudRes`,
+        method: 'POST',
+        data
+    });
+}
+
 export function controlProcess(sid, command) {
     return request({
         url: `/instance/processControl`,

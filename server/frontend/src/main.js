@@ -1,7 +1,9 @@
-import { createApp } from 'vue'
-import { Quasar, Notify, Dialog } from 'quasar'
+import {createApp} from 'vue'
+import {Dialog, Notify, Quasar} from 'quasar'
 import quasarLang from 'quasar/lang/zh-CN'
-import { connectWebSocket } from "@/ws";
+import {connectWebSocket} from "@/ws";
+import router from './router'
+import {createPinia} from 'pinia'
 
 // Import icon libraries
 import '@quasar/extras/material-icons/material-icons.css'
@@ -16,12 +18,14 @@ import App from './App.vue'
 
 const myApp = createApp(App)
 
+myApp.use(router)
+myApp.use(createPinia())
 myApp.use(Quasar, {
-  plugins: {
-    Notify,
-    Dialog
-  }, // import Quasar plugins and add here
-  lang: quasarLang,
+    plugins: {
+        Notify,
+        Dialog
+    }, // import Quasar plugins and add here
+    lang: quasarLang,
 })
 
 // Assumes you have a <div id="app"></div> in your index.html

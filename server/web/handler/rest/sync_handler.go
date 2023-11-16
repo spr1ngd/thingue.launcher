@@ -9,6 +9,11 @@ import (
 
 type SyncGroup struct{}
 
+func (g *SyncGroup) ListCloudRes(c *gin.Context) {
+	cloudResList := core.SyncService.ListCloudRes()
+	response.OkWithData(cloudResList, c)
+}
+
 func (g *SyncGroup) GetSyncConfig(c *gin.Context) {
 	config := core.SyncService.GetSyncConfig()
 	response.OkWithData(config, c)
@@ -44,4 +49,33 @@ func (g *SyncGroup) UploadFile(c *gin.Context) {
 		return
 	}
 	response.Ok(c)
+}
+
+func (g *SyncGroup) UpdateCloudRes(c *gin.Context) {
+	var res model.CloudRes
+	_ = c.ShouldBindJSON(&res)
+	err := core.SyncService.UpdateCloudRes(&res)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.Ok(c)
+	}
+}
+
+func (g *SyncGroup) CreateCloudRes(c *gin.Context) {
+	var res model.CloudRes
+	_ = c.ShouldBindJSON(&res)
+	err := core.SyncService.CreateCloudRes(&res)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.Ok(c)
+	}
+}
+
+func (g *SyncGroup) DeleteCloudRes(c *gin.Context) {
+	var names []string
+	_ = c.ShouldBindJSON(&names)
+	deleteCount := core.SyncService.DeleteRes(names)
+	response.OkWithData(deleteCount, c)
 }

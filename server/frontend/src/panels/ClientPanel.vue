@@ -3,15 +3,18 @@ import {collectLogs, downloadLogs} from "@/api";
 import {Notify, useQuasar} from "quasar";
 import {v4 as uuidv4} from 'uuid';
 import {emitter, wsId} from "@/ws";
+import {usePanelStore} from "@/stores";
 
-const props = defineProps(['row']);
+const panelStore = usePanelStore();
+
+const props = defineProps(['data']);
 const $q = useQuasar();
 
 async function handleCollectClick() {
   const traceId = uuidv4()
   let res = await collectLogs({
     wsId: wsId,
-    clientId: props.row.id,
+    clientId: props.data.id,
     traceId
   });
   if (res.code === 200) {
@@ -73,59 +76,59 @@ function doLogsDownload(traceId) {
       <q-item>
         <q-item-section>
           <q-item-label>客户端版本：</q-item-label>
-          <q-item-label caption>{{ props.row.version }}</q-item-label>
+          <q-item-label caption>{{ props.data.version }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>客户端安装路径：</q-item-label>
-          <q-item-label caption>{{ props.row.workdir }}</q-item-label>
+          <q-item-label caption>{{ props.data.workdir }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>CPU：</q-item-label>
-          <q-item-label caption v-for="cpu in props.row.cpus">{{ cpu }}</q-item-label>
+          <q-item-label caption v-for="cpu in props.data.cpus">{{ cpu }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>GPU：</q-item-label>
-          <q-item-label caption v-for="gpu in props.row.gpus">{{ gpu }}</q-item-label>
+          <q-item-label caption v-for="gpu in props.data.gpus">{{ gpu }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>内存：</q-item-label>
-          <q-item-label caption>{{ props.row.memory }}</q-item-label>
+          <q-item-label caption>{{ props.data.memory }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>系统类型：</q-item-label>
-          <q-item-label caption>{{ props.row.osType }}</q-item-label>
+          <q-item-label caption>{{ props.data.osType }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>系统架构：</q-item-label>
-          <q-item-label caption>{{ props.row.osArch }}</q-item-label>
+          <q-item-label caption>{{ props.data.osArch }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>系统用户：</q-item-label>
-          <q-item-label caption>{{ props.row.systemUser }}</q-item-label>
+          <q-item-label caption>{{ props.data.systemUser }}</q-item-label>
         </q-item-section>
       </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>IP地址：</q-item-label>
-          <q-item-label caption v-for="ip in props.row.ips">{{ ip }}</q-item-label>
+          <q-item-label caption v-for="ip in props.data.ips">{{ ip }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>
     <q-btn color="white" text-color="primary" label="收集客户端日志" @click="handleCollectClick"/>
-    <q-btn color="white" text-color="primary" label="关闭" @click="$emit('closeRightPanel')"/>
+    <q-btn color="white" text-color="primary" label="关闭" @click="panelStore.closePanel()"/>
   </div>
 </template>

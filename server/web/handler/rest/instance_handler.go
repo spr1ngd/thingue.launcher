@@ -153,3 +153,10 @@ func (g *InstanceGroup) GetTicketById(c *gin.Context) {
 		response.OkWithData(ticket, c)
 	}
 }
+
+func (g *InstanceGroup) InstanceList(c *gin.Context) {
+	list, _ := core.InstanceService.InstanceList()
+	response.OkWithDetailed(response.PageResult{
+		List: list,
+	}, "", c)
+}

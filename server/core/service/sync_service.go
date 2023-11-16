@@ -16,6 +16,12 @@ type syncService struct{}
 
 var SyncService = syncService{}
 
+func (s *syncService) ListCloudRes() []*model.CloudRes {
+	var cloudResList []*model.CloudRes
+	global.STORAGE_DB.Find(&cloudResList)
+	return cloudResList
+}
+
 func (s *syncService) GetSyncConfig() []string {
 	var files []string
 	file, err := os.Open("./thingue-launcher/storage/config.json")
@@ -74,4 +80,22 @@ func (s *syncService) DeleteFiles(res string, names []string) {
 	for _, name := range names {
 		os.Remove(filepath.Join("thingue-launcher/storage/", res, name))
 	}
+}
+
+func (s *syncService) DeleteRes(names []string) int64 {
+	var deleteCount int64
+	var res []model.CloudRes
+	tx := global.STORAGE_DB.Delete(&res, names)
+	tx.Count(&deleteCount)
+	return deleteCount
+}
+
+func (s *syncService) CreateCloudRes(res *model.CloudRes) error {
+	tx := global.STORAGE_DB.Create(res)
+	return tx.Error
+}
+
+func (s *syncService) UpdateCloudRes(res *model.CloudRes) error {
+	tx := global.STORAGE_DB.Updates(res)
+	return tx.Error
 }

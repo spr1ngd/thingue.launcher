@@ -90,6 +90,12 @@ func (s *instanceService) PakControl(control request.PakControl) error {
 	return err
 }
 
+func (s *instanceService) InstanceList() ([]*model.ServerInstance, error) {
+	var instances []*model.ServerInstance
+	global.SERVER_DB.Find(&instances)
+	return instances, nil
+}
+
 func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*model.ServerInstance, error) {
 	// 数据库查询
 	//query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)

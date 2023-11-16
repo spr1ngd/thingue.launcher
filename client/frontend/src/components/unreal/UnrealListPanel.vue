@@ -165,7 +165,7 @@ function handleGotoServer(tab) {
 
 <template>
   <div class="q-pa-sm">
-    <q-table grid title="实例列表" :rows="rows" :columns="columns" v-model="selected"
+    <q-table grid :rows="rows" :columns="columns" v-model="selected"
              selection="multiple" hide-pagination :pagination="{rowsPerPage:0}">
       <template v-slot:top-left>
         <div class="full-width row flex-center q-gutter-sm">
