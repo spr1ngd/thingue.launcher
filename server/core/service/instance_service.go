@@ -50,7 +50,7 @@ func (s *instanceService) UpdateProcessState(msg *message.ClientProcessStateUpda
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
-func (s *instanceService) UpdateRendering(sid string, rendering bool) {
+func (s *instanceService) UpdateRenderingState(sid string, rendering bool) {
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("rendering", rendering)
 }
 

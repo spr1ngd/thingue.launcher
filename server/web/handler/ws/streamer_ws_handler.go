@@ -45,7 +45,8 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				// todo
 				fmt.Println(msg)
 			} else if msgType == "rendering" {
-				service.InstanceService.UpdateRendering(streamer.SID, msg["value"].(bool))
+				streamer.UpdateRenderingState(msg)
+				service.InstanceService.UpdateRenderingState(streamer.SID, msg["value"].(bool))
 			} else if msgType == "hotReloadComplete" {
 				service.InstanceService.UpdatePak(streamer.SID, "")
 			} else if msgType == "loadComplete" {

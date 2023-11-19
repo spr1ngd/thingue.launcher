@@ -17,6 +17,7 @@ type StreamerConnector struct {
 	heartbeatTimer   *time.Timer
 	AutoStopTimer    *time.Timer
 	EnableRelay      bool
+	RenderingState   bool
 }
 
 func (s *StreamerConnector) SendPong(msg map[string]any) {
@@ -107,4 +108,14 @@ func (s *StreamerConnector) SendCommand(command *message.Command) {
 func (s *StreamerConnector) Close() {
 	_ = s.conn.Close()
 	delete(SdpConnProvider.idStreamerMap, s.SID)
+}
+
+func (s *StreamerConnector) ControlRendering(rendering bool) {
+	command := message.Command{}
+	command.BuildRenderingCommand(&message.RenderingParams{Value: rendering})
+	//s.SendCommand(&command)
+}
+
+func (s *StreamerConnector) UpdateRenderingState(msg map[string]any) {
+	s.RenderingState = msg["value"].(bool)
 }

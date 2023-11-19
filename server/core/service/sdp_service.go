@@ -82,14 +82,23 @@ func (m *sdpService) ConnectStreamer(playerConnector *provider.PlayerConnector, 
 func (m *sdpService) OnPlayerPaired(player *provider.PlayerConnector) {
 	player.StreamerConnector.PlayerConnectors = append(player.StreamerConnector.PlayerConnectors, player)
 	InstanceService.UpdatePlayers(player.StreamerConnector)
+	if !player.StreamerConnector.RenderingState {
+		// 开启渲染
+		player.StreamerConnector.ControlRendering(true)
+	}
 }
 
 func (m *sdpService) OnPlayerDisConnect(player *provider.PlayerConnector) {
 	player.StreamerConnector.PlayerDisconnect(player)
 	player.StreamerConnector.SendPlayersCount()
 	instance := InstanceService.UpdatePlayers(player.StreamerConnector)
-	if instance.PlayerCount == 0 && instance.AutoControl && instance.StopDelay >= 0 {
-		player.StreamerConnector.AutoStopTimer.Reset(time.Duration(instance.StopDelay) * time.Second)
+	if instance.PlayerCount == 0 {
+		// 关闭渲染
+		player.StreamerConnector.ControlRendering(false)
+		if instance.AutoControl && instance.StopDelay >= 0 {
+			// 自动启停
+			player.StreamerConnector.AutoStopTimer.Reset(time.Duration(instance.StopDelay) * time.Second)
+		}
 	}
 	player.Close()
 }

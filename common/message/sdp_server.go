@@ -19,7 +19,7 @@ func (c *Command) BuildBundleUnloadCommand() {
 	c.Command = "unload"
 }
 
-func (c *Command) BuildRenderingCommand(params RenderingParams) {
+func (c *Command) BuildRenderingCommand(params *RenderingParams) {
 	c.Type = "command"
 	c.Command = "rendering"
 	c.Params = params
