@@ -3,6 +3,10 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"thingue-launcher/common/provider"
+	"thingue-launcher/common/request"
+	"thingue-launcher/common/util"
+	"thingue-launcher/server/global"
+	"thingue-launcher/server/web/handler"
 )
 
 func BuildRouter() *gin.Engine {
@@ -15,6 +19,20 @@ func BuildRouter() *gin.Engine {
 		WsRouter.BuildRouter(baseGroup)
 		//初始化base/static路由
 		StaticRouter.BuildRouter(baseGroup)
+		//构建/mqtt路由
+		baseGroup.GET("/mqtt", func(c *gin.Context) {
+			handler.MqttHandler.Handler(c.Writer, c.Request)
+		})
+		baseGroup.POST("/mqtt/publishPayload", func(context *gin.Context) {
+			var b request.PublishJson
+			context.ShouldBindJSON(&b)
+			global.MQTT_SERVER.Publish(b.Topic, util.MapToJson(b.Payload), b.Retain, b.Qos)
+		})
+		baseGroup.POST("/mqtt/publishText", func(context *gin.Context) {
+			var b request.PublishText
+			context.ShouldBindJSON(&b)
+			global.MQTT_SERVER.Publish(b.Topic, []byte(b.Text), b.Retain, b.Qos)
+		})
 	}
 	//初始化base/api路由组
 	apiGroup := baseGroup.Group("/api")

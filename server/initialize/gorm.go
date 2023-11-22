@@ -8,7 +8,7 @@ import (
 	"thingue-launcher/server/global"
 )
 
-func InitServerDB() {
+func initServerDB() {
 	dsn := "file::memory:?cache=shared"
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -23,7 +23,7 @@ func InitServerDB() {
 	}
 }
 
-func InitStorageDB() {
+func initStorageDB() {
 	dsn := "./thingue-launcher/storage.db"
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	if err != nil {

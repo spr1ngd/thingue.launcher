@@ -61,9 +61,10 @@ func (s *clientService) RegisterClient(clientId uint) {
 	}
 }
 
-func (s *clientService) SendProcessState(sid string, stateCode int8) {
+func (s *clientService) SendProcessState(sid string, stateCode int8, pid int) {
 	reqData, _ := json.Marshal(&message.ClientProcessStateUpdate{
 		SID:       sid,
+		Pid:       pid,
 		StateCode: stateCode,
 	})
 	_, err := s.HttpPost("/api/instance/updateProcessState", reqData)

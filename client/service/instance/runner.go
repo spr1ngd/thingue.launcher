@@ -102,7 +102,7 @@ func (r *Runner) Stop() error {
 
 func (r *Runner) updateStateCode(stateCode int8) {
 	r.StateCode = stateCode
-	ClientService.SendProcessState(r.SID, stateCode)
+	ClientService.SendProcessState(r.SID, stateCode, r.Pid)
 }
 
 func (r *Runner) OpenLog() error {

@@ -123,7 +123,7 @@ onUnmounted(() => {
                           v-model="localServerConfig.data.useExternalStatic" label="使用外部静态资源"/>
               </q-item-section>
             </q-item>
-            <q-item v-if="localServerConfig.useExternalStatic">
+            <q-item v-if="localServerConfig.data.useExternalStatic">
               <q-item-section>
                 <q-item-label>静态资源路径</q-item-label>
                 <q-input :readonly="localServerStatus" dense outlined square type="text"

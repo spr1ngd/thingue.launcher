@@ -4,6 +4,20 @@ import (
 	"thingue-launcher/common/domain"
 )
 
+type PublishJson struct {
+	Topic   string         `json:"topic"`
+	Payload map[string]any `json:"payload"`
+	Retain  bool           `json:"retain"`
+	Qos     byte           `json:"qos"`
+}
+
+type PublishText struct {
+	Topic  string `json:"topic"`
+	Text   string `json:"text"`
+	Retain bool   `json:"retain"`
+	Qos    byte   `json:"qos"`
+}
+
 type SelectorCond struct {
 	SID               string `json:"sid"`
 	Name              string `json:"name"`

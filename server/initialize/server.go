@@ -13,7 +13,7 @@ import (
 )
 
 type server struct {
-	server            http.Server
+	listen            *http.Server
 	IsRunning         bool
 	CloseReturnChanel chan string
 	router            *gin.Engine
@@ -23,21 +23,27 @@ type server struct {
 var Server = new(server)
 
 func (s *server) Serve() {
+	var err error
+	//ORM+MQTT
 	if !s.isInitialized { //如果是第一次没有初始化
 		//s.router = router.BuildRouter(s.StaticFiles) //构建路由
-		InitServerDB()  // 初始化gorm
-		InitStorageDB() // 初始化gorm
+		initServerDB() // 初始化gorm
+		initStorageDB()
+		initMqttServer()
 		s.isInitialized = true
 	}
 	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Client{})
 	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
-	s.server = http.Server{
+	// 构建gin路由
+	s.router = router.BuildRouter()
+	// Listen
+	s.listen = &http.Server{
 		Addr:    provider.AppConfig.LocalServer.BindAddr,
-		Handler: router.BuildRouter(),
+		Handler: s.router,
 	}
 	s.IsRunning = true
-	fmt.Println("thingue server listening at: ", s.server.Addr)
-	err := s.server.ListenAndServe() //运行中阻塞
+	fmt.Println("thingue server listening at: ", s.listen.Addr)
+	err = s.listen.ListenAndServe() //运行中阻塞
 	s.IsRunning = false
 	if s.CloseReturnChanel != nil {
 		s.CloseReturnChanel <- err.Error()
@@ -55,7 +61,7 @@ func (s *server) Start() {
 }
 
 func (s *server) Stop() {
-	err := s.server.Close()
+	err := s.listen.Close()
 	coreprovider.ClientConnProvider.CloseAllConnection()
 	coreprovider.AdminConnProvider.CloseAllConnection()
 	if err != nil {

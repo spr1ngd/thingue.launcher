@@ -46,7 +46,7 @@ func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 }
 
 func (s *instanceService) UpdateProcessState(msg *message.ClientProcessStateUpdate) {
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Update("state_code", msg.StateCode)
+	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Updates(map[string]any{"Pid": msg.Pid, "StateCode": msg.StateCode})
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
@@ -136,5 +136,15 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 		return matchInstances, nil
 	} else {
 		return readyInstances, nil
+	}
+}
+
+func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) (*model.ServerInstance, error) {
+	instance := &model.ServerInstance{}
+	tx := global.SERVER_DB.Joins("Client", global.SERVER_DB.Where(&model.Client{Hostname: hostname})).First(instance, &model.ServerInstance{Pid: pid})
+	if tx.Error != nil {
+		return instance, nil
+	} else {
+		return nil, tx.Error
 	}
 }

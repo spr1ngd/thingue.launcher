@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
+	"strconv"
 	"thingue-launcher/common/message"
+	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
 	"thingue-launcher/server/core"
@@ -159,4 +161,19 @@ func (g *InstanceGroup) InstanceList(c *gin.Context) {
 	response.OkWithDetailed(response.PageResult{
 		List: list,
 	}, "", c)
+}
+
+func (g *InstanceGroup) GetInstanceByHostnameAndPid(c *gin.Context) {
+	var instance *model.ServerInstance
+	hostname := c.Query("hostname")
+	pidStr := c.Query("pid")
+	pid, err := strconv.Atoi(pidStr)
+	if err == nil {
+		instance, err = core.InstanceService.GetInstanceByHostnameAndPid(hostname, pid)
+	}
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(instance, c)
+	}
 }
