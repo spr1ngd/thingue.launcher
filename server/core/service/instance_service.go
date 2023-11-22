@@ -140,9 +140,11 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 }
 
 func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) (*model.ServerInstance, error) {
+	db := global.SERVER_DB
 	instance := &model.ServerInstance{}
-	tx := global.SERVER_DB.Joins("Client", global.SERVER_DB.Where(&model.Client{Hostname: hostname})).First(instance, &model.ServerInstance{Pid: pid})
-	if tx.Error != nil {
+	tx := db.Debug().Select("server_instances.*").Joins("JOIN clients ON server_instances.client_id=clients.id AND clients.hostname = ? AND server_instances.pid = ?",
+		hostname, pid).First(instance)
+	if tx.Error == nil {
 		return instance, nil
 	} else {
 		return nil, tx.Error
