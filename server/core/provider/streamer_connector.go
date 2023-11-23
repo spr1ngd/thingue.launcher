@@ -11,13 +11,14 @@ import (
 )
 
 type StreamerConnector struct {
-	SID              string
-	PlayerConnectors []*PlayerConnector
-	conn             *websocket.Conn
-	heartbeatTimer   *time.Timer
-	AutoStopTimer    *time.Timer
-	EnableRelay      bool
-	RenderingState   bool
+	SID                 string
+	PlayerConnectors    []*PlayerConnector
+	conn                *websocket.Conn
+	heartbeatTimer      *time.Timer
+	AutoStopTimer       *time.Timer
+	EnableRelay         bool
+	EnableRenderControl bool
+	RenderingState      bool
 }
 
 func (s *StreamerConnector) SendPong(msg map[string]any) {
@@ -111,9 +112,11 @@ func (s *StreamerConnector) Close() {
 }
 
 func (s *StreamerConnector) ControlRendering(rendering bool) {
-	command := message.Command{}
-	command.BuildRenderingCommand(&message.RenderingParams{Value: rendering})
-	//s.SendCommand(&command)
+	if s.EnableRenderControl {
+		command := message.Command{}
+		command.BuildRenderingCommand(&message.RenderingParams{Value: rendering})
+		s.SendCommand(&command)
+	}
 }
 
 func (s *StreamerConnector) UpdateRenderingState(msg map[string]any) {

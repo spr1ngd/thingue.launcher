@@ -263,6 +263,17 @@ async function save() {
         </q-item>
         <q-item tag="label" v-ripple>
           <q-item-section side top>
+            <q-checkbox v-model="props.data.settings.enableRenderControl"/>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>渲染控制</q-item-label>
+            <q-item-label caption>
+              是否根据连接数控制开启关闭渲染
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item tag="label" v-ripple>
+          <q-item-section side top>
             <q-checkbox v-model="props.data.settings.faultRecover"/>
           </q-item-section>
           <q-item-section>

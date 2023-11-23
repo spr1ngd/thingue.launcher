@@ -12,6 +12,7 @@ type PlayerConnector struct {
 	PlayerId          uint
 	StreamerConnector *StreamerConnector
 	conn              *websocket.Conn
+	UserData          map[string]string
 }
 
 func (p *PlayerConnector) SendConfig() {
@@ -78,12 +79,17 @@ func (p *PlayerConnector) SendCloseMsg(code int, msg string) {
 	p.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(code, msg))
 }
 
-func (p *PlayerConnector) Kick() {
+func (p *PlayerConnector) KickOthers() {
 	for _, kickPlayer := range p.StreamerConnector.PlayerConnectors {
 		if p != kickPlayer {
 			kickPlayer.SendCloseMsg(4000, "kicked")
 		}
 	}
+	p.StreamerConnector.SendPlayersCount()
+}
+
+func (p *PlayerConnector) Kick() {
+	p.SendCloseMsg(4000, "kicked")
 	p.StreamerConnector.SendPlayersCount()
 }
 

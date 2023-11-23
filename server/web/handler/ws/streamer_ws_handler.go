@@ -18,7 +18,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 	sid := c.Param("id")
 	instance := service.InstanceService.GetInstanceBySid(sid)
 	if instance != nil {
-		streamer := provider.SdpConnProvider.NewStreamer(sid, conn, instance.EnableRelay)
+		streamer := provider.SdpConnProvider.NewStreamer(sid, conn, instance.EnableRelay, instance.EnableRenderControl)
 		streamer.SendConfig()
 		service.SdpService.OnStreamerConnect(streamer)
 		for {

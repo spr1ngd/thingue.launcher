@@ -9,4 +9,5 @@ var (
 	InstanceService = service.InstanceService
 	TicketService   = service.TicketService
 	SyncService     = service.SyncService
+	SdpService      = service.SdpService
 )

@@ -17,13 +17,14 @@ var SdpConnProvider = sdpConnProvider{
 	idPlayerMap:   make(map[uint]*PlayerConnector),
 }
 
-func (sdp *sdpConnProvider) NewStreamer(sid string, conn *websocket.Conn, enableRelay bool) *StreamerConnector {
+func (sdp *sdpConnProvider) NewStreamer(sid string, conn *websocket.Conn, enableRelay bool, enableRenderControl bool) *StreamerConnector {
 	streamer := &StreamerConnector{
-		SID:              sid,
-		conn:             conn,
-		PlayerConnectors: make([]*PlayerConnector, 0),
-		AutoStopTimer:    time.NewTimer(999 * time.Second),
-		EnableRelay:      enableRelay,
+		SID:                 sid,
+		conn:                conn,
+		PlayerConnectors:    make([]*PlayerConnector, 0),
+		AutoStopTimer:       time.NewTimer(999 * time.Second),
+		EnableRelay:         enableRelay,
+		EnableRenderControl: enableRenderControl,
 	}
 	streamer.AutoStopTimer.Stop()
 	sdp.idStreamerMap[streamer.SID] = streamer
@@ -56,4 +57,21 @@ func (sdp *sdpConnProvider) GetPlayer(id uint) (*PlayerConnector, error) {
 	} else {
 		return nil, errors.New("player不存在")
 	}
+}
+
+func (sdp *sdpConnProvider) GetPlayersByUserData(userMap map[string]string) []*PlayerConnector {
+	var players []*PlayerConnector
+	for _, connector := range sdp.idPlayerMap {
+		matched := true
+		for key, value := range userMap {
+			if connector.UserData[key] != value {
+				matched = false
+				break
+			}
+		}
+		if matched {
+			players = append(players, connector)
+		}
+	}
+	return players
 }

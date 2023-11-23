@@ -15,7 +15,10 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 		fmt.Println("WebSocket upgrade error:", err)
 		return
 	}
+	userData := map[string]string{}
+	_ = c.ShouldBindQuery(userData)
 	player := provider.SdpConnProvider.NewPlayer(conn)
+	player.UserData = userData
 	// 连接Streamer
 	err = service.SdpService.ConnectStreamer(player, c.Param("ticket"))
 	if err == nil {
@@ -46,7 +49,7 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 			} else if msgType == "stats" {
 				//todo
 			} else if msgType == "kick" {
-				player.Kick()
+				player.KickOthers()
 			} else {
 				player.SendCloseMsg(1008, "不支持的消息类型")
 			}

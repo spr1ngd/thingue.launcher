@@ -177,3 +177,18 @@ func (g *InstanceGroup) GetInstanceByHostnameAndPid(c *gin.Context) {
 		response.OkWithData(instance, c)
 	}
 }
+
+func (g *InstanceGroup) KickPlayerUser(c *gin.Context) {
+	userQueryMap := map[string]string{}
+	err := c.ShouldBindQuery(&userQueryMap)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	count, err := core.SdpService.KickPlayerUser(userQueryMap)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithDetailed(count, fmt.Sprintf("踢掉%d个连接", count), c)
+	}
+}

@@ -102,3 +102,18 @@ func (m *sdpService) OnPlayerDisConnect(player *provider.PlayerConnector) {
 	}
 	player.Close()
 }
+
+func (m *sdpService) KickPlayerUser(userQueryMap map[string]string) (int, error) {
+	if len(userQueryMap) == 0 {
+		return 0, errors.New("参数不能为空")
+	}
+	players := provider.SdpConnProvider.GetPlayersByUserData(userQueryMap)
+	if len(players) > 0 {
+		for _, player := range players {
+			player.Kick()
+		}
+		return len(players), nil
+	} else {
+		return 0, errors.New("没有匹配的连接")
+	}
+}

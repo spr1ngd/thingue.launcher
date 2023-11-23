@@ -26,6 +26,7 @@ func (s *instanceRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		instanceRouter.POST("uploadLogs", handler.InstanceGroup.UploadLogs)
 		instanceRouter.GET("downloadLogs", handler.InstanceGroup.DownloadLogs)
 		instanceRouter.GET("getInstanceByHostnameAndPid", handler.InstanceGroup.GetInstanceByHostnameAndPid)
+		instanceRouter.GET("kickPlayerUser", handler.InstanceGroup.KickPlayerUser)
 	}
 	return instanceRouter
 }

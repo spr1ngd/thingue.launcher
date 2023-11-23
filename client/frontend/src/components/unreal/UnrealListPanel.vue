@@ -84,7 +84,8 @@ function handleNewSettings() {
       autoResizeRes: false,
       autoControl: false,
       stopDelay: 5,
-      enableRelay: true
+      enableRelay: true,
+      EnableRenderControl: false
     }
   })
 }
