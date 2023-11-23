@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"sync"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
@@ -10,7 +11,9 @@ import (
 	"thingue-launcher/server/global"
 )
 
-type instanceService struct{}
+type instanceService struct {
+	updateLock sync.Mutex
+}
 
 var InstanceService = new(instanceService)
 
@@ -21,6 +24,8 @@ func (s *instanceService) GetInstanceBySid(sid string) *model.ServerInstance {
 }
 
 func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *model.ServerInstance {
+	s.updateLock.Lock()
+	defer s.updateLock.Unlock()
 	instance := s.GetInstanceBySid(streamer.SID)
 	var playerIds []uint
 	for _, connector := range streamer.PlayerConnectors {
@@ -34,6 +39,8 @@ func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *m
 }
 
 func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
+	s.updateLock.Lock()
+	defer s.updateLock.Unlock()
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("streamer_connected", connected)
 	provider.AdminConnProvider.BroadcastUpdate()
 	instance := model.ServerInstance{}

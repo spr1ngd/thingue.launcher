@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/request"
+	"thingue-launcher/common/response"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/global"
-	"thingue-launcher/server/web/handler"
 )
 
 func BuildRouter() *gin.Engine {
@@ -19,20 +19,8 @@ func BuildRouter() *gin.Engine {
 		WsRouter.BuildRouter(baseGroup)
 		//初始化base/static路由
 		StaticRouter.BuildRouter(baseGroup)
-		//构建/mqtt路由
-		baseGroup.GET("/mqtt", func(c *gin.Context) {
-			handler.MqttHandler.Handler(c.Writer, c.Request)
-		})
-		baseGroup.POST("/mqtt/publishPayload", func(context *gin.Context) {
-			var b request.PublishJson
-			context.ShouldBindJSON(&b)
-			global.MQTT_SERVER.Publish(b.Topic, util.MapToJson(b.Payload), b.Retain, b.Qos)
-		})
-		baseGroup.POST("/mqtt/publishText", func(context *gin.Context) {
-			var b request.PublishText
-			context.ShouldBindJSON(&b)
-			global.MQTT_SERVER.Publish(b.Topic, []byte(b.Text), b.Retain, b.Qos)
-		})
+		//构建base/mqtt路由
+		MqttRouter.BuildRouter(baseGroup)
 	}
 	//初始化base/api路由组
 	apiGroup := baseGroup.Group("/api")
@@ -40,6 +28,27 @@ func BuildRouter() *gin.Engine {
 		//初始化base/api/*路由组
 		InstanceRouter.BuildRouter(apiGroup)
 		SyncRouter.BuildRouter(apiGroup)
+
+		apiGroup.POST("/mqtt/publishPayload", func(context *gin.Context) {
+			var b request.PublishJson
+			context.ShouldBindJSON(&b)
+			err := global.MQTT_SERVER.Publish(b.Topic, util.MapToJson(b.Payload), b.Retain, b.Qos)
+			if err == nil {
+				response.Ok(context)
+			} else {
+				response.FailWithMessage(err.Error(), context)
+			}
+		})
+		apiGroup.POST("/mqtt/publishText", func(context *gin.Context) {
+			var b request.PublishText
+			context.ShouldBindJSON(&b)
+			err := global.MQTT_SERVER.Publish(b.Topic, []byte(b.Text), b.Retain, b.Qos)
+			if err == nil {
+				response.Ok(context)
+			} else {
+				response.FailWithMessage(err.Error(), context)
+			}
+		})
 	}
 	return Router
 }
