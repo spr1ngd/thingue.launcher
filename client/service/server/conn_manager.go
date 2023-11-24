@@ -141,7 +141,7 @@ func (m *connManager) StartHeartbeatTask() {
 				break
 			}
 			t := <-m.heartbeatTicker.C
-			err := m.conn.WriteMessage(websocket.TextMessage, util.MapToJson(map[string]interface{}{"type": "ping", "time": t.Format("2006-01-02 15:04:05")}))
+			err := m.conn.WriteMessage(websocket.TextMessage, util.MapToJson(map[string]any{"type": "ping", "time": util.DateFormat(t)}))
 			if err != nil {
 				m.heartbeatTicker.Stop()
 				err = m.conn.Close()

@@ -47,8 +47,8 @@ func (s *clientService) ClientRegister(registerInfo *request.ClientRegisterInfo)
 	return nil
 }
 
-func (s *clientService) ClientList() []model.Client {
-	var clients []model.Client
+func (s *clientService) ClientList() []*model.Client {
+	var clients []*model.Client
 	global.SERVER_DB.Preload("Instances").Find(&clients)
 	return clients
 }

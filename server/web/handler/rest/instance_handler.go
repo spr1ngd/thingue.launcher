@@ -51,7 +51,7 @@ func (g *InstanceGroup) GetInstanceSid(c *gin.Context) {
 
 func (g *InstanceGroup) ClientList(c *gin.Context) {
 	list := core.ClientService.ClientList()
-	response.OkWithDetailed(response.PageResult{
+	response.OkWithDetailed(response.PageResult[*model.Client]{
 		List: list,
 	}, "", c)
 }
@@ -158,7 +158,7 @@ func (g *InstanceGroup) GetTicketById(c *gin.Context) {
 
 func (g *InstanceGroup) InstanceList(c *gin.Context) {
 	list, _ := core.InstanceService.InstanceList()
-	response.OkWithDetailed(response.PageResult{
+	response.OkWithDetailed(response.PageResult[*model.ServerInstance]{
 		List: list,
 	}, "", c)
 }

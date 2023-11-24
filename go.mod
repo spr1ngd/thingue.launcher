@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/websocket v1.5.1
 	github.com/jaypipes/ghw v0.12.0
+	github.com/labstack/gommon v0.4.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mochi-mqtt/server/v2 v2.4.1
 	github.com/robfig/cron/v3 v3.0.1
@@ -47,7 +48,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/labstack/echo/v4 v4.10.2 // indirect
-	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.0 // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.6.0 // indirect
