@@ -82,6 +82,7 @@ func (m *sdpService) ConnectStreamer(playerConnector *provider.PlayerConnector, 
 func (m *sdpService) OnStreamerLoadBundleComplete(streamer *provider.StreamerConnector) {
 	if len(streamer.PlayerConnectors) == 0 {
 		streamer.ControlRendering(false)
+		InstanceService.UpdateRenderingState(streamer.SID, false)
 	}
 }
 
@@ -91,6 +92,7 @@ func (m *sdpService) OnPlayerPaired(player *provider.PlayerConnector) {
 	// 如果未开启渲染，则发消息开启
 	if !player.StreamerConnector.RenderingState {
 		player.StreamerConnector.ControlRendering(true)
+		InstanceService.UpdateRenderingState(player.StreamerConnector.SID, true)
 	}
 }
 
@@ -101,6 +103,7 @@ func (m *sdpService) OnPlayerDisConnect(player *provider.PlayerConnector) {
 	if len(player.StreamerConnector.PlayerConnectors) == 0 {
 		// 关闭渲染
 		player.StreamerConnector.ControlRendering(false)
+		InstanceService.UpdateRenderingState(player.StreamerConnector.SID, false)
 		if instance.AutoControl && instance.StopDelay >= 0 {
 			// 启动自动启停延时任务
 			player.StreamerConnector.AutoStopTimer.Reset(time.Duration(instance.StopDelay) * time.Second)

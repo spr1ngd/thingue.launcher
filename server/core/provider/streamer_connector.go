@@ -116,6 +116,7 @@ func (s *StreamerConnector) ControlRendering(rendering bool) {
 		command := message.Command{}
 		command.BuildRenderingCommand(&message.RenderingParams{Value: rendering})
 		s.SendCommand(&command)
+		s.RenderingState = rendering
 	}
 }
 

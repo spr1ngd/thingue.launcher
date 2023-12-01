@@ -45,6 +45,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				// todo
 				fmt.Println(msg)
 			} else if msgType == "rendering" {
+				// todo 此消息类型并未实现，因此不会执行到此分支
 				streamer.UpdateRenderingState(msg)
 				service.InstanceService.UpdateRenderingState(streamer.SID, msg["value"].(bool))
 			} else if msgType == "hotReloadComplete" {
