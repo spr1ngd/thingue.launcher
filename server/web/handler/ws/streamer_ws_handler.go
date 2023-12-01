@@ -50,6 +50,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 			} else if msgType == "hotReloadComplete" {
 				service.InstanceService.UpdatePak(streamer.SID, "")
 			} else if msgType == "loadComplete" {
+				service.SdpService.OnStreamerLoadBundleComplete(streamer)
 				service.InstanceService.UpdatePak(streamer.SID, msg["bundleName"].(string))
 			} else {
 				streamer.SendCloseMsg(1008, "不支持的消息类型")

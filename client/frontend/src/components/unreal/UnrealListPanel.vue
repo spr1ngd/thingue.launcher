@@ -85,7 +85,7 @@ function handleNewSettings() {
       autoControl: false,
       stopDelay: 5,
       enableRelay: true,
-      EnableRenderControl: false
+      enableRenderControl: false
     }
   })
 }
