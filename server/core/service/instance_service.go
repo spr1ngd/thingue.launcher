@@ -74,6 +74,10 @@ func (s *instanceService) ProcessControl(processControl request.ProcessControl) 
 		Command: processControl.Command,
 	}
 	provider.ClientConnProvider.SendToClient(instance.ClientID, control.Pack())
+	if processControl.Command == "STOP" {
+		s.UpdatePak(instance.SID, "")
+	}
+
 }
 
 func (s *instanceService) PakControl(control request.PakControl) error {
