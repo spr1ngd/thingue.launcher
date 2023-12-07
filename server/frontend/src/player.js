@@ -44,7 +44,7 @@ async function playerUrlBuilder() {
     })
     const resJson = await response.json()
     if (resJson.code === 200) {
-        return `${origin}${path}/ws/player/${resJson.data.ticket}?user=root`;
+        return `${origin}${path}/ws/player/${resJson.data.ticket}`;
     } else {
         throw new Error(resJson.msg);
     }

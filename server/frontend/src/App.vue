@@ -1,86 +1,53 @@
 <script setup>
-import {ref} from 'vue';
-import {RouterView} from 'vue-router'
-import {usePanelStore} from "@/stores"
+import { ref } from 'vue';
+import InstanceList from '@/components/InstanceList.vue';
+import ClientInfo from '@/components/ClientInfo.vue';
+import InstanceInfo from '@/components/InstanceInfo.vue';
 
-let panelStore = usePanelStore();
+const rightDrawerOpen = ref(false);
 
-const leftDrawerOpen = ref(true)
+const rowProp = ref({});
+const sessionIdProp = ref('');
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+let currentTab = '';
+const tabs = {
+  'client': ClientInfo,
+  'instance': InstanceInfo
+};
+
+function showInfo(row, sessionId, type) {
+  /**
+   * 已开时
+   *  不同切换
+   *  相同关闭
+   * 未开时打开
+   */
+  if (rightDrawerOpen.value) {
+    if (type !== currentTab || rowProp.value !== row) {
+      rowProp.value = row;
+      currentTab = type;
+      sessionIdProp.value = sessionId;
+    } else {
+      rightDrawerOpen.value = false;
+    }
+  } else {
+    rightDrawerOpen.value = true;
+    rowProp.value = row;
+    currentTab = type;
+    sessionIdProp.value = sessionId;
+  }
 }
 </script>
 
 <template>
   <q-layout view="hHh lpR fFf">
-    <q-header bordered class="text-white" style="background-color: #001529">
-      <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer"/>
-        <q-toolbar-title>
-          ThingUE Server 控制台
-        </q-toolbar-title>
-      </q-toolbar>
-    </q-header>
-    <q-drawer v-model="leftDrawerOpen" side="left" elevated behavior="desktop" :width="200">
-      <!-- 菜单目录 -->
-      <q-list>
-        <q-item to="/">
-          <q-item-section avatar>
-            <q-icon name="home"/>
-          </q-item-section>
-          <q-item-section>
-            首页
-          </q-item-section>
-        </q-item>
-        <q-item to="/client">
-          <q-item-section avatar>
-            <q-icon name="computer"/>
-          </q-item-section>
-          <q-item-section>
-            客户端
-          </q-item-section>
-        </q-item>
-        <q-item to="/instance">
-          <q-item-section avatar>
-            <q-icon name="flash_on"/>
-          </q-item-section>
-          <q-item-section>
-            实例
-          </q-item-section>
-        </q-item>
-        <q-item to="/sync">
-          <q-item-section avatar>
-            <q-icon name="sync"/>
-          </q-item-section>
-          <q-item-section>
-            同步方案
-          </q-item-section>
-        </q-item>
-        <q-expansion-item expand-separator icon="settings" label="设置">
-          <q-list class="q-ml-none">
-            <q-item to="/relay-setting">
-              <q-item-section class="q-ml-lg">
-                中继管理
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section class="q-ml-lg">
-                密钥
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-expansion-item>
-      </q-list>
-    </q-drawer>
-    <q-drawer v-model="panelStore.open" side="right" elevated behavior="desktop" :width="panelStore.width" overlay>
-      <component v-if="panelStore.open" :is="panelStore.component" :data="panelStore.data"/>
+    <q-drawer v-model="rightDrawerOpen" :width="350" side="right" behavior="desktop" elevated>
+      <component :is="tabs[currentTab]" :row="rowProp" :sessionId="sessionIdProp" @close="rightDrawerOpen = false"></component>
     </q-drawer>
     <q-page-container>
-      <RouterView/>
+      <InstanceList @someEvent="showInfo" />
     </q-page-container>
   </q-layout>
 </template>
 
-<style lang="sass">
-</style>
+<style scoped></style>

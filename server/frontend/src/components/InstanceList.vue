@@ -85,13 +85,14 @@ onMounted(() => {
     expanded.value = items.split(",").map(item => Number(item))
   }
   watch(expanded, () => {
+    console.log(expanded.value)
     localStorage.setItem("expanded", expanded.value)
   })
 });
 
 </script>
 <template>
-  <q-table title="实例列表" :rows="rows" :columns="columns" row-key="id" v-model:expanded="expanded" class="q-ma-md">
+  <q-table title="实例列表" :rows="rows" :columns="columns" row-key="id" v-model:expanded="expanded">
     <template v-slot:header="props">
       <q-tr :props="props">
         <q-th align="center"/>

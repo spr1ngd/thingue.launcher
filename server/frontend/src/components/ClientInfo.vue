@@ -36,6 +36,7 @@ async function handleCollectClick() {
 
 function doLogsDownload(traceId) {
   downloadLogs(traceId).then((response) => {
+    console.log(response)
     if (response.data.type === 'application/zip') {
       let filename = 'logs.zip'; // 默认文件名
       const contentDisposition = response.headers['content-disposition'];
@@ -126,6 +127,6 @@ function doLogsDownload(traceId) {
       </q-item>
     </q-list>
     <q-btn color="white" text-color="primary" label="收集客户端日志" @click="handleCollectClick"/>
-    <q-btn color="white" text-color="primary" label="关闭" @click="$emit('closeRightPanel')"/>
+    <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')"/>
   </div>
 </template>

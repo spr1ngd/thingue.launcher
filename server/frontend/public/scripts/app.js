@@ -18,7 +18,7 @@ async function fetchData() {
     const resJson = await response.json()
     if (resJson.code === 200) {
         matchViewportResolution = resJson.data.autoResizeRes
-        return `${origin}${path}/ws/player/${resJson.data.ticket}?user=root`;
+        return `${origin}${path}/ws/player/${resJson.data.ticket}`;
     }
 }
 
