@@ -6,23 +6,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
     <meta name="google" content="notranslate"/>
-    <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
+    <title>像素流播放器（UE4）</title>
     <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
     <link type="text/css" rel="stylesheet" href="player.css">
     <script type="text/javascript" src="scripts/adapter-latest.js"></script>
     <script type="text/javascript" src="scripts/webRtcPlayer.js"></script>
-    <script type="text/javascript" src="scripts/app.js"></script>
+    <script type="text/javascript" src="scripts/app_v4.js"></script>
     <script type="text/javascript" src="scripts/index.js"></script>
     <script type="text/javascript" src="scripts/inputBenchmark.js"></script>
 
     <script>
-
         //onMessage
         window.onmessage = async function (e) {
             var ret = await ToUEMessage(e.data);
-            console.log("MSGFinished!!", ret);
             e.source.postMessage(ret, e.origin);
         }
 
@@ -32,7 +30,7 @@
 
         //postMessage
         function OnUserEvent(command, param) {
-            console.log("postMessage: ", param);
+            console.debug(command, param)
             if (window.top != window)
                 window.top.postMessage(param, "*");
 

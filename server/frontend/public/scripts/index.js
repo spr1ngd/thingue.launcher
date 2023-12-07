@@ -27,7 +27,7 @@ var CommandMapCache = {};
 async function SendUserCommand(command, param){
     return new Promise(function(resolve, reject){
         var uuid = generateUUID();
-        console.info({
+        console.debug({
             type: "UserCommand",
             uuid: uuid,
             command: command,
