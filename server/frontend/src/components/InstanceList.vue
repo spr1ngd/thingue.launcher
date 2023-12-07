@@ -121,7 +121,7 @@ onMounted(() => {
       <!-- 子列表 -->
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%">
-          <q-table hide-pagination :columns="subColumns" :rows="props.row.instances">
+          <q-table hide-pagination :pagination="{rowsNumber:null}" :columns="subColumns" :rows="props.row.instances">
             <template v-slot:header="props">
               <q-tr :props="props">
                 <q-th align="center">实例编号</q-th>
