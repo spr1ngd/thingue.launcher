@@ -5,8 +5,6 @@ import {v4 as uuidv4} from "uuid";
 const PixelStreamingApplicationStyles = new PixelStreamingApplicationStyle();
 PixelStreamingApplicationStyles.applyStyleSheet();
 
-var CommandMapCache = {};
-
 document.body.onload = function () {
     const config = new Config({
         initialSettings: {
@@ -33,9 +31,8 @@ document.body.onload = function () {
     }
 
     stream.addResponseEventListener("user_handler", function (response) {
-        console.debug(response)
         if (window.top !== window) {
-            window.top.postMessage(response, "*");
+            window.top.postMessage(JSON.parse(response).param, "*");
         }
     })
 

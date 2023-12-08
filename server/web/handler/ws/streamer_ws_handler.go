@@ -1,8 +1,10 @@
 package ws
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"strconv"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/core/service"
@@ -45,9 +47,11 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				// todo
 				fmt.Println(msg)
 			} else if msgType == "rendering" {
-				// todo 此消息类型并未实现，因此不会执行到此分支
-				streamer.UpdateRenderingState(msg)
-				service.InstanceService.UpdateRenderingState(streamer.SID, msg["value"].(bool))
+				state, err := getRenderingStateFromMsg(msg)
+				if err == nil {
+					streamer.UpdateRenderingState(state)
+					service.InstanceService.UpdateRenderingState(streamer.SID, state)
+				}
 			} else if msgType == "hotReloadComplete" {
 				service.InstanceService.UpdatePak(streamer.SID, "")
 			} else if msgType == "loadComplete" {
@@ -64,4 +68,20 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 		_ = conn.Close()
 	}
 
+}
+
+func getRenderingStateFromMsg(msg map[string]any) (bool, error) {
+	value, ok := msg["value"].(bool)
+	if ok {
+		return value, nil
+	} else {
+		strValue, ok := msg["value"].(string)
+		if ok {
+			value, err := strconv.ParseBool(strValue)
+			if err == nil {
+				return value, nil
+			}
+		}
+	}
+	return false, errors.New("类型错误")
 }

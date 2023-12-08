@@ -120,6 +120,6 @@ func (s *StreamerConnector) ControlRendering(rendering bool) {
 	}
 }
 
-func (s *StreamerConnector) UpdateRenderingState(msg map[string]any) {
-	s.RenderingState = msg["value"].(bool)
+func (s *StreamerConnector) UpdateRenderingState(state bool) {
+	s.RenderingState = state
 }
