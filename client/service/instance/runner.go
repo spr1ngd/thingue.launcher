@@ -3,6 +3,7 @@ package instance
 import (
 	"errors"
 	"fmt"
+	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
 	"runtime"
@@ -93,6 +94,7 @@ func (r *Runner) Stop() error {
 	} else {
 		return errors.New("不支持的系统")
 	}
+	cmd.SysProcAttr = &windows.SysProcAttr{HideWindow: true}
 	cmd.Stdout = os.Stdout
 	err := cmd.Start()
 	exitStatus := <-r.ExitSignalChannel

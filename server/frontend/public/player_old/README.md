@@ -32,7 +32,7 @@ SingletonPixelStreaming.addMessageMap('ToUEMessage', async (params) => {
 <script>
     // 接收消息
     window.onmessage = async function (e) {
-        console.log("主页面收到消息",e.data)
+        console.log("主页面收到消息", e.data)
     }
 
     // 发送消息

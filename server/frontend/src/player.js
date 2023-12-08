@@ -1,8 +1,11 @@
 import {Config, PixelStreaming} from '@thingue/lib-pixelstreamingfrontend';
 import {Application, PixelStreamingApplicationStyle} from '@thingue/lib-pixelstreamingfrontend-ui';
+import {v4 as uuidv4} from "uuid";
 
 const PixelStreamingApplicationStyles = new PixelStreamingApplicationStyle();
 PixelStreamingApplicationStyles.applyStyleSheet();
+
+var CommandMapCache = {};
 
 document.body.onload = function () {
     const config = new Config({
@@ -18,6 +21,24 @@ document.body.onload = function () {
     const stream = new PixelStreaming(config, {
         playerUrlBuilder: playerUrlBuilder
     });
+
+    window.onmessage = async function (e) {
+        const uuid = uuidv4();
+        stream.emitUIInteraction({
+            type: "UserCommand",
+            uuid,
+            command: "ToUEMessage",
+            param: e.data
+        })
+    }
+
+    stream.addResponseEventListener("user_handler", function (response) {
+        console.debug(response)
+        if (window.top !== window) {
+            window.top.postMessage(response, "*");
+        }
+    })
+
     const application = new Application({
         stream,
         onColorModeChanged: (isLightMode) => PixelStreamingApplicationStyles.setColorMode(isLightMode)
