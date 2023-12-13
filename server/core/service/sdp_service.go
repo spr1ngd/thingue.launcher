@@ -19,16 +19,27 @@ func (m *sdpService) OnStreamerConnect(streamer *provider.StreamerConnector) {
 		for {
 			// todo 释放资源
 			<-streamer.AutoStopTimer.C
-			if len(streamer.PlayerConnectors) == 0 {
-				InstanceService.ProcessControl(request.ProcessControl{
-					SID:     streamer.SID,
-					Command: "STOP",
-				})
-				fmt.Println("检查完毕，自动停止控制指令发送")
+			getStreamer, err := provider.SdpConnProvider.GetStreamer(streamer.SID)
+			if err == nil {
+				if streamer != getStreamer {
+					fmt.Println("streamer已重启，自动停止任务关闭")
+					break
+				}
+				if len(getStreamer.PlayerConnectors) == 0 {
+					InstanceService.ProcessControl(request.ProcessControl{
+						SID:     getStreamer.SID,
+						Command: "STOP",
+					})
+					fmt.Println("检查完毕，自动停止控制指令发送")
+				} else {
+					fmt.Println("检查完毕，不需要自动停止")
+				}
 			} else {
-				fmt.Println("检查完毕，不需要自动停止")
+				fmt.Println("streamer已停止，自动停止任务关闭")
+				break
 			}
 		}
+		fmt.Println("自动停止协程结束，资源释放")
 	}()
 }
 
