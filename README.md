@@ -6,7 +6,7 @@ This is the official Wails Vue template.
 
 You can configure the project by editing `wails.json`. More information about the project settings can be found
 here: https://wails.io/docs/reference/project-config
-wwwwwwwwwwwwwwwwwwwwwwwww
+
 ## Install
 ```bash
 # for windows install gcc toolchain use msys2
@@ -18,7 +18,7 @@ go env -w CGO_ENABLED=1
 go env -w GOPROXY=https://goproxy.cn,direct
 # install wails cli
 go install github.com/wailsapp/wails/v2/cmd/wails@latest
-# for linux check your develop environment
+# check your develop environment
 wails doctor
 ```
 

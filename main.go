@@ -9,14 +9,15 @@ import (
 )
 
 var (
-	GitCommit string
-	BuildDate string
+	GitCommit  string
+	BuildDate  string
+	AppVersion string
 	//go:embed all:server/frontend/dist
 	staticFiles embed.FS
 )
 
 func main() {
-	provider.SetVersionBuildInfo(GitCommit, BuildDate)
+	provider.SetVersionBuildInfo(AppVersion, GitCommit, BuildDate)
 	_, err := os.Stat(constants.SAVE_DIR)
 	if os.IsNotExist(err) {
 		os.MkdirAll(constants.SAVE_DIR, 0755)

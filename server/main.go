@@ -11,14 +11,15 @@ import (
 )
 
 var (
-	GitCommit string
-	BuildDate string
+	GitCommit  string
+	BuildDate  string
+	AppVersion string
 	//go:embed all:frontend/dist
 	staticFiles embed.FS
 )
 
 func main() {
-	provider.SetVersionBuildInfo(GitCommit, BuildDate)
+	provider.SetVersionBuildInfo(AppVersion, GitCommit, BuildDate)
 	provider.SetWebStatic("frontend/dist", staticFiles)
 	provider.InitFlagConfig()
 	showHelp := viper.GetBool("showHelp")
