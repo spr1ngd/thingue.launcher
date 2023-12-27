@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"thingue-launcher/client/api"
+	"thingue-launcher/common/provider"
 	"time"
 
 	"github.com/wailsapp/wails/v2"
@@ -16,7 +17,7 @@ func InitApp(assets embed.FS) {
 	myLog := NewFileLogger(fmt.Sprintf("thingue-launcher/info-%v.log", time.Now().Format("2006-01-02")))
 	// 初始化wails app
 	err := wails.Run(&options.App{
-		Title:  "ThingUE启动器",
+		Title:  "ThingUE启动器 v" + provider.VersionInfo.Version,
 		Width:  820,
 		Height: 501,
 		AssetServer: &assetserver.Options{

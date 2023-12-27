@@ -32,17 +32,21 @@ to this in your browser, and you can call your Go code from devtools.
 To build a redistributable, production mode package, use
 ### Windows客户端编译
 ```shell
-wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')'" -o thingue-launcher_win64.exe -upx
+$AppVersion = "0.0.4"
+wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion.exe
 ```
 ### Linux客户端编译
 ```shell
-wails build -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`'" -o thingue-launcher_linux64 -upx
+export AppVersion="0.0.4"
+wails build -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`' -X main.AppVersion=0.0.4 -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion
 ```
 ### Windows服务端编译
 ```shell
-go build -o build/bin/thingue-server_win64.exe -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')'" server/main.go
+$AppVersion = "0.0.4"
+go build -o build/bin/thingue-server-v$AppVersion.exe -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" server/main.go
 ```
 ### Linux服务端编译
 ```shell
-go build -o build/bin/thingue-server_linux64 -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`'" server/main.go
+export AppVersion="0.0.4"
+go build -o build/bin/thingue-server_$AppVersion -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`' -X main.AppVersion=$AppVersion" server/main.go
 ```

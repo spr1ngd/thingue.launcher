@@ -4,6 +4,7 @@ import {v4 as uuidv4} from "uuid";
 
 const PixelStreamingApplicationStyles = new PixelStreamingApplicationStyle();
 PixelStreamingApplicationStyles.applyStyleSheet();
+const urlParams = new URLSearchParams(window.location.search);
 
 document.body.onload = function () {
     const config = new Config({
@@ -13,8 +14,8 @@ document.body.onload = function () {
             OfferToReceive: true,
             HoveringMouse: true,
             StartVideoMuted: true,
-            MatchViewportRes: false,
-        }
+        },
+        useUrlParams: true
     });
     const stream = new PixelStreaming(config, {
         playerUrlBuilder: playerUrlBuilder
@@ -36,9 +37,30 @@ document.body.onload = function () {
         }
     })
 
+    const hideUi = urlParams.has("HideUI") && (urlParams.get("HideUI") === "true" || urlParams.get("HideUI") === "True")
+
     const application = new Application({
         stream,
-        onColorModeChanged: (isLightMode) => PixelStreamingApplicationStyles.setColorMode(isLightMode)
+        onColorModeChanged: (isLightMode) => PixelStreamingApplicationStyles.setColorMode(isLightMode),
+        // 隐藏UI上的控制元素配置
+        settingsPanelConfig: {
+            isEnabled: true,
+            visibilityButtonConfig: {
+                creationMode: hideUi ? 2 : 0
+            }
+        },
+        statsPanelConfig: {
+            isEnabled: true,
+            visibilityButtonConfig: {
+                creationMode: hideUi ? 2 : 0
+            }
+        },
+        fullScreenControlsConfig: {
+            creationMode: hideUi ? 2 : 0
+        },
+        videoQpIndicatorConfig: {
+            disableIndicator: hideUi
+        },
     });
     document.body.appendChild(application.rootElement);
 }
@@ -46,7 +68,6 @@ document.body.onload = function () {
 async function playerUrlBuilder() {
     const origin = window.location.origin.replace('http://', 'ws://').replace('https://', 'wss://');
     const path = window.location.pathname.slice(0, location.pathname.lastIndexOf("/")).replace("/static", "");
-    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("ticket")) {
         return `${origin}${path}/ws/player/${urlParams.get("ticket")}`;
     }
