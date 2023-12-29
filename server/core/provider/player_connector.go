@@ -40,7 +40,6 @@ func (p *PlayerConnector) ForwardMessage(msg map[string]any) {
 
 func (p *PlayerConnector) Offer(msg map[string]any) {
 	p.ForwardMessage(msg)
-	p.StreamerConnector.SendPlayersCount()
 }
 
 func (p *PlayerConnector) Subscribe() {
@@ -51,7 +50,6 @@ func (p *PlayerConnector) Subscribe() {
 	forwardMsg["sfu"] = false
 	forwardMsg["sendOffer"] = true
 	p.StreamerConnector.SendMessage(util.MapToJson(forwardMsg))
-	p.StreamerConnector.SendPlayersCount()
 }
 
 func (p *PlayerConnector) ListStreamers() {

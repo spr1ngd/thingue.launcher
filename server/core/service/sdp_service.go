@@ -99,6 +99,7 @@ func (m *sdpService) OnStreamerLoadBundleComplete(streamer *provider.StreamerCon
 
 func (m *sdpService) OnPlayerPaired(player *provider.PlayerConnector) {
 	player.StreamerConnector.PlayerConnectors = append(player.StreamerConnector.PlayerConnectors, player)
+	player.StreamerConnector.SendPlayersCount()
 	InstanceService.UpdatePlayers(player.StreamerConnector)
 	// 如果未开启渲染，则发消息开启
 	if !player.StreamerConnector.RenderingState {
