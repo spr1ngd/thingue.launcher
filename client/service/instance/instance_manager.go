@@ -5,7 +5,7 @@ import (
 	"thingue-launcher/client/global"
 	"thingue-launcher/common/model"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
@@ -48,8 +48,7 @@ func (m *instanceManager) SaveConfig(instance *model.ClientInstance) error {
 		return errors.New("实例运行中无法修改配置")
 	}
 	global.APP_DB.Save(instance)
-	mapstructure.Decode(instance, runner.Instance)
-	return nil
+	return copier.Copy(runner.Instance, instance)
 }
 
 func (m *instanceManager) Delete(id uint) {
