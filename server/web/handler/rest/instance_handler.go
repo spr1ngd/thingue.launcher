@@ -10,7 +10,9 @@ import (
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
+	"thingue-launcher/common/util"
 	"thingue-launcher/server/core"
+	"thingue-launcher/server/core/provider"
 )
 
 type InstanceGroup struct{}
@@ -190,5 +192,26 @@ func (g *InstanceGroup) KickPlayerUser(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 	} else {
 		response.OkWithDetailed(count, fmt.Sprintf("踢掉%d个连接", count), c)
+	}
+}
+
+func (g *InstanceGroup) ClearPak(c *gin.Context) {
+	sid := c.Query("sid")
+	core.InstanceService.UpdatePak(sid, "")
+}
+
+func (g *InstanceGroup) SendMsgToStreamer(c *gin.Context) {
+	var msg map[string]any
+	err := c.BindJSON(&msg)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		sid := c.Query("sid")
+		streamer, err := provider.SdpConnProvider.GetStreamer(sid)
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		}
+		streamer.SendMessage(util.MapToJson(msg))
+		response.OkWithMessage("消息发送成功", c)
 	}
 }

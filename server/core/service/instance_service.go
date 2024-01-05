@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"k8s.io/apimachinery/pkg/labels"
 	"sync"
 	"thingue-launcher/common/message"
@@ -61,8 +62,23 @@ func (s *instanceService) UpdateRenderingState(sid string, rendering bool) {
 	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("rendering", rendering)
 }
 
-func (s *instanceService) UpdatePak(sid string, pak string) {
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("current_pak", pak)
+func (s *instanceService) UpdatePak(sid, currentPakValue string) {
+	if currentPakValue != "" {
+		instance := model.ServerInstance{}
+		global.SERVER_DB.Where("s_id = ?", sid).First(&instance)
+		found := false
+		for _, pak := range instance.Paks {
+			if pak.Value == currentPakValue {
+				found = true
+				break
+			}
+		}
+		if !found {
+			fmt.Println("bundle名称不在paks里")
+			return
+		}
+	}
+	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("current_pak", currentPakValue)
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 

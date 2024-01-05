@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"thingue-launcher/client/service"
+	"thingue-launcher/client/service/instance"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/model"
@@ -84,6 +85,7 @@ func (u *instanceApi) StartInstance(id uint) error {
 func (u *instanceApi) StopInstance(id uint) error {
 	runner := service.RunnerManager.GetRunnerById(id)
 	if runner != nil {
+		instance.ClientService.ClearPak(runner.SID)
 		return runner.Stop()
 	} else {
 		return errors.New("实例不存在")

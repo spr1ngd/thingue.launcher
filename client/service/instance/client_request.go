@@ -73,6 +73,15 @@ func (s *clientService) SendProcessState(sid string, stateCode int8, pid int) {
 	}
 }
 
+func (s *clientService) ClearPak(sid string) {
+	params := url.Values{}
+	params.Add("sid", sid)
+	_, err := s.HttpGetWithParams("/api/instance/clearPak", params)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func (s *clientService) UpdateStreamerConnected(msg *message.ServerStreamerConnectedUpdate) {
 	runner := RunnerManager.GetRunnerById(msg.CID)
 	if runner != nil {

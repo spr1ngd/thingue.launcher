@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"thingue-launcher/common/message"
 	"thingue-launcher/common/request"
 	"thingue-launcher/server/core/provider"
 	"time"
@@ -41,6 +42,16 @@ func (m *sdpService) OnStreamerConnect(streamer *provider.StreamerConnector) {
 		}
 		fmt.Println("自动停止协程结束，资源释放")
 	}()
+	// 加载重启之前的pak
+	instance := InstanceService.GetInstanceBySid(streamer.SID)
+	if instance.CurrentPak != "" {
+		go func() {
+			time.Sleep(5 * time.Second)
+			command := message.Command{}
+			command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.CurrentPak})
+			streamer.SendCommand(&command)
+		}()
+	}
 }
 
 func (m *sdpService) OnStreamerDisconnect(streamer *provider.StreamerConnector) {
