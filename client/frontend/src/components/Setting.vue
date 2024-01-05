@@ -56,76 +56,66 @@ function select() {
 
 </script>
 <template>
-  <q-card>
-    <q-card-section class="q-pa-sm">
-      <div class="row no-wrap items-center q-pa-sm">
-        <div class="text-h6">通用设置</div>
-      </div>
-    </q-card-section>
-    <q-card-section class="q-pa-none q-pt-sm">
-      <q-list>
-        <q-expansion-item>
-          <template v-slot:header>
-            <q-item-section avatar>
-              <q-toggle v-model="enableRestartTask" @update:model-value="updateEnableRestartTask"/>
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>开启定时重启任务</q-item-label>
-              <q-item-label caption>定时重启本机实例提高UE长时间运行的稳定性</q-item-label>
-            </q-item-section>
+  <div class="text-h6">设置</div>
+  <q-list>
+    <q-item-label header>定时重启</q-item-label>
+    <q-item>
+      <q-item-section avatar>
+        <q-toggle v-model="enableRestartTask" @update:model-value="updateEnableRestartTask"/>
+      </q-item-section>
+      <q-item-section>
+        <q-item-label>开启定时重启任务</q-item-label>
+        <q-item-label caption>定时重启本机实例提高UE长时间运行的稳定性</q-item-label>
+      </q-item-section>
+    </q-item>
+    <q-item>
+      <q-item-section>
+        <div class="text-subtitle2">定时重启任务CRON表达式(5位)</div>
+      </q-item-section>
+      <q-item-section side>
+        <q-input :disable="enableRestartTask" dense v-model="systemSettings.RestartTaskCron"/>
+      </q-item-section>
+    </q-item>
+
+    <q-item-label header>其他</q-item-label>
+    <q-item>
+      <q-item-section avatar>
+        <div class="text-subtitle2">外部日志查看器路径(默认使用vscode)</div>
+      </q-item-section>
+      <q-item-section>
+        <q-input dense v-model="systemSettings.ExternalEditorPath">
+          <template v-slot:append>
+            <q-btn padding="none" icon="sym_o_file_open" flat dense @click="select"/>
           </template>
-          <q-item>
-            <q-item-section side>
-              <div class="text-subtitle2">定时重启任务CRON表达式(5位)</div>
-            </q-item-section>
-            <q-item-section side>
-              <q-input :disable="enableRestartTask" dense v-model="systemSettings.RestartTaskCron"/>
-            </q-item-section>
-          </q-item>
-        </q-expansion-item>
-        <q-item>
-          <q-item-section avatar>
-            <div class="text-subtitle2">外部日志查看器路径(默认使用vscode)</div>
-          </q-item-section>
-          <q-item-section>
-            <q-input dense v-model="systemSettings.ExternalEditorPath">
-              <template v-slot:append>
-                <q-btn padding="none" icon="sym_o_file_open" flat dense @click="select"/>
-              </template>
-            </q-input>
-          </q-item-section>
-        </q-item>
-        <q-expansion-item label="关于">
-          <q-list dense class="q-pl-lg q-pa-sm">
-            <q-item>
-              <q-item-section side>
-                <q-item-label>Version:</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-item-label>{{ versionInfo.Version }}</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section side>
-                <q-item-label>BuildDate:</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-item-label>{{ versionInfo.BuildDate }}</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section side>
-                <q-item-label>GitCommit:</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-item-label>{{ versionInfo.GitCommit }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-expansion-item>
-      </q-list>
-    </q-card-section>
-  </q-card>
+        </q-input>
+      </q-item-section>
+    </q-item>
+    <q-item-label header>版本信息</q-item-label>
+    <q-item dense>
+      <q-item-section>
+        <q-item-label>Version:</q-item-label>
+      </q-item-section>
+      <q-item-section side>
+        <q-item-label>{{ versionInfo.Version }}</q-item-label>
+      </q-item-section>
+    </q-item>
+    <q-item dense>
+      <q-item-section>
+        <q-item-label>BuildDate:</q-item-label>
+      </q-item-section>
+      <q-item-section side>
+        <q-item-label>{{ versionInfo.BuildDate }}</q-item-label>
+      </q-item-section>
+    </q-item>
+    <q-item dense>
+      <q-item-section>
+        <q-item-label>GitCommit:</q-item-label>
+      </q-item-section>
+      <q-item-section side>
+        <q-item-label>{{ versionInfo.GitCommit }}</q-item-label>
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
 <style>
 </style>
