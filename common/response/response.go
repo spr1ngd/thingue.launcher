@@ -11,7 +11,6 @@ type InstanceTicket struct {
 	SID               string        `json:"sid"` //服务端唯一ID
 	Name              string        `json:"name"`
 	ExecPath          string        `json:"execPath"`
-	EnableH265        bool          `json:"enableH265"`
 	AutoResizeRes     bool          `json:"autoResizeRes"`
 	Pid               int           `json:"pid"`
 	StateCode         int8          `json:"stateCode"`

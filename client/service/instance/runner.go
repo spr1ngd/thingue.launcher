@@ -40,10 +40,6 @@ func (r *Runner) Start() error {
 	if r.Name != "" {
 		launchArguments = append(launchArguments, "LOG="+r.Name+".log")
 	}
-	// 设置H265
-	if r.EnableH265 {
-		launchArguments = append(launchArguments, "-PSForceH265")
-	}
 	// 运行前
 	fmt.Println(r.ExecPath, launchArguments)
 	command := exec.Command(r.ExecPath, launchArguments...)

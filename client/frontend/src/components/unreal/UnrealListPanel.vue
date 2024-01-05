@@ -80,12 +80,13 @@ function handleNewSettings() {
       ],
       cloudRes: "",
       faultRecover: false,
-      enableH265: false,
+      enableMultiuserControl: false,
       autoResizeRes: false,
       autoControl: false,
       stopDelay: 5,
       enableRelay: true,
-      enableRenderControl: false
+      enableRenderControl: false,
+      playerConfig: {}
     }
   })
 }
