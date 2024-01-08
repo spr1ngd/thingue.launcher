@@ -31,8 +31,8 @@ type Instance struct {
 }
 
 type PlayerConfig struct {
-	MatchViewportRes       bool `json:"matchViewportRes"`
-	HideUI                 bool `json:"hideUI"`
-	AutoDisconnect         bool `json:"autoDisconnect"`
-	AutoDisconnectWaitTime uint `json:"autoDisconnectWaitTime"`
+	MatchViewportRes bool `json:"matchViewportRes"`
+	HideUI           bool `json:"hideUI"`
+	IdleDisconnect   bool `json:"idleDisconnect"`
+	IdleTimeout      uint `json:"idleTimeout"`
 }

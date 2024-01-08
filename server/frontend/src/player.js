@@ -6,6 +6,29 @@ const PixelStreamingApplicationStyles = new PixelStreamingApplicationStyle();
 PixelStreamingApplicationStyles.applyStyleSheet();
 const urlParams = new URLSearchParams(window.location.search);
 
+const idleController = {
+    timer: null,
+    stream: null,
+    timeout: null,
+    resetTimer: function () {
+        clearTimeout(idleController.timer);
+        idleController.timer = setTimeout(idleController.disconnectStream, idleController.timeout);
+    },
+    disconnectStream: function () {
+        idleController.stream.disconnect()
+    },
+    startListener: function () {
+        window.addEventListener('mousemove', idleController.resetTimer);
+        window.addEventListener('keydown', idleController.resetTimer);
+        idleController.resetTimer()
+    },
+    stopListener: function () {
+        window.removeEventListener('mousemove', idleController.resetTimer);
+        window.removeEventListener('keydown', idleController.resetTimer);
+        clearTimeout(idleController.timer);
+    }
+}
+
 document.body.onload = function () {
     const config = new Config({
         initialSettings: {
@@ -14,12 +37,16 @@ document.body.onload = function () {
             OfferToReceive: true,
             HoveringMouse: true,
             StartVideoMuted: true,
+            MatchViewportRes: false,
+            SuppressBrowserKeys: false,
         },
         useUrlParams: true
     });
     const stream = new PixelStreaming(config, {
         playerUrlBuilder: playerUrlBuilder
     });
+
+    idleController.stream = stream
 
     window.onmessage = async function (e) {
         const uuid = uuidv4();
@@ -63,6 +90,7 @@ document.body.onload = function () {
         },
     });
     document.body.appendChild(application.rootElement);
+
 }
 
 async function playerUrlBuilder() {
@@ -83,6 +111,17 @@ async function playerUrlBuilder() {
     })
     const resJson = await response.json()
     if (resJson.code === 200) {
+        // 获取player配置
+        const playerConfig = resJson.data.playerConfig
+        idleController.stream.config.setFlagEnabled('MatchViewportRes', playerConfig.matchViewportRes)
+        document.getElementById("controls").style.visibility = playerConfig.hideUI ? "hidden" : "visible"
+        document.getElementById("connection").style.visibility = playerConfig.hideUI ? "hidden" : "visible"
+        if (playerConfig.idleDisconnect) {
+            idleController.timeout = playerConfig.idleTimeout * 60000
+            idleController.startListener()
+        } else {
+            idleController.stopListener()
+        }
         return `${origin}${path}/ws/player/${resJson.data.ticket}`;
     } else {
         throw new Error(resJson.msg);

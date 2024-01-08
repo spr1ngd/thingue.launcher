@@ -59,7 +59,7 @@ function select() {
 async function save() {
   const settings = JSON.parse(JSON.stringify(props.data.settings))
   settings.stopDelay = Number(settings.stopDelay)
-  settings.playerConfig.autoDisconnectWaitTime = Number(settings.playerConfig.autoDisconnectWaitTime)
+  settings.playerConfig.idleTimeout = Number(settings.playerConfig.idleTimeout)
   settings.launchArguments = editor.launchArgumentsEditor.getValue().split('\n')
   settings.metadata = editor.metadataEditor.getValue()
   settings.paksConfig = editor.paksConfigEditor.getValue()
@@ -239,7 +239,7 @@ async function save() {
     </q-item>
     <q-item dense tag="label" v-ripple>
       <q-item-section side top>
-        <q-checkbox v-model="props.data.settings.playerConfig.autoDisconnect"/>
+        <q-checkbox v-model="props.data.settings.playerConfig.idleDisconnect"/>
       </q-item-section>
       <q-item-section>
         <q-item-label>无操作关闭连接</q-item-label>
@@ -248,9 +248,17 @@ async function save() {
         </q-item-label>
       </q-item-section>
       <q-item-section side>
-        <q-input dense v-model="props.data.settings.playerConfig.autoDisconnectWaitTime" label="无操作等待时间（分钟）"
+        <q-input dense v-model="props.data.settings.playerConfig.idleTimeout" label="无操作等待时间（分钟）"
                  type="number"/>
       </q-item-section>
+    </q-item>
+    <q-separator spaced/>
+
+    <q-item>
+      <div class="q-gutter-md">
+        <q-btn color="primary" @click="save">保存</q-btn>
+        <q-btn @click="emit('openListPanel')">关闭</q-btn>
+      </div>
     </q-item>
 
   </q-list>
