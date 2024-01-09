@@ -123,10 +123,12 @@ func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
 			_ = runner.Stop()
+			ClientService.SetRestarting(runner.SID, true)
 			time.Sleep(3 * time.Second) //kill发出停顿三秒，等待进程关闭
 			err := runner.Start()
 			if err != nil {
 				fmt.Printf("%s重启失败:%s\n", runner.Name, err)
+				ClientService.SetRestarting(runner.SID, false)
 			} else {
 				fmt.Printf("%s重启成功\n", runner.Name)
 			}

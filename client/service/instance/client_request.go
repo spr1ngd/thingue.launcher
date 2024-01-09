@@ -73,6 +73,16 @@ func (s *clientService) SendProcessState(sid string, stateCode int8, pid int) {
 	}
 }
 
+func (s *clientService) SetRestarting(sid string, restarting bool) {
+	params := url.Values{}
+	params.Add("sid", sid)
+	params.Add("restarting", strconv.FormatBool(restarting))
+	_, err := s.HttpGetWithParams("/api/instance/setRestarting", params)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func (s *clientService) ClearPak(sid string) {
 	params := url.Values{}
 	params.Add("sid", sid)

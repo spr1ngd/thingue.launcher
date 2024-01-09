@@ -42,16 +42,6 @@ func (m *sdpService) OnStreamerConnect(streamer *provider.StreamerConnector) {
 		}
 		fmt.Println("自动停止协程结束，资源释放")
 	}()
-	// 加载重启之前的pak
-	instance := InstanceService.GetInstanceBySid(streamer.SID)
-	if instance.CurrentPak != "" {
-		go func() {
-			time.Sleep(5 * time.Second)
-			command := message.Command{}
-			command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.CurrentPak})
-			streamer.SendCommand(&command)
-		}()
-	}
 }
 
 func (m *sdpService) OnStreamerDisconnect(streamer *provider.StreamerConnector) {
@@ -147,5 +137,16 @@ func (m *sdpService) KickPlayerUser(userQueryMap map[string]string) (int, error)
 		return len(players), nil
 	} else {
 		return 0, errors.New("没有匹配的连接")
+	}
+}
+
+func (m *sdpService) OnStreamerNodeRestarted(streamer *provider.StreamerConnector) {
+	instance := InstanceService.GetInstanceBySid(streamer.SID)
+	if instance.Restarting && instance.CurrentPak != "" {
+		fmt.Println("加载重启之前的pak", instance.CurrentPak)
+		command := message.Command{}
+		command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.CurrentPak})
+		streamer.SendCommand(&command)
+		InstanceService.SetRestarting(instance.SID, false)
 	}
 }

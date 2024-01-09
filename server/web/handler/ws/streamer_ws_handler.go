@@ -54,6 +54,8 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				}
 			} else if msgType == "hotReloadComplete" {
 				service.InstanceService.UpdatePak(streamer.SID, "")
+			} else if msgType == "nodeRestarted" {
+				service.SdpService.OnStreamerNodeRestarted(streamer)
 			} else if msgType == "loadComplete" {
 				service.SdpService.OnStreamerLoadBundleComplete(streamer)
 				service.InstanceService.UpdatePak(streamer.SID, msg["bundleName"].(string))

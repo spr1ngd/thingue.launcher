@@ -38,21 +38,35 @@ func (s *StreamerConnector) State(msg map[string]any) {
 	}
 }
 
+func (s *StreamerConnector) SendMultiuserControl(playerId uint) {
+	if _, ok := SdpConnProvider.idPlayerMap[playerId]; ok {
+		s.SendMessage(util.MapToJson(map[string]any{
+			"type":     "multiuserControl",
+			"playerId": util.SanitizePlayerId(playerId),
+		}))
+	} else {
+		s.SendMessage(util.MapToJson(map[string]any{
+			"type":     "multiuserControl",
+			"playerId": "Invalid Player Id",
+		}))
+	}
+}
+
 func (s *StreamerConnector) SendConfig() {
 	if s.EnableRelay && provider.AppConfig.PeerConnectionOptions != "" {
 		var options domain.PeerConnectionOptions
 		err := yaml.Unmarshal([]byte(provider.AppConfig.PeerConnectionOptions), &options)
 		if err == nil {
-			s.SendMessage(util.MapToJson(map[string]interface{}{
+			s.SendMessage(util.MapToJson(map[string]any{
 				"type":                  "config",
 				"peerConnectionOptions": options,
 			}))
 			return
 		}
 	}
-	s.SendMessage(util.MapToJson(map[string]interface{}{
+	s.SendMessage(util.MapToJson(map[string]any{
 		"type":                  "config",
-		"peerConnectionOptions": map[string]interface{}{},
+		"peerConnectionOptions": map[string]any{},
 	}))
 }
 
@@ -85,11 +99,16 @@ func (s *StreamerConnector) PlayerDisconnect(disconnectPlayer *PlayerConnector) 
 
 func (s *StreamerConnector) SendPlayersCount() {
 	players := s.PlayerConnectors
-	msg := map[string]interface{}{
-		"type":  "playerCount",
-		"count": len(players),
-	}
-	for _, player := range players {
+	for index, player := range players {
+		canResizeRes := false
+		if index == 0 {
+			canResizeRes = true
+		}
+		msg := map[string]any{
+			"type":         "playerCount",
+			"count":        len(players),
+			"canResizeRes": canResizeRes,
+		}
 		player.SendMessage(util.MapToJson(msg))
 	}
 }

@@ -28,6 +28,7 @@ type ServerInstance struct {
 	PlayerIds           UintSlice           `json:"playerIds"`
 	PlayerCount         uint                `json:"playerCount"`
 	CurrentPak          string              `json:"currentPak"`
+	Restarting          bool                `json:"restarting"`
 	Rendering           bool                `json:"rendering"`
 	AutoControl         bool                `json:"autoControl"`
 	StopDelay           uint                `json:"stopDelay"`

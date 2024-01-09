@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build --base=./",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "link": "npm link ../../../thing.ue.frontend/pixelstreaming/library ../../../thing.ue.frontend/pixelstreaming/ui-library"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.5",

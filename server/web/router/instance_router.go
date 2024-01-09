@@ -18,6 +18,7 @@ func (s *instanceRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		instanceRouter.POST("processControl", handler.InstanceGroup.ProcessControl)
 		instanceRouter.POST("pakControl", handler.InstanceGroup.PakControl)
 		instanceRouter.GET("clearPak", handler.InstanceGroup.ClearPak)
+		instanceRouter.GET("setRestarting", handler.InstanceGroup.SetRestarting)
 		instanceRouter.POST("sendMsgToStreamer", handler.InstanceGroup.SendMsgToStreamer)
 		instanceRouter.POST("ticketSelect", handler.InstanceGroup.TicketSelect)
 		instanceRouter.GET("instanceList", handler.InstanceGroup.InstanceList)

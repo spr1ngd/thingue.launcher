@@ -198,6 +198,7 @@ func (g *InstanceGroup) KickPlayerUser(c *gin.Context) {
 func (g *InstanceGroup) ClearPak(c *gin.Context) {
 	sid := c.Query("sid")
 	core.InstanceService.UpdatePak(sid, "")
+	response.OkWithMessage("状态更新成功", c)
 }
 
 func (g *InstanceGroup) SendMsgToStreamer(c *gin.Context) {
@@ -213,5 +214,17 @@ func (g *InstanceGroup) SendMsgToStreamer(c *gin.Context) {
 		}
 		streamer.SendMessage(util.MapToJson(msg))
 		response.OkWithMessage("消息发送成功", c)
+	}
+}
+
+func (g *InstanceGroup) SetRestarting(c *gin.Context) {
+	sid := c.Query("sid")
+	restarting := c.Query("restarting")
+	restartingBool, err := strconv.ParseBool(restarting)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		core.InstanceService.SetRestarting(sid, restartingBool)
+		response.OkWithMessage("状态更新成功", c)
 	}
 }
