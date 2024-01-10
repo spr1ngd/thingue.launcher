@@ -86,7 +86,12 @@ function handleNewSettings() {
       stopDelay: 5,
       enableRelay: true,
       enableRenderControl: false,
-      playerConfig: {}
+      playerConfig: {
+        matchViewportRes: true,
+        hideUI: false,
+        idleDisconnect: false,
+        idleTimeout: 5
+      }
     }
   })
 }

@@ -30,6 +30,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				break
 			}
 			msg := util.JsonStrToMapData(msgStr)
+			//fmt.Println("==收到消息==", string(msgStr))
 			// 处理不同消息类型
 			msgType := msg["type"].(string)
 			if msgType == "ping" {

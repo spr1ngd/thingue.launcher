@@ -40,6 +40,13 @@ func (m *runnerManager) Init() {
 						ExecPath:        filepath.Join(pwd, entry.Name()),
 						LaunchArguments: []string{"-AudioMixer", "-RenderOffScreen", "-ForceRes", "-ResX=1920", "-ResY=1080"},
 						IsInternal:      true,
+						EnableRelay:     true,
+						PlayerConfig: domain.PlayerConfig{
+							MatchViewportRes: true,
+							HideUI:           false,
+							IdleDisconnect:   false,
+							IdleTimeout:      5,
+						},
 					}
 					InstanceManager.Create(instance)
 					_ = m.NewRunner(instance)

@@ -34,6 +34,7 @@ To build a redistributable, production mode package, use
 ```shell
 $AppVersion = "0.0.4"
 wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion.exe
+wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion.exe -windowsconsole
 ```
 ### Linux客户端编译
 ```shell
