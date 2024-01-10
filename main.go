@@ -5,6 +5,7 @@ import (
 	"os"
 	"thingue-launcher/client"
 	"thingue-launcher/common/constants"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
 )
 
@@ -23,6 +24,7 @@ func main() {
 		os.MkdirAll(constants.SAVE_DIR, 0755)
 	}
 	provider.InitConfigFromFile()
+	logger.InitZapLogger()
 	provider.SetWebStatic("server/frontend/dist", staticFiles)
 	client.Startup()
 	client.Shutdown()

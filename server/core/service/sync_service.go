@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
 	"thingue-launcher/server/core/provider"
@@ -24,7 +25,7 @@ func (s *syncService) ListCloudRes() []*model.CloudRes {
 
 func (s *syncService) GetSyncConfig() []string {
 	var files []string
-	file, err := os.Open("./thingue-launcher/storage/config.json")
+	file, err := os.Open(constants.SAVE_DIR + "storage/config.json")
 	defer file.Close()
 	if err == nil {
 		var configs []string

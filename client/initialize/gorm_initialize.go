@@ -3,6 +3,7 @@ package initialize
 import (
 	"fmt"
 	"thingue-launcher/client/global"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/model"
 
 	"gorm.io/driver/sqlite"
@@ -10,7 +11,7 @@ import (
 )
 
 func InitGorm() {
-	db, err := gorm.Open(sqlite.Open("./thingue-launcher/config.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(constants.SAVE_DIR+"config.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

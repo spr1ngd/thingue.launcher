@@ -3,18 +3,16 @@ package initialize
 import (
 	"context"
 	"embed"
-	"fmt"
-	"thingue-launcher/client/api"
-	"thingue-launcher/common/provider"
-	"time"
-
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"thingue-launcher/client/api"
+	"thingue-launcher/common/provider"
 )
 
 func InitApp(assets embed.FS) {
-	myLog := NewFileLogger(fmt.Sprintf("thingue-launcher/info-%v.log", time.Now().Format("2006-01-02")))
+	zapLogger := ZapLogger{}
 	// 初始化wails app
 	err := wails.Run(&options.App{
 		Title:  "ThingUE启动器 v" + provider.VersionInfo.Version,
@@ -28,13 +26,14 @@ func InitApp(assets embed.FS) {
 			api.InstanceApi.Init(ctx)
 			api.ServerApi.Init(ctx)
 			api.SystemApi.Init(ctx)
+			runtime.LogWarning(ctx, "APP启动，系统自检")
 		},
-		Logger: myLog,
 		Bind: []interface{}{
 			api.InstanceApi,
 			api.ServerApi,
 			api.SystemApi,
 		},
+		Logger: &zapLogger,
 	})
 	if err != nil {
 		println("Error:", err.Error())

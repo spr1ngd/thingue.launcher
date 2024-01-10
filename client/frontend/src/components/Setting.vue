@@ -12,7 +12,8 @@ import {Notify} from "quasar";
 
 const systemSettings = reactive({
   RestartTaskCron: '',
-  ExternalEditorPath: ''
+  ExternalEditorPath: '',
+  LogLevel: 0
 })
 
 const enableRestartTask = ref(false)
@@ -22,6 +23,7 @@ onMounted(async () => {
   const appConfig = await GetAppConfig();
   versionInfo.value = await GetVersionInfo();
   systemSettings.RestartTaskCron = appConfig.systemSettings.restartTaskCron
+  systemSettings.LogLevel = appConfig.systemSettings.logLevel
   systemSettings.ExternalEditorPath = appConfig.systemSettings.externalEditorPath
   enableRestartTask.value = appConfig.systemSettings.enableRestartTask
   watch(systemSettings, async (value, oldValue, onCleanup) => {
@@ -59,7 +61,7 @@ function select() {
   <div class="text-h6">设置</div>
   <q-list>
     <q-item-label header>定时重启</q-item-label>
-    <q-item>
+    <q-item dense>
       <q-item-section avatar>
         <q-toggle v-model="enableRestartTask" @update:model-value="updateEnableRestartTask"/>
       </q-item-section>
@@ -67,20 +69,24 @@ function select() {
         <q-item-label>开启定时重启任务</q-item-label>
         <q-item-label caption>定时重启本机实例提高UE长时间运行的稳定性</q-item-label>
       </q-item-section>
-    </q-item>
-    <q-item>
-      <q-item-section>
-        <div class="text-subtitle2">定时重启任务CRON表达式(5位)</div>
-      </q-item-section>
       <q-item-section side>
-        <q-input :disable="enableRestartTask" dense v-model="systemSettings.RestartTaskCron"/>
+        <q-input :disable="enableRestartTask" dense v-model="systemSettings.RestartTaskCron" label="Cron (5位)"/>
       </q-item-section>
     </q-item>
 
     <q-item-label header>其他</q-item-label>
-    <q-item>
-      <q-item-section avatar>
-        <div class="text-subtitle2">外部日志查看器路径(默认使用vscode)</div>
+    <q-item dense>
+      <q-item-section>
+        <q-item-label>日志输出级别</q-item-label>
+      </q-item-section>
+      <q-item-section side>
+        <q-select dense options-dense v-model="systemSettings.LogLevel"
+                  :options="['debug','info','warn','error']"></q-select>
+      </q-item-section>
+    </q-item>
+    <q-item dense>
+      <q-item-section>
+        <q-item-label>UE日志查看器路径(默认使用vscode)</q-item-label>
       </q-item-section>
       <q-item-section>
         <q-input dense v-model="systemSettings.ExternalEditorPath">
