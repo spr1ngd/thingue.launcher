@@ -2,9 +2,9 @@ package ws
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/core/service"
@@ -14,7 +14,7 @@ import (
 func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 	conn, err := WsUpgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println("WebSocket upgrade error:", err)
+		logger.Zap.Error("WebSocket upgrade error:", err)
 		return
 	}
 	sid := c.Param("id")
@@ -30,7 +30,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				break
 			}
 			msg := util.JsonStrToMapData(msgStr)
-			//fmt.Println("==收到消息==", string(msgStr))
+			logger.Zap.Debug("streamer消息", string(msgStr))
 			// 处理不同消息类型
 			msgType := msg["type"].(string)
 			if msgType == "ping" {
@@ -43,10 +43,10 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				streamer.ForwardMessage(msg)
 			} else if msgType == "disconnectPlayer" {
 				// todo
-				fmt.Println(msg)
+				logger.Zap.Warn("未实现的消息类型", msg)
 			} else if msgType == "state" {
 				// todo
-				fmt.Println(msg)
+				logger.Zap.Warn("未实现的消息类型", msg)
 			} else if msgType == "rendering" {
 				state, err := getRenderingStateFromMsg(msg)
 				if err == nil {
@@ -67,7 +67,7 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 		service.SdpService.OnStreamerDisconnect(streamer)
 	} else {
 		time.Sleep(3 * time.Second)
-		fmt.Println("未注册的Streamer在尝试连接")
+		logger.Zap.Warn("未注册的Streamer在尝试连接")
 		_ = conn.Close()
 	}
 

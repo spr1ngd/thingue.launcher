@@ -1,9 +1,9 @@
 package ws
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"sync"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/util"
 	"thingue-launcher/sgcc-adapter/provider"
 	"thingue-launcher/sgcc-adapter/service"
@@ -59,14 +59,14 @@ func (m *connManager) StartConnectTask() {
 	m.reconnectTimer = time.NewTimer(time.Duration(m.reconnectInterval) * time.Second)
 	go func() {
 		for {
-			t := <-m.reconnectTimer.C
-			fmt.Println("连接开始", t.Format("2006-01-02 15:04:05"))
+			<-m.reconnectTimer.C
+			logger.Zap.Debug("连接开始")
 			err := m.connect()
 			if err == nil {
 				break
 			} else {
 				m.reconnectTimer.Reset(time.Duration(m.reconnectInterval) * time.Second)
-				fmt.Printf("连接失败,%d秒后重试\n", m.reconnectInterval)
+				logger.Zap.Debug("连接失败,%d秒后重试\n", m.reconnectInterval)
 			}
 		}
 	}()
@@ -87,10 +87,10 @@ func (m *connManager) StartHeartbeatTask() {
 			if err != nil {
 				m.heartbeatTicker.Stop()
 				err = provider.Conn.Close()
-				fmt.Println(err)
+				logger.Zap.Warn("心跳发送失败，连接断开", err)
 				break
 			}
 		}
-		fmt.Println("停止发送心跳")
+		logger.Zap.Debug("停止发送心跳")
 	}()
 }

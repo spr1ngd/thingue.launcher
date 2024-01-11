@@ -2,7 +2,7 @@ package provider
 
 import (
 	"errors"
-	"fmt"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 
 	"github.com/gorilla/websocket"
@@ -27,7 +27,7 @@ func (p *clientConnProvider) SendToAllClients(message *message.Message) {
 	for _, conn := range p.ConnMap {
 		err := conn.WriteMessage(websocket.TextMessage, message.GetBytes())
 		if err != nil {
-			fmt.Println(err)
+			logger.Zap.Error(err)
 		}
 	}
 }
@@ -36,7 +36,7 @@ func (p *clientConnProvider) CloseAllConnection() {
 	for _, conn := range p.ConnMap {
 		err := conn.Close()
 		if err != nil {
-			fmt.Println(err)
+			logger.Zap.Error(err)
 		}
 	}
 }

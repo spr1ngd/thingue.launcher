@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/util"
 )
 
@@ -94,7 +95,7 @@ func (m *syncManager) StartUpdate(id uint) (string, error) {
 }
 
 func (m *syncManager) UpdateCloudRes(cloudRes string) error {
-	fmt.Println("检查更新")
+	logger.Zap.Debug("检查更新")
 	instances := InstanceManager.GetByCloudRes(cloudRes)
 	// 筛除使用相同包的实例
 	uniqueMap := make(map[string]int)

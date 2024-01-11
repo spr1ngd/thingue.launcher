@@ -7,13 +7,12 @@ import (
 	"go.uber.org/zap/zapcore"
 	"os"
 	"thingue-launcher/common/constants"
-	"thingue-launcher/common/provider"
 )
 
 var Zap *zap.SugaredLogger
 
-func InitZapLogger() {
-	level, err := zapcore.ParseLevel(provider.AppConfig.SystemSettings.LogLevel)
+func InitZapLogger(logLevel string) {
+	level, err := zapcore.ParseLevel(logLevel)
 	if err != nil {
 		fmt.Println("日志级别设置失败", err)
 		level = zapcore.InfoLevel

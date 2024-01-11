@@ -1,14 +1,13 @@
 package provider
 
 import (
-	"fmt"
-	"os"
-	"path"
-	"thingue-launcher/common/constants"
-
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
+	"os"
+	"path"
+	"thingue-launcher/common/constants"
+	"thingue-launcher/common/logger"
 )
 
 var AppConfig = new(Config)
@@ -82,6 +81,6 @@ func WriteConfigToFile() {
 	data, err := yaml.Marshal(&AppConfig)
 	err = os.WriteFile(configFile, data, 0755)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Zap.Error(err)
 	}
 }

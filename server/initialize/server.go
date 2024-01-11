@@ -1,10 +1,10 @@
 package initialize
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
 	coreprovider "thingue-launcher/server/core/provider"
@@ -42,13 +42,13 @@ func (s *server) Serve() {
 		Handler: s.router,
 	}
 	s.IsRunning = true
-	fmt.Println("thingue server listening at: ", s.listen.Addr)
+	logger.Zap.Info("thingue server listening at: ", s.listen.Addr)
 	err = s.listen.ListenAndServe() //运行中阻塞
 	s.IsRunning = false
 	if s.CloseReturnChanel != nil {
 		s.CloseReturnChanel <- err.Error()
 	}
-	fmt.Printf("server closed: %v\n", err)
+	logger.Zap.Info("server closed: %v\n", err)
 }
 
 func (s *server) Start() {
@@ -65,8 +65,8 @@ func (s *server) Stop() {
 	coreprovider.ClientConnProvider.CloseAllConnection()
 	coreprovider.AdminConnProvider.CloseAllConnection()
 	if err != nil {
-		fmt.Printf("server shutdown failed: %v\n", err)
+		logger.Zap.Error("server shutdown failed: %v\n", err)
 	} else {
-		fmt.Println("server gracefully stopped.")
+		logger.Zap.Info("server gracefully stopped.")
 	}
 }

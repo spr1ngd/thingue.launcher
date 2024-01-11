@@ -6,7 +6,6 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"thingue-launcher/client/api"
 	"thingue-launcher/common/provider"
 )
@@ -26,7 +25,6 @@ func InitApp(assets embed.FS) {
 			api.InstanceApi.Init(ctx)
 			api.ServerApi.Init(ctx)
 			api.SystemApi.Init(ctx)
-			runtime.LogWarning(ctx, "APP启动，系统自检")
 		},
 		Bind: []interface{}{
 			api.InstanceApi,

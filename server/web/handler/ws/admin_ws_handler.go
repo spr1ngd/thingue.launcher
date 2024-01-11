@@ -1,9 +1,9 @@
 package ws
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/core/provider"
@@ -12,7 +12,7 @@ import (
 func (g *HandlerGroup) AdminWebSocketHandler(c *gin.Context) {
 	conn, err := WsUpgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println("WebSocket upgrade error:", err)
+		logger.Zap.Error("WebSocket upgrade error:", err)
 		return
 	}
 	id := provider.AdminConnProvider.AddConn(conn)
@@ -25,7 +25,7 @@ func (g *HandlerGroup) AdminWebSocketHandler(c *gin.Context) {
 		var msg = message.Message{}
 		err = conn.ReadJSON(&msg)
 		if err != nil {
-			fmt.Println("WebSocket read error:", err)
+			logger.Zap.Error("WebSocket read error:", err)
 			break
 		}
 	}

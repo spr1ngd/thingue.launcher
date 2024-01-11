@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v3"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,11 +22,13 @@ func main() {
 	// 初始化配置
 	yamlFile, err := os.ReadFile("config.yaml")
 	if err != nil {
-		log.Fatalf("Failed to read YAML file: %v", err)
+		fmt.Printf("Failed to read YAML file: %v\n", err)
+		panic(err)
 	}
 	err = yaml.Unmarshal(yamlFile, provider.Config)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal YAML: %v", err)
+		fmt.Printf("Failed to unmarshal YAML: %v", err)
+		panic(err)
 	}
 	// 初始化server
 	service.ThingUE.Init()

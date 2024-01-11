@@ -5,10 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
@@ -53,7 +53,7 @@ func (s *clientService) RegisterClient(clientId uint) {
 		err = json.Unmarshal(result, &res)
 		if err != nil {
 			if res.Code != 200 {
-				fmt.Println("注册信息发送失败")
+				logger.Zap.Error("注册信息发送失败")
 			}
 		} else {
 			RunnerManager.StartInternalRunner()
@@ -69,7 +69,7 @@ func (s *clientService) SendProcessState(sid string, stateCode int8, pid int) {
 	})
 	_, err := s.HttpPost("/api/instance/updateProcessState", reqData)
 	if err != nil {
-		fmt.Println(err)
+		logger.Zap.Error(err)
 	}
 }
 
@@ -79,7 +79,7 @@ func (s *clientService) SetRestarting(sid string, restarting bool) {
 	params.Add("restarting", strconv.FormatBool(restarting))
 	_, err := s.HttpGetWithParams("/api/instance/setRestarting", params)
 	if err != nil {
-		fmt.Println(err)
+		logger.Zap.Error(err)
 	}
 }
 
@@ -88,7 +88,7 @@ func (s *clientService) ClearPak(sid string) {
 	params.Add("sid", sid)
 	_, err := s.HttpGetWithParams("/api/instance/clearPak", params)
 	if err != nil {
-		fmt.Println(err)
+		logger.Zap.Error(err)
 	}
 }
 
@@ -110,7 +110,6 @@ func (s *clientService) CollectLogs(traceId string) {
 	var buf bytes.Buffer
 	zipWriter := zip.NewWriter(&buf)
 	for _, filePath := range filesToCompress {
-		fmt.Println(filePath)
 		_ = util.AddFileToZip(zipWriter, filePath)
 	}
 	_ = zipWriter.Close()
@@ -122,7 +121,7 @@ func (s *clientService) CollectLogs(traceId string) {
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
 	if err != nil {
-		fmt.Println("Error:", err)
+		logger.Zap.Error(err)
 		return
 	}
 }

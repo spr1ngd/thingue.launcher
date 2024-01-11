@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"thingue-launcher/client/global"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
 	"time"
@@ -41,7 +42,7 @@ func (r *Runner) Start() error {
 		launchArguments = append(launchArguments, "LOG="+r.Name+".log")
 	}
 	// 运行前
-	fmt.Println(r.ExecPath, launchArguments)
+	logger.Zap.Debug(r.ExecPath, launchArguments)
 	command := exec.Command(r.ExecPath, launchArguments...)
 	err = command.Start()
 	if err != nil {
@@ -62,12 +63,12 @@ func (r *Runner) Start() error {
 		case r.ExitSignalChannel <- exitCode:
 			r.updateStateCode(0)
 			RunnerManager.RunnerStatusUpdateChanel <- r.CID
-			fmt.Println("退出码发送成功")
+			logger.Zap.Debug("退出码发送成功")
 			r.faultCount = 0
 		default:
 			r.updateStateCode(-1)
 			RunnerManager.RunnerUnexpectedExitChanel <- r.CID
-			fmt.Println("异常退出", r.faultCount)
+			logger.Zap.Warn("异常退出", r.faultCount)
 			if r.FaultRecover && r.faultCount < 3 {
 				time.Sleep(3 * time.Second)
 				r.Start()

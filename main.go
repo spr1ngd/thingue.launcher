@@ -24,7 +24,7 @@ func main() {
 		os.MkdirAll(constants.SAVE_DIR, 0755)
 	}
 	provider.InitConfigFromFile()
-	logger.InitZapLogger()
+	logger.InitZapLogger(provider.AppConfig.SystemSettings.LogLevel)
 	provider.SetWebStatic("server/frontend/dist", staticFiles)
 	client.Startup()
 	client.Shutdown()

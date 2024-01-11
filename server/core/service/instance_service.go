@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"k8s.io/apimachinery/pkg/labels"
 	"sync"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
@@ -74,7 +74,7 @@ func (s *instanceService) UpdatePak(sid, currentPakValue string) {
 			}
 		}
 		if !found {
-			fmt.Println("bundle名称不在paks里")
+			logger.Zap.Debug("未配置的pak值", currentPakValue)
 			return
 		}
 	}

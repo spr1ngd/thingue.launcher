@@ -1,10 +1,10 @@
 package initialize
 
 import (
-	"fmt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"thingue-launcher/common/constants"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"thingue-launcher/server/global"
 )
@@ -20,7 +20,7 @@ func initServerDB() {
 		&model.Client{},
 		&model.ServerInstance{},
 	); err != nil {
-		fmt.Println(err)
+		logger.Zap.Error(err)
 	}
 }
 
@@ -35,6 +35,6 @@ func initStorageDB() {
 		&model.CloudFile{},
 		&model.CloudRes{},
 	); err != nil {
-		fmt.Println(err)
+		logger.Zap.Error(err)
 	}
 }

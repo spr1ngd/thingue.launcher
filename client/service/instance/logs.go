@@ -2,11 +2,11 @@ package instance
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/logger"
 )
 
 func getLogDir(instance *domain.Instance) (string, error) {
@@ -65,7 +65,7 @@ func getLogFiles(instance *domain.Instance) []string {
 	if err != nil {
 		return logFiles
 	} else {
-		fmt.Println("找不到logs目录")
+		logger.Zap.Error("找不到logs目录")
 	}
 	logFile, err := os.ReadDir(logsDir)
 	if err == nil {

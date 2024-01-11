@@ -3,11 +3,11 @@ package service
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"github.com/bluele/gcache"
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"math"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/message/types"
 	"thingue-launcher/common/model"
@@ -84,7 +84,7 @@ func (s *clientService) CollectLogs(req request.LogsCollect) error {
 func (s *clientService) UploadLogs(traceId string, buf *bytes.Buffer) error {
 	err := s.BufferCache.SetWithExpire(traceId, buf, time.Second*60)
 	if err != nil {
-		fmt.Println(err)
+		logger.Zap.Error(err)
 		return err
 	}
 	provider.AdminConnProvider.NotifyDownloadComplete(s.WsIdMap[traceId])

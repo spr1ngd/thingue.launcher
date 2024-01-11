@@ -4,20 +4,20 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"log"
 	"os"
+	"thingue-launcher/common/logger"
 )
 
 func CalculateFileHash(filePath string) string {
 	file, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal(err)
+		logger.Zap.Error(err)
 	}
 	defer file.Close()
 
 	hasher := sha256.New()
 	if _, err := io.Copy(hasher, file); err != nil {
-		log.Fatal(err)
+		logger.Zap.Error(err)
 	}
 
 	hash := hasher.Sum(nil)

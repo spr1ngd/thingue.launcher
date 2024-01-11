@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"time"
 )
@@ -107,7 +108,7 @@ func (m *runnerManager) GetRunnerById(id uint) *Runner {
 }
 
 func (m *runnerManager) CloseAllRunner() {
-	fmt.Println("关闭所有正在运行的实例")
+	logger.Zap.Info("关闭所有正在运行的实例")
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
 			runner.Stop()

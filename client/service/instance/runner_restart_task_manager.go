@@ -1,8 +1,8 @@
 package instance
 
 import (
-	"fmt"
 	"github.com/robfig/cron/v3"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
 )
 
@@ -27,9 +27,9 @@ func (t *RunnerRestartTaskManager) Start() error {
 	var err error
 	appConfig := provider.AppConfig
 	t.restartTaskEntryID, err = t.restartCron.AddFunc(appConfig.SystemSettings.RestartTaskCron, func() {
-		fmt.Println("重启定时任务执行开始")
+		logger.Zap.Debug("重启定时任务执行开始")
 		RunnerManager.RestartAllRunner()
-		fmt.Println("重启定时任务执行结束")
+		logger.Zap.Debug("重启定时任务执行结束")
 	})
 	t.restartCron.Start()
 	return err

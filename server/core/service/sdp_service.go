@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/request"
 	"thingue-launcher/server/core/provider"
@@ -23,7 +24,7 @@ func (m *sdpService) OnStreamerConnect(streamer *provider.StreamerConnector) {
 			getStreamer, err := provider.SdpConnProvider.GetStreamer(streamer.SID)
 			if err == nil {
 				if streamer != getStreamer {
-					fmt.Println("streamer已重启，自动停止任务关闭")
+					logger.Zap.Warn("streamer已重启，自动停止任务关闭")
 					break
 				}
 				if len(getStreamer.PlayerConnectors) == 0 {
@@ -31,16 +32,16 @@ func (m *sdpService) OnStreamerConnect(streamer *provider.StreamerConnector) {
 						SID:     getStreamer.SID,
 						Command: "STOP",
 					})
-					fmt.Println("检查完毕，自动停止控制指令发送")
+					logger.Zap.Info("检查完毕，自动停止控制指令发送")
 				} else {
-					fmt.Println("检查完毕，不需要自动停止")
+					logger.Zap.Debug("检查完毕，不需要自动停止")
 				}
 			} else {
-				fmt.Println("streamer已停止，自动停止任务关闭")
+				logger.Zap.Info("streamer已停止，自动停止任务关闭")
 				break
 			}
 		}
-		fmt.Println("自动停止协程结束，资源释放")
+		logger.Zap.Info("自动停止协程结束，资源释放")
 	}()
 }
 
@@ -143,7 +144,7 @@ func (m *sdpService) KickPlayerUser(userQueryMap map[string]string) (int, error)
 func (m *sdpService) OnStreamerNodeRestarted(streamer *provider.StreamerConnector) {
 	instance := InstanceService.GetInstanceBySid(streamer.SID)
 	if instance.Restarting && instance.CurrentPak != "" {
-		fmt.Println("加载重启之前的pak", instance.CurrentPak)
+		logger.Zap.Debug("加载重启之前的pak", instance.CurrentPak)
 		command := message.Command{}
 		command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.CurrentPak})
 		streamer.SendCommand(&command)

@@ -1,8 +1,8 @@
 package ws
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/util"
 	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/core/service"
@@ -12,7 +12,7 @@ import (
 func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 	conn, err := WsUpgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println("WebSocket upgrade error:", err)
+		logger.Zap.Error("WebSocket upgrade error:", err)
 		return
 	}
 	userData := map[string]string{}

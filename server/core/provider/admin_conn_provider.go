@@ -1,8 +1,8 @@
 package provider
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/util"
 )
 
@@ -50,7 +50,7 @@ func (p *adminConnProvider) CloseAllConnection() {
 	for _, conn := range p.ConnMap {
 		err := conn.Close()
 		if err != nil {
-			fmt.Println(err)
+			logger.Zap.Error(err)
 		}
 	}
 }

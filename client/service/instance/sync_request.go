@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/response"
 )
@@ -66,7 +66,7 @@ func (s *syncRequest) UploadFile(fileName string, cloudRes string, filePath stri
 	var buf bytes.Buffer
 	file, err := os.Open(filePath)
 	if err != nil {
-		fmt.Println(err)
+		logger.Zap.Error(err)
 	}
 	_, err = io.Copy(&buf, file)
 	defer file.Close()
@@ -79,7 +79,7 @@ func (s *syncRequest) UploadFile(fileName string, cloudRes string, filePath stri
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
 	if err != nil {
-		fmt.Println("Error:", err)
+		logger.Zap.Error(err)
 		return
 	}
 }

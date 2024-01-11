@@ -2,10 +2,10 @@ package server
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 	"sync"
 	"thingue-launcher/client/service/instance"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
@@ -115,8 +115,8 @@ func (m *connManager) StartConnectTask() {
 	m.reconnectTimer = time.NewTimer(time.Duration(m.reconnectInterval) * time.Second)
 	go func() {
 		for {
-			t := <-m.reconnectTimer.C
-			fmt.Println("连接开始", t.Format("2006-01-02 15:04:05"))
+			<-m.reconnectTimer.C
+			logger.Zap.Debug("连接开始")
 			if m.ServerAddr == "" {
 				break //不需要连接了
 			}
@@ -125,7 +125,7 @@ func (m *connManager) StartConnectTask() {
 				break
 			} else {
 				m.reconnectTimer.Reset(time.Duration(m.reconnectInterval) * time.Second)
-				fmt.Printf("连接失败,%d秒后重试\n", m.reconnectInterval)
+				logger.Zap.Debugf("连接失败,%d秒后重试\n", m.reconnectInterval)
 			}
 		}
 	}()
@@ -145,10 +145,10 @@ func (m *connManager) StartHeartbeatTask() {
 			if err != nil {
 				m.heartbeatTicker.Stop()
 				err = m.conn.Close()
-				fmt.Println(err)
+				logger.Zap.Error(err)
 				break
 			}
 		}
-		fmt.Println("停止发送心跳")
+		logger.Zap.Info("停止发送心跳")
 	}()
 }
