@@ -13,7 +13,7 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/labstack/gommon v0.4.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/mochi-mqtt/server/v2 v2.4.1
+	github.com/mochi-mqtt/server/v2 v2.4.5
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/pflag v1.0.5
