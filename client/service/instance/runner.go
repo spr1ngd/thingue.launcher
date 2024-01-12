@@ -2,7 +2,6 @@ package instance
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
@@ -53,6 +52,7 @@ func (r *Runner) Start() error {
 	r.updateStateCode(1)
 	r.LastStartAt = time.Now()
 	RunnerManager.RunnerStatusUpdateChanel <- r.CID
+	logger.Zap.Infof("实例启动 %s", r.Name)
 	go func() {
 		exitCode := command.Wait()
 		r.Pid = 0
@@ -63,12 +63,12 @@ func (r *Runner) Start() error {
 		case r.ExitSignalChannel <- exitCode:
 			r.updateStateCode(0)
 			RunnerManager.RunnerStatusUpdateChanel <- r.CID
-			logger.Zap.Debug("退出码发送成功")
+			logger.Zap.Debugf("退出码发送成功 %s", r.Name)
 			r.faultCount = 0
 		default:
 			r.updateStateCode(-1)
 			RunnerManager.RunnerUnexpectedExitChanel <- r.CID
-			logger.Zap.Warn("异常退出", r.faultCount)
+			logger.Zap.Warnf("实例异常退出 %s %d", r.Name, r.faultCount)
 			if r.FaultRecover && r.faultCount < 3 {
 				time.Sleep(3 * time.Second)
 				r.Start()
@@ -95,7 +95,7 @@ func (r *Runner) Stop() error {
 	cmd.Stdout = os.Stdout
 	err := cmd.Start()
 	exitStatus := <-r.ExitSignalChannel
-	fmt.Printf("%s进程退出%s\n", r.Name, exitStatus)
+	logger.Zap.Infof("实例停止 %s %s", r.Name, exitStatus)
 	return err
 }
 

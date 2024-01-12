@@ -25,7 +25,6 @@ func (g *HandlerGroup) AdminWebSocketHandler(c *gin.Context) {
 		var msg = message.Message{}
 		err = conn.ReadJSON(&msg)
 		if err != nil {
-			logger.Zap.Error("WebSocket read error:", err)
 			break
 		}
 	}

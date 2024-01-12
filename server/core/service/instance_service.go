@@ -177,7 +177,3 @@ func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) 
 		return nil, tx.Error
 	}
 }
-
-func (s *instanceService) SetRestarting(sid string, restarting bool) {
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("restarting", restarting)
-}

@@ -20,7 +20,6 @@ type InstanceGroup struct{}
 func (g *InstanceGroup) ClientRegister(c *gin.Context) {
 	var registerInfo request.ClientRegisterInfo
 	err := c.ShouldBindJSON(&registerInfo)
-	fmt.Printf("%+v\n", registerInfo)
 	err = core.ClientService.ClientRegister(&registerInfo)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -224,7 +223,7 @@ func (g *InstanceGroup) SetRestarting(c *gin.Context) {
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
-		core.InstanceService.SetRestarting(sid, restartingBool)
+		provider.SdpConnProvider.SetStreamerRestartingState(sid, restartingBool)
 		response.OkWithMessage("状态更新成功", c)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"gopkg.in/yaml.v3"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
@@ -122,6 +123,7 @@ func (s *StreamerConnector) SendCloseMsg(code int, msg string) {
 }
 
 func (s *StreamerConnector) SendCommand(command *message.Command) {
+	logger.Zap.Info(string(command.GetBytes()))
 	s.conn.WriteMessage(websocket.TextMessage, command.GetBytes())
 }
 

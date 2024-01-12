@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/request"
@@ -83,7 +82,7 @@ func (m *sdpService) ConnectStreamer(playerConnector *provider.PlayerConnector, 
 						break
 					}
 				}
-				fmt.Println("自动启动成功")
+				logger.Zap.Info("自动启动成功")
 			} else {
 				err = errors.New("streamer未连接且未开启自动启动")
 			}
@@ -143,11 +142,17 @@ func (m *sdpService) KickPlayerUser(userQueryMap map[string]string) (int, error)
 
 func (m *sdpService) OnStreamerNodeRestarted(streamer *provider.StreamerConnector) {
 	instance := InstanceService.GetInstanceBySid(streamer.SID)
-	if instance.Restarting && instance.CurrentPak != "" {
-		logger.Zap.Debug("加载重启之前的pak", instance.CurrentPak)
+	restarting := provider.SdpConnProvider.GetStreamerRestartingState(streamer.SID)
+	if restarting && instance.CurrentPak != "" {
+		logger.Zap.Infof("重启后加载 %s %s", instance.Name, instance.CurrentPak)
 		command := message.Command{}
 		command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.CurrentPak})
 		streamer.SendCommand(&command)
-		InstanceService.SetRestarting(instance.SID, false)
+		provider.SdpConnProvider.SetStreamerRestartingState(streamer.SID, false)
+	} else if restarting {
+		provider.SdpConnProvider.SetStreamerRestartingState(streamer.SID, false)
+		logger.Zap.Infof("重启后不需要加载pak %s %s", instance.Name, instance.CurrentPak)
+	} else {
+		logger.Zap.Warnf("非重启时忽略nodeRestarted消息 %s", instance.Name)
 	}
 }

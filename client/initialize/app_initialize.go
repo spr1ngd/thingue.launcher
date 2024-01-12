@@ -11,7 +11,6 @@ import (
 )
 
 func InitApp(assets embed.FS) {
-	zapLogger := ZapLogger{}
 	// 初始化wails app
 	err := wails.Run(&options.App{
 		Title:  "ThingUE启动器 v" + provider.VersionInfo.Version,
@@ -26,12 +25,12 @@ func InitApp(assets embed.FS) {
 			api.ServerApi.Init(ctx)
 			api.SystemApi.Init(ctx)
 		},
-		Bind: []interface{}{
+		Bind: []any{
 			api.InstanceApi,
 			api.ServerApi,
 			api.SystemApi,
 		},
-		Logger: &zapLogger,
+		Logger: &ZapLogger{},
 	})
 	if err != nil {
 		println("Error:", err.Error())

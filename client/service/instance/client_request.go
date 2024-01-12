@@ -79,7 +79,7 @@ func (s *clientService) SetRestarting(sid string, restarting bool) {
 	params.Add("restarting", strconv.FormatBool(restarting))
 	_, err := s.HttpGetWithParams("/api/instance/setRestarting", params)
 	if err != nil {
-		logger.Zap.Error(err)
+		logger.Zap.Error("更新重启状态失败", err)
 	}
 }
 

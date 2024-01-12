@@ -48,7 +48,7 @@ func (s *server) Serve() {
 	if s.CloseReturnChanel != nil {
 		s.CloseReturnChanel <- err.Error()
 	}
-	logger.Zap.Info("server closed: %v\n", err)
+	logger.Zap.Info("server closed", err)
 }
 
 func (s *server) Start() {
@@ -65,8 +65,8 @@ func (s *server) Stop() {
 	coreprovider.ClientConnProvider.CloseAllConnection()
 	coreprovider.AdminConnProvider.CloseAllConnection()
 	if err != nil {
-		logger.Zap.Error("server shutdown failed: %v\n", err)
+		logger.Zap.Error("server shutdown failed", err)
 	} else {
-		logger.Zap.Info("server gracefully stopped.")
+		logger.Zap.Info("server gracefully stopped")
 	}
 }

@@ -3,6 +3,8 @@ package provider
 import (
 	"errors"
 	"github.com/gorilla/websocket"
+	"sync"
+	"thingue-launcher/common/logger"
 	"time"
 )
 
@@ -10,11 +12,14 @@ type sdpConnProvider struct {
 	playerIdCount uint
 	idStreamerMap map[string]*StreamerConnector
 	idPlayerMap   map[uint]*PlayerConnector
+	restartingMap map[string]bool
+	stateLock     sync.Mutex
 }
 
 var SdpConnProvider = sdpConnProvider{
 	idStreamerMap: make(map[string]*StreamerConnector),
 	idPlayerMap:   make(map[uint]*PlayerConnector),
+	restartingMap: make(map[string]bool),
 }
 
 func (sdp *sdpConnProvider) NewStreamer(sid string, conn *websocket.Conn, enableRelay bool, enableRenderControl bool) *StreamerConnector {
@@ -74,4 +79,25 @@ func (sdp *sdpConnProvider) GetPlayersByUserData(userMap map[string]string) []*P
 		}
 	}
 	return players
+}
+
+func (sdp *sdpConnProvider) GetStreamerRestartingState(id string) bool {
+	sdp.stateLock.Lock()
+	defer sdp.stateLock.Unlock()
+	state, ok := sdp.restartingMap[id]
+	if ok {
+		return state
+	}
+	return false
+}
+
+func (sdp *sdpConnProvider) SetStreamerRestartingState(id string, state bool) {
+	sdp.stateLock.Lock()
+	defer sdp.stateLock.Unlock()
+	logger.Zap.Infof("设置实例重启中标识 %s %t", id, state)
+	if state {
+		sdp.restartingMap[id] = state
+	} else {
+		delete(sdp.restartingMap, id)
+	}
 }
