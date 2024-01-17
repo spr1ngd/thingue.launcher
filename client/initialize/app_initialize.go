@@ -6,7 +6,9 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"thingue-launcher/client/api"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
 )
 
@@ -25,6 +27,9 @@ func InitApp(assets embed.FS) {
 			api.ServerApi.Init(ctx)
 			api.SystemApi.Init(ctx)
 		},
+		Windows: &windows.Options{
+			Theme: windows.Light,
+		},
 		Bind: []any{
 			api.InstanceApi,
 			api.ServerApi,
@@ -33,6 +38,6 @@ func InitApp(assets embed.FS) {
 		Logger: &ZapLogger{},
 	})
 	if err != nil {
-		println("Error:", err.Error())
+		logger.Zap.Fatalf("App初始化失败%s", err.Error())
 	}
 }

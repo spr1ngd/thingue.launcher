@@ -19,6 +19,7 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 	_ = c.ShouldBindQuery(userData)
 	player := provider.SdpConnProvider.NewPlayer(conn)
 	player.UserData = userData
+	player.StartPingSendTask()
 	// 连接Streamer
 	err = service.SdpService.ConnectStreamer(player, c.Param("ticket"))
 	if err == nil {
@@ -34,6 +35,8 @@ func (g *HandlerGroup) PlayerWebSocketHandler(c *gin.Context) {
 			msgType := msg["type"].(string)
 			if msgType == "ping" {
 				player.SendPong(msg)
+			} else if msgType == "pong" {
+				logger.Zap.Debug(msg)
 			} else if msgType == "listStreamers" {
 				player.ListStreamers()
 			} else if msgType == "offer" { // for old streamer

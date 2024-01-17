@@ -4,8 +4,10 @@ import (
 	"github.com/gorilla/websocket"
 	"gopkg.in/yaml.v3"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
+	"time"
 )
 
 type PlayerConnector struct {
@@ -13,6 +15,7 @@ type PlayerConnector struct {
 	StreamerConnector *StreamerConnector
 	conn              *websocket.Conn
 	UserData          map[string]string
+	heartbeatTicker   *time.Ticker
 }
 
 func (p *PlayerConnector) SendConfig() {
@@ -63,18 +66,30 @@ func (p *PlayerConnector) ListStreamers() {
 }
 
 func (p *PlayerConnector) SendPong(msg map[string]any) {
-	p.SendMessage(util.MapToJson(map[string]interface{}{
+	p.SendMessage(util.MapToJson(map[string]any{
 		"type": "pong",
 		"time": msg["time"],
 	}))
 }
 
 func (p *PlayerConnector) SendMessage(msg []byte) {
-	p.conn.WriteMessage(websocket.TextMessage, msg)
+	err := p.conn.WriteMessage(websocket.TextMessage, msg)
+	if err != nil {
+		p.Close()
+	}
+}
+
+func (p *PlayerConnector) SendPingMsg() error {
+	return p.conn.WriteMessage(websocket.TextMessage, util.MapToJson(map[string]any{
+		"type": "ping",
+	}))
 }
 
 func (p *PlayerConnector) SendCloseMsg(code int, msg string) {
-	p.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(code, msg))
+	err := p.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(code, msg))
+	if err != nil {
+		p.Close()
+	}
 }
 
 func (p *PlayerConnector) KickOthers() {
@@ -94,4 +109,26 @@ func (p *PlayerConnector) Kick() {
 func (p *PlayerConnector) Close() {
 	_ = p.conn.Close()
 	delete(SdpConnProvider.idPlayerMap, p.PlayerId)
+}
+
+func (p *PlayerConnector) StartPingSendTask() {
+	p.heartbeatTicker = time.NewTicker(5 * time.Second)
+	go func() {
+		for {
+			_ = <-p.heartbeatTicker.C
+			if p.conn == nil {
+				p.heartbeatTicker.Stop()
+				break
+			} else {
+				err := p.SendPingMsg()
+				if err != nil {
+					logger.Zap.Error("无法向Player发送心跳")
+					p.Close()
+					p.heartbeatTicker.Stop()
+					break
+				}
+			}
+		}
+		logger.Zap.Debug("停止向Player发送心跳")
+	}()
 }
