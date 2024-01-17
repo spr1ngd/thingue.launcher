@@ -155,4 +155,9 @@ func (m *sdpService) OnStreamerNodeRestarted(streamer *provider.StreamerConnecto
 	} else {
 		logger.Zap.Warnf("非重启时忽略nodeRestarted消息 %s", instance.Name)
 	}
+	if streamer.EnableRenderControl && len(streamer.PlayerConnectors) == 0 {
+		command := message.Command{}
+		command.BuildRenderingCommand(&message.RenderingParams{Value: false})
+		streamer.SendCommand(&command)
+	}
 }
