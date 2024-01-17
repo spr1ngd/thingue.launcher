@@ -35,6 +35,6 @@ func main() {
 		fmt.Printf("GitCommit %s\n", provider.VersionInfo.GitCommit)
 		return
 	}
-	logger.InitZapLogger("info")
+	logger.InitZapLogger(viper.GetString("logLevel"))
 	initialize.Server.Serve()
 }
