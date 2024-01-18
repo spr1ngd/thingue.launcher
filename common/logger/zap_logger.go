@@ -11,13 +11,13 @@ import (
 
 var Zap *zap.SugaredLogger
 
-func InitZapLogger(logLevel string) {
+func InitZapLogger(logLevel, logFilename string) {
 	level, err := zapcore.ParseLevel(logLevel)
 	if err != nil {
 		fmt.Println("日志级别设置失败", err)
 		level = zapcore.InfoLevel
 	}
-	fileCore := zapcore.NewCore(getFileEncoder(), getLogFileWriter(), level)
+	fileCore := zapcore.NewCore(getFileEncoder(), getLogFileWriter(logFilename), level)
 	consoleCore := zapcore.NewCore(getConsoleEncoder(), getLogConsoleWriter(), level)
 	tee := zapcore.NewTee(fileCore, consoleCore)
 	logger := zap.New(tee, zap.AddCaller())
@@ -41,9 +41,9 @@ func getFileEncoder() zapcore.Encoder {
 	//return zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
 }
 
-func getLogFileWriter() zapcore.WriteSyncer {
+func getLogFileWriter(logFilename string) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   constants.SAVE_DIR + "app.log",
+		Filename:   constants.SAVE_DIR + logFilename,
 		MaxSize:    1,
 		MaxBackups: 5,
 		MaxAge:     30,
