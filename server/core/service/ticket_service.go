@@ -26,7 +26,7 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 	ticket := response.InstanceTicket{}
 	// 数据库查询
 	//query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
-	query := global.SERVER_DB
+	query := global.ServerDB
 	if selectCond.StreamerConnected == true {
 		query = query.Where("streamer_connected = ?", selectCond.StreamerConnected)
 	}
@@ -86,7 +86,7 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 
 func (s *ticketService) GetTicketById(sid string) (string, error) {
 	var instance model.ServerInstance
-	err := global.SERVER_DB.Where("s_id = ?", sid).First(&instance).Error
+	err := global.ServerDB.Where("s_id = ?", sid).First(&instance).Error
 	if err == nil {
 		ticket, _ := uuid.NewUUID()
 		//添加缓存

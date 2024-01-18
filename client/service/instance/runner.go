@@ -28,7 +28,7 @@ func (r *Runner) Start() error {
 	}
 	var launchArguments []string
 	// 设置PixelStreamingURL
-	sid, err := ClientService.GetInstanceSid(global.CLIENT_ID, r.CID)
+	sid, err := ClientService.GetInstanceSid(global.ClientId, r.CID)
 	if err == nil {
 		r.SID = sid
 		wsUrl := util.HttpUrlToWsUrl(provider.AppConfig.ServerURL, "/ws/streamer")

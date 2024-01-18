@@ -16,5 +16,5 @@ func initMqttServer() {
 	_ = mqttServer.AddHook(new(auth.AllowHook), nil)
 	_ = mqttServer.AddListener(handler.MqttHandler)
 	_ = mqttServer.Serve()
-	global.MQTT_SERVER = mqttServer
+	global.MqttServer = mqttServer
 }

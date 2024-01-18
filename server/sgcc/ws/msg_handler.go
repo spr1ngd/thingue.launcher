@@ -3,8 +3,8 @@ package ws
 import (
 	"github.com/labstack/gommon/log"
 	"github.com/mitchellh/mapstructure"
-	"thingue-launcher/sgcc-adapter/message"
-	"thingue-launcher/sgcc-adapter/service"
+	"thingue-launcher/server/global"
+	"thingue-launcher/server/sgcc/message"
 )
 
 func MsgReceive(msg map[string]any) {
@@ -20,27 +20,27 @@ func MsgReceive(msg map[string]any) {
 		case "init":
 			init := &message.Init{}
 			if err = mapstructure.Decode(msg, init); err == nil {
-				service.SGCC.Init()
+				global.SgccService.Init()
 			}
 		case "deploy":
 			deploy := &message.Deploy{}
 			if err = mapstructure.Decode(msg, deploy); err == nil {
-				service.SGCC.Deploy(deploy)
+				global.SgccService.Deploy(deploy)
 			}
 		case "release":
 			release := &message.Release{}
 			if err = mapstructure.Decode(msg, release); err == nil {
-				service.SGCC.Release(release.Nodes)
+				global.SgccService.Release(release.Nodes)
 			}
 		case "restart":
 			restart := &message.Restart{}
 			if err = mapstructure.Decode(msg, restart); err == nil {
-				service.SGCC.Restart(restart.Nodes)
+				global.SgccService.Restart(restart.Nodes)
 			}
 		case "kill":
 			kill := &message.Kill{}
 			if err = mapstructure.Decode(msg, kill); err == nil {
-				service.SGCC.Kill(kill.Nodes)
+				global.SgccService.Kill(kill.Nodes)
 			}
 		default:
 			log.Info("不支持的消息类型")

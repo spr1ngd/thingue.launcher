@@ -1,39 +1,44 @@
 # README
 
-## About
-
-This is the official Wails Vue template.
-
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
-
 ## Install
+### windows
+#### gcc安装
+由于依赖的sqlite数据库驱动需要gcc，所以在windows下通过msys2安装gcc并将bin目录配置到Path
+
+1、下载安装[msys2](https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib/msys2-x86_64-latest.exe)
+
+2、打开`MSYS2 MINGW64`终端使用以下命令安装gcc
 ```bash
-# for windows install gcc toolchain use msys2
+# 设置镜像源加速安装
 sed -i "s#https\?://mirror.msys2.org/#https://mirrors.tuna.tsinghua.edu.cn/msys2/#g" /etc/pacman.d/mirrorlist*
 pacman -S mingw-w64-x86_64-toolchain
-# enable cgo
+#出现提示时输入3，选择mingw-w64-x86_64-gcc即可
+```
+3、将`C:\msys64\mingw64\bin`配置到Path下
+#### go安装配置
+[下载地址](https://go.dev/dl/go1.21.6.windows-amd64.msi)，安装完成后执行
+```bash
+# 开启cgo
 go env -w CGO_ENABLED=1
-# set goproxy
+# 设置goproxy加速依赖下载
 go env -w GOPROXY=https://goproxy.cn,direct
-# install wails cli
+# 安装wails cli
 go install github.com/wailsapp/wails/v2/cmd/wails@latest
-# check your develop environment
+# 检查开发环境，Linux下可能需要根据提示额外安装一些包
 wails doctor
 ```
 
 ## Live Development
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+在项目目录下运行`wails dev`进入实时开发模式，代码变更会实时生效，如果提示找不到命令需要把`用户目录\go\bin`配置到Path里
 
 ## Building
-To build a redistributable, production mode package, use
 ### Windows客户端编译
 ```shell
-$AppVersion = "0.0.10"
+# 设置版本号
+$AppVersion = "0.0.11"
+# 构建不带控制台的程序
 wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion.exe
+# 构建带控制台的程序，闪退情况下比较方便排查问题
 wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion.exe -windowsconsole
 ```
 ### Linux客户端编译
@@ -41,12 +46,12 @@ wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate
 export AppVersion="0.0.10"
 wails build -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`' -X main.AppVersion=0.0.4 -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion
 ```
-### Windows服务端编译
+### Windows独立服务程序编译
 ```shell
 $AppVersion = "0.0.10"
 go build -o build/bin/thingue-server-v$AppVersion.exe -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" server/main.go
 ```
-### Linux服务端编译
+### Linux独立服务程序编译
 ```shell
 export AppVersion="0.0.10"
 go build -o build/bin/thingue-server_$AppVersion -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`' -X main.AppVersion=$AppVersion" server/main.go

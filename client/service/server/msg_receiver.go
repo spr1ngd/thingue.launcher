@@ -12,8 +12,8 @@ func MsgReceive(msg message.Message) error {
 	switch msg.Type {
 	case types.ServerConnectCallback:
 		clientId := msg.Data.(float64)
-		global.CLIENT_ID = uint(clientId)
-		instance.ClientService.RegisterClient(global.CLIENT_ID)
+		global.ClientId = uint(clientId)
+		instance.ClientService.RegisterClient(global.ClientId)
 	case types.ServerProcessControl:
 		processControl := msg.RecvServerProcessControl()
 		instance.RunnerManager.ExecCommand(

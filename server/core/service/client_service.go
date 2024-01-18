@@ -29,7 +29,7 @@ var ClientService = clientService{
 
 func (s *clientService) ClientRegister(registerInfo *request.ClientRegisterInfo) error {
 	var client model.Client
-	global.SERVER_DB.Find(&client, registerInfo.ClientID)
+	global.ServerDB.Find(&client, registerInfo.ClientID)
 	client.SetDeviceInfo(*registerInfo.DeviceInfo)
 	var serverInstances = make([]*model.ServerInstance, 0)
 	for _, instance := range registerInfo.Instances {
@@ -42,30 +42,30 @@ func (s *clientService) ClientRegister(registerInfo *request.ClientRegisterInfo)
 		serverInstances = append(serverInstances, serverInstance)
 	}
 	client.Instances = serverInstances
-	global.SERVER_DB.Save(&client)
+	global.ServerDB.Save(&client)
 	provider.AdminConnProvider.BroadcastUpdate()
 	return nil
 }
 
 func (s *clientService) ClientList() []*model.Client {
 	var clients []*model.Client
-	global.SERVER_DB.Preload("Instances").Find(&clients)
+	global.ServerDB.Preload("Instances").Find(&clients)
 	return clients
 }
 
 func (s *clientService) ClientOnline(client *model.Client) {
-	global.SERVER_DB.Create(&client)
+	global.ServerDB.Create(&client)
 }
 
 func (s *clientService) ClientOffline(client *model.Client) {
-	global.SERVER_DB.Delete(&client)
-	global.SERVER_DB.Where("client_id = ?", client.ID).Delete(&model.ServerInstance{})
+	global.ServerDB.Delete(&client)
+	global.ServerDB.Where("client_id = ?", client.ID).Delete(&model.ServerInstance{})
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *clientService) GetInstanceSid(clientId string, instanceId string) (string, error) {
 	var instance model.ServerInstance
-	err := global.SERVER_DB.Where("client_id = ? AND c_id = ?", clientId, instanceId).First(&instance).Error
+	err := global.ServerDB.Where("client_id = ? AND c_id = ?", clientId, instanceId).First(&instance).Error
 	if err == nil {
 		return instance.SID, err
 	} else {

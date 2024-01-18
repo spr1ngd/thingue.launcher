@@ -32,7 +32,7 @@ func BuildRouter() *gin.Engine {
 		apiGroup.POST("/mqtt/publishPayload", func(context *gin.Context) {
 			var b request.PublishJson
 			context.ShouldBindJSON(&b)
-			err := global.MQTT_SERVER.Publish(b.Topic, util.MapToJson(b.Payload), b.Retain, b.Qos)
+			err := global.MqttServer.Publish(b.Topic, util.MapToJson(b.Payload), b.Retain, b.Qos)
 			if err == nil {
 				response.Ok(context)
 			} else {
@@ -42,7 +42,7 @@ func BuildRouter() *gin.Engine {
 		apiGroup.POST("/mqtt/publishText", func(context *gin.Context) {
 			var b request.PublishText
 			context.ShouldBindJSON(&b)
-			err := global.MQTT_SERVER.Publish(b.Topic, []byte(b.Text), b.Retain, b.Qos)
+			err := global.MqttServer.Publish(b.Topic, []byte(b.Text), b.Retain, b.Qos)
 			if err == nil {
 				response.Ok(context)
 			} else {

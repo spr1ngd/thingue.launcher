@@ -158,7 +158,7 @@ func (g *InstanceGroup) GetTicketById(c *gin.Context) {
 }
 
 func (g *InstanceGroup) InstanceList(c *gin.Context) {
-	list, _ := core.InstanceService.InstanceList()
+	list := core.InstanceService.InstanceList()
 	response.OkWithDetailed(response.PageResult[*model.ServerInstance]{
 		List: list,
 	}, "", c)

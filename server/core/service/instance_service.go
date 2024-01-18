@@ -20,7 +20,7 @@ var InstanceService = new(instanceService)
 
 func (s *instanceService) GetInstanceBySid(sid string) *model.ServerInstance {
 	instance := &model.ServerInstance{}
-	global.SERVER_DB.Where("s_id = ?", sid).First(instance)
+	global.ServerDB.Where("s_id = ?", sid).First(instance)
 	return instance
 }
 
@@ -34,7 +34,7 @@ func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *m
 	}
 	instance.PlayerIds = playerIds
 	instance.PlayerCount = uint(len(streamer.PlayerConnectors))
-	global.SERVER_DB.Save(&instance)
+	global.ServerDB.Save(&instance)
 	provider.AdminConnProvider.BroadcastUpdate()
 	return instance
 }
@@ -42,10 +42,10 @@ func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *m
 func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 	s.updateLock.Lock()
 	defer s.updateLock.Unlock()
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("streamer_connected", connected)
+	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("streamer_connected", connected)
 	provider.AdminConnProvider.BroadcastUpdate()
 	instance := model.ServerInstance{}
-	global.SERVER_DB.Where("s_id = ?", sid).First(&instance)
+	global.ServerDB.Where("s_id = ?", sid).First(&instance)
 	updateMsg := message.ServerStreamerConnectedUpdate{
 		CID:       instance.CID,
 		Connected: connected,
@@ -54,18 +54,18 @@ func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 }
 
 func (s *instanceService) UpdateProcessState(msg *message.ClientProcessStateUpdate) {
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Updates(map[string]any{"Pid": msg.Pid, "StateCode": msg.StateCode})
+	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Updates(map[string]any{"Pid": msg.Pid, "StateCode": msg.StateCode})
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) UpdateRenderingState(sid string, rendering bool) {
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("rendering", rendering)
+	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("rendering", rendering)
 }
 
 func (s *instanceService) UpdatePak(sid, currentPakValue string) {
 	if currentPakValue != "" {
 		instance := model.ServerInstance{}
-		global.SERVER_DB.Where("s_id = ?", sid).First(&instance)
+		global.ServerDB.Where("s_id = ?", sid).First(&instance)
 		found := false
 		for _, pak := range instance.Paks {
 			if pak.Value == currentPakValue {
@@ -78,13 +78,13 @@ func (s *instanceService) UpdatePak(sid, currentPakValue string) {
 			return
 		}
 	}
-	global.SERVER_DB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("current_pak", currentPakValue)
+	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("current_pak", currentPakValue)
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) ProcessControl(processControl request.ProcessControl) {
 	var instance model.ServerInstance
-	global.SERVER_DB.Where("s_id = ?", processControl.SID).First(&instance)
+	global.ServerDB.Where("s_id = ?", processControl.SID).First(&instance)
 	control := message.ServerProcessControl{
 		CID:     instance.CID,
 		Command: processControl.Command,
@@ -117,16 +117,16 @@ func (s *instanceService) PakControl(control request.PakControl) error {
 	return err
 }
 
-func (s *instanceService) InstanceList() ([]*model.ServerInstance, error) {
+func (s *instanceService) InstanceList() []*model.ServerInstance {
 	var instances []*model.ServerInstance
-	global.SERVER_DB.Find(&instances)
-	return instances, nil
+	global.ServerDB.Find(&instances)
+	return instances
 }
 
 func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*model.ServerInstance, error) {
 	// 数据库查询
 	//query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
-	query := global.SERVER_DB
+	query := global.ServerDB
 	if selectCond.StreamerConnected == true {
 		query = query.Where("streamer_connected = ?", selectCond.StreamerConnected)
 	}
@@ -167,7 +167,7 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 }
 
 func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) (*model.ServerInstance, error) {
-	db := global.SERVER_DB
+	db := global.ServerDB
 	instance := &model.ServerInstance{}
 	tx := db.Debug().Select("server_instances.*").Joins("JOIN clients ON server_instances.client_id=clients.id AND clients.hostname = ? AND server_instances.pid = ?",
 		hostname, pid).First(instance)

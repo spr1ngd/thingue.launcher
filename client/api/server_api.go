@@ -79,22 +79,22 @@ func (s *serverApi) UpdatePeerConnectionOptions(options string) error {
 
 func (s *serverApi) ListRemoteServer() []model.RemoteServer {
 	var list []model.RemoteServer
-	global.APP_DB.Find(&list)
+	global.AppDB.Find(&list)
 	return list
 }
 
 func (s *serverApi) CreateRemoteServer(remoteServer model.RemoteServer) uint {
-	global.APP_DB.Create(&remoteServer)
+	global.AppDB.Create(&remoteServer)
 	return remoteServer.ID
 }
 
 func (s *serverApi) SaveRemoteServer(remoteServer model.RemoteServer) uint {
-	global.APP_DB.Save(&remoteServer)
+	global.AppDB.Save(&remoteServer)
 	return remoteServer.ID
 }
 
 func (s *serverApi) DeleteRemoteServer(id uint) {
-	global.APP_DB.Delete(&model.RemoteServer{}, id)
+	global.AppDB.Delete(&model.RemoteServer{}, id)
 }
 
 func (s *serverApi) GetConnectServerOptions() []string {

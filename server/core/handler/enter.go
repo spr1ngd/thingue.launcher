@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"thingue-launcher/server/web/handler/mqtt"
-	"thingue-launcher/server/web/handler/rest"
-	"thingue-launcher/server/web/handler/ws"
+	"thingue-launcher/server/core/handler/mqtt"
+	"thingue-launcher/server/core/handler/rest"
+	"thingue-launcher/server/core/handler/ws"
 )
 
 var (

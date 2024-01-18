@@ -3,26 +3,26 @@ package service
 import (
 	"github.com/labstack/gommon/log"
 	"thingue-launcher/common/model"
+	"thingue-launcher/common/request"
 	"thingue-launcher/common/util"
-	"thingue-launcher/sgcc-adapter/message"
-	"thingue-launcher/sgcc-adapter/provider"
+	"thingue-launcher/server/core/service"
+	"thingue-launcher/server/sgcc/message"
+	"thingue-launcher/server/sgcc/provider"
 	"time"
 )
 
-type sgcc struct{}
+type SgccService struct{}
 
-var SGCC = sgcc{}
-
-func (s *sgcc) GetNodeStatus(node string) int {
-	instance, err := ThingUE.GetInstanceBySID(node)
-	if err == nil {
+func (s *SgccService) GetNodeStatus(node string) int {
+	instance := service.InstanceService.GetInstanceBySid(node)
+	if instance != nil {
 		return s.GetInstanceStatus(instance)
 	}
 	log.Error("获取实例状态失败", instance.SID)
 	return -1
 }
 
-func (s *sgcc) GetInstanceStatus(instance *model.ServerInstance) int {
+func (s *SgccService) GetInstanceStatus(instance *model.ServerInstance) int {
 	if instance.StateCode == 1 {
 		if instance.PakName == "" {
 			return 0
@@ -42,40 +42,44 @@ func (s *sgcc) GetInstanceStatus(instance *model.ServerInstance) int {
 	return -1
 }
 
-func (s *sgcc) Register() {
-	maxNode := ThingUE.GetMaxNode()
+func (s *SgccService) Register() {
+	maxNode := len(service.InstanceService.InstanceList())
 	registerMessage := message.NewRegister(maxNode)
 	provider.SendCloudMessage(registerMessage.GetBytes())
 }
 
-func (s *sgcc) Init() {
+func (s *SgccService) Init() {
 	// instance start + // 获取nodes状态
 	var callback *message.InitCallback
 	var nodes []message.Node
-	instances, err := ThingUE.GetInstances()
-	if err == nil {
-		for _, instance := range instances {
-			ThingUE.SendPrecessCommand(instance.SID, "START")
-			node := message.Node{
-				Id:       instance.SID,
-				Status:   s.GetInstanceStatus(instance),
-				Datetime: util.DateFormat(time.Now()),
-				Station:  instance.PakName,
-				LoadType: 3,
-			}
-			nodes = append(nodes, node)
+	instances := service.InstanceService.InstanceList()
+	for _, instance := range instances {
+		service.InstanceService.ProcessControl(request.ProcessControl{
+			SID:     instance.SID,
+			Command: "START",
+		})
+		node := message.Node{
+			Id:       instance.SID,
+			Status:   s.GetInstanceStatus(instance),
+			Datetime: util.DateFormat(time.Now()),
+			Station:  instance.PakName,
+			LoadType: 3,
 		}
-		callback = message.NewInitCallback(true, nodes)
-	} else {
-		callback = message.NewInitCallback(false, nil)
+		nodes = append(nodes, node)
 	}
+	callback = message.NewInitCallback(true, nodes)
+	//callback = message.NewInitCallback(false, nil)
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *sgcc) Deploy(deploy *message.Deploy) {
+func (s *SgccService) Deploy(deploy *message.Deploy) {
 	// instance pakload
 	var callback *message.DeployCallback
-	ThingUE.SendPakControl(deploy.Node, "load", deploy.Station)
+	_ = service.InstanceService.PakControl(request.PakControl{
+		SID:  deploy.Node,
+		Type: "load",
+		Pak:  deploy.Station,
+	})
 	callback = message.NewDeployCallback(true)
 	callback.Datetime = util.DateFormat(time.Now())
 	callback.Node = deploy.Node
@@ -84,12 +88,16 @@ func (s *sgcc) Deploy(deploy *message.Deploy) {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *sgcc) Release(nodes []string) {
+func (s *SgccService) Release(nodes []string) {
 	// instance pakunload
 	var callback *message.ReleaseCallback
 	var callbackNodes []*message.CallBackNode
 	for _, node := range nodes {
-		ThingUE.SendPakControl(node, "unload", "")
+		_ = service.InstanceService.PakControl(request.PakControl{
+			SID:  node,
+			Type: "unload",
+			Pak:  "",
+		})
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,
 			Status:   s.GetNodeStatus(node),
@@ -101,7 +109,7 @@ func (s *sgcc) Release(nodes []string) {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *sgcc) Status() {
+func (s *SgccService) Status() {
 	statistic := message.Statistic{}
 	status := message.Status{
 		Statistic: statistic,
@@ -109,12 +117,15 @@ func (s *sgcc) Status() {
 	provider.SendCloudMessage(status.GetBytes())
 }
 
-func (s *sgcc) Restart(nodes []string) {
+func (s *SgccService) Restart(nodes []string) {
 	// instance restart
 	var callback *message.RestartCallback
 	var callbackNodes []*message.CallBackNode
 	for _, node := range nodes {
-		ThingUE.SendPrecessCommand(node, "RESTART")
+		service.InstanceService.ProcessControl(request.ProcessControl{
+			SID:     node,
+			Command: "RESTART",
+		})
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,
 			Status:   s.GetNodeStatus(node),
@@ -125,12 +136,15 @@ func (s *sgcc) Restart(nodes []string) {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *sgcc) Kill(nodes []string) {
+func (s *SgccService) Kill(nodes []string) {
 	// instance stop
 	var callback *message.KillCallback
 	var callbackNodes []*message.CallBackNode
 	for _, node := range nodes {
-		ThingUE.SendPrecessCommand(node, "STOP")
+		service.InstanceService.ProcessControl(request.ProcessControl{
+			SID:     node,
+			Command: "STOP",
+		})
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,
 			Status:   s.GetNodeStatus(node),

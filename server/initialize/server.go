@@ -32,8 +32,8 @@ func (s *server) Serve() {
 		initMqttServer()
 		s.isInitialized = true
 	}
-	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Client{})
-	global.SERVER_DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
+	global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Client{})
+	global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
 	// 构建gin路由
 	s.router = router.BuildRouter()
 	// Listen

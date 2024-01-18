@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"path"
 	"thingue-launcher/common/constants"
 )
 
@@ -43,7 +44,7 @@ func getFileEncoder() zapcore.Encoder {
 
 func getLogFileWriter(logFilename string) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   constants.SAVE_DIR + logFilename,
+		Filename:   path.Join(constants.SaveDir, logFilename),
 		MaxSize:    1,
 		MaxBackups: 5,
 		MaxAge:     30,

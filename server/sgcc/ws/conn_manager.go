@@ -4,9 +4,8 @@ import (
 	"github.com/gorilla/websocket"
 	"sync"
 	"thingue-launcher/common/logger"
-	"thingue-launcher/common/util"
-	"thingue-launcher/sgcc-adapter/provider"
-	"thingue-launcher/sgcc-adapter/service"
+	"thingue-launcher/server/global"
+	"thingue-launcher/server/sgcc/provider"
 	"time"
 )
 
@@ -49,8 +48,8 @@ func (m *connManager) connect() error {
 			m.IsConnected = false
 			m.StartConnectTask()
 		}()
-		// 连接时注册
-		service.SGCC.Register()
+		// 注册
+		global.SgccService.Register()
 	}
 	return err
 }
@@ -66,31 +65,8 @@ func (m *connManager) StartConnectTask() {
 				break
 			} else {
 				m.reconnectTimer.Reset(time.Duration(m.reconnectInterval) * time.Second)
-				logger.Zap.Debug("连接失败,%d秒后重试\n", m.reconnectInterval)
+				logger.Zap.Debug("连接失败,%d秒后重试", m.reconnectInterval)
 			}
 		}
-	}()
-}
-
-func (m *connManager) StartHeartbeatTask() {
-	// 创建一个定时器，每隔一段时间发送心跳消息
-	m.heartbeatTicker = time.NewTicker(40 * time.Second)
-	go func() {
-		for {
-			if !m.IsConnected {
-				m.heartbeatTicker.Stop()
-				break
-			}
-			t := <-m.heartbeatTicker.C
-			err := provider.Conn.WriteMessage(websocket.TextMessage,
-				util.MapToJson(map[string]any{"type": "ping", "time": util.DateFormat(t)}))
-			if err != nil {
-				m.heartbeatTicker.Stop()
-				err = provider.Conn.Close()
-				logger.Zap.Warn("心跳发送失败，连接断开", err)
-				break
-			}
-		}
-		logger.Zap.Debug("停止发送心跳")
 	}()
 }

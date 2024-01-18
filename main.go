@@ -18,14 +18,14 @@ var (
 )
 
 func main() {
-	provider.SetVersionBuildInfo(AppVersion, GitCommit, BuildDate)
-	_, err := os.Stat(constants.SAVE_DIR)
+	constants.SetEmbed("server/frontend/dist", staticFiles)
+	constants.SetVersionInfo(AppVersion, GitCommit, BuildDate)
+	_, err := os.Stat(constants.SaveDir)
 	if os.IsNotExist(err) {
-		os.MkdirAll(constants.SAVE_DIR, 0755)
+		os.MkdirAll(constants.SaveDir, 0755)
 	}
 	provider.InitConfigFromFile()
 	logger.InitZapLogger(provider.AppConfig.SystemSettings.LogLevel, "app.log")
-	provider.SetWebStatic("server/frontend/dist", staticFiles)
 	client.Startup()
 	client.Shutdown()
 }

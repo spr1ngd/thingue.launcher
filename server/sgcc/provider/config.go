@@ -2,7 +2,6 @@ package provider
 
 type config struct {
 	CloudServerURL string    `yaml:"cloud-server-url"`
-	UeServerURL    string    `yaml:"ue-server-url"`
 	Register       *register `yaml:"register"`
 }
 

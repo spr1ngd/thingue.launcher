@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	"path"
 	"thingue-launcher/client/global"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/logger"
@@ -11,15 +12,15 @@ import (
 )
 
 func InitGorm() {
-	db, err := gorm.Open(sqlite.Open(constants.SAVE_DIR+"config.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(path.Join(constants.SaveDir, "config.db")), &gorm.Config{})
 	if err != nil {
 		logger.Zap.Panic("failed to connect database")
 	}
-	global.APP_DB = db
+	global.AppDB = db
 	if err = db.AutoMigrate(
 		&model.RemoteServer{},
 		&model.ClientInstance{},
 	); err != nil {
-		logger.Zap.Error(err)
+		logger.Zap.Panic(err)
 	}
 }

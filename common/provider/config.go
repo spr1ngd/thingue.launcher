@@ -12,7 +12,7 @@ import (
 
 var AppConfig = new(Config)
 
-var configFile = path.Join(constants.SAVE_DIR, constants.CONFIG_NAME)
+var configFile = path.Join(constants.SaveDir, constants.ConfigName)
 
 type Config struct {
 	ServerURL             string         `json:"serverURL" yaml:"serverURL"`
@@ -61,7 +61,7 @@ func InitConfigFromFile() {
 	viper.SetDefault("localServer.bindAddr", "0.0.0.0:8877")
 	viper.SetDefault("localServer.contentPath", "/")
 	viper.SetDefault("localServer.useExternalStatic", false)
-	viper.SetDefault("localServer.staticDir", constants.SAVE_DIR+"static")
+	viper.SetDefault("localServer.staticDir", path.Join(constants.SaveDir, "static"))
 	viper.SetDefault("localServer.autoStart", true)
 	viper.SetDefault("systemSettings.logLevel", "info")
 	// 加载配置文件
