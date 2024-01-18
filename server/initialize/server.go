@@ -8,8 +8,8 @@ import (
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
 	coreprovider "thingue-launcher/server/core/provider"
+	"thingue-launcher/server/core/router"
 	"thingue-launcher/server/global"
-	"thingue-launcher/server/web/router"
 )
 
 type server struct {

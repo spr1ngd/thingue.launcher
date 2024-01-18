@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"thingue-launcher/server/web/handler"
+	"thingue-launcher/server/core/handler"
 )
 
 type instanceRouter struct{}

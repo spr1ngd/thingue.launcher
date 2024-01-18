@@ -2,7 +2,7 @@ package message
 
 import (
 	"encoding/json"
-	"thingue-launcher/sgcc-adapter/provider"
+	"thingue-launcher/server/sgcc/provider"
 )
 
 type RegisterMessage struct {

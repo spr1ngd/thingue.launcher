@@ -4,8 +4,8 @@ import (
 	mqtt "github.com/mochi-mqtt/server/v2"
 	"github.com/mochi-mqtt/server/v2/hooks/auth"
 	"thingue-launcher/common/provider"
+	"thingue-launcher/server/core/handler"
 	"thingue-launcher/server/global"
-	"thingue-launcher/server/web/handler"
 )
 
 func initMqttServer() {
