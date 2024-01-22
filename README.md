@@ -3,7 +3,7 @@
 ## Install
 ### windows
 #### gcc安装
-由于依赖的sqlite数据库驱动需要gcc，所以在windows下通过msys2安装gcc并将bin目录配置到Path
+由于依赖的sqlite数据库驱动需要gcc，所以在windows下需要通过msys2安装gcc并将bin目录配置到Path
 
 1、下载安装[msys2](https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib/msys2-x86_64-latest.exe)
 
@@ -11,8 +11,8 @@
 ```bash
 # 设置镜像源加速安装
 sed -i "s#https\?://mirror.msys2.org/#https://mirrors.tuna.tsinghua.edu.cn/msys2/#g" /etc/pacman.d/mirrorlist*
-pacman -S mingw-w64-x86_64-toolchain
-#出现提示时输入3，选择mingw-w64-x86_64-gcc即可
+# 安装gcc
+pacman -S mingw-w64-x86_64-gcc
 ```
 3、将`C:\msys64\mingw64\bin`配置到Path下
 #### go安装配置

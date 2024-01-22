@@ -39,7 +39,7 @@ type SystemSettings struct {
 func InitFlagConfig() {
 	pflag.StringP("bind", "b", "0.0.0.0:8877", "Sets the server bind address")
 	pflag.String("content-path", "/", "Sets the server base content path")
-	pflag.String("log-level", "info", "设置日志级别")
+	pflag.String("log-level", "info", "set log level")
 	pflag.String("static-dir", "", "Path to directory containing the web static resources. Defaults use embed")
 	pflag.BoolP("help", "h", false, "show help")
 	pflag.BoolP("version", "v", false, "show version")

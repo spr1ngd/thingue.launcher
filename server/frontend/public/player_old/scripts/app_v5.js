@@ -1855,6 +1855,8 @@ function connect() {
 				}, 1000);
 			} else if (msg.type === 'iceCandidate') {
 				onWebRtcIce(msg.candidate);
+			} else if (msg.type === 'ping') {
+
 			} else {
 				console.log(`invalid SS message type: ${msg.type}`);
 			}
