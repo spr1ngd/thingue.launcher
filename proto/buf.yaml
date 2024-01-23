@@ -1,0 +1,13 @@
+version: v1beta1
+deps:
+  - buf.build/googleapis/googleapis
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+  rpc_allow_google_protobuf_empty_responses: true
+  ignore:
+    - RPC_REQUEST_RESPONSE_UNIQUE
+  allow_comment_ignores: true

@@ -1,0 +1,67 @@
+syntax = "proto3";
+package apis.v1;
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "types/v1/instance.proto";
+
+message RegisterAgentRequest {
+  repeated types.v1.InstanceInfo instances = 1;
+  types.v1.DeviceInfo device_info = 2;
+}
+
+message RegisterAgentResponse {
+  uint32 id = 1;
+}
+
+message AddInstanceRequest{
+  types.v1.InstanceInfo instance_info = 1;
+}
+
+message DeleteInstanceRequest {
+  uint32 client_id = 1;
+  uint32 instance_id = 2;
+}
+
+message GetStreamerIdRequest {
+  uint32 client_id = 1;
+  uint32 instance_id = 2;
+}
+
+message GetStreamerIdResponse {
+  string id = 1;
+}
+
+message UpdateRestartingRequest {
+  uint32 client_id = 1;
+  uint32 instance_id = 2;
+  bool restarting = 3;
+}
+
+message UpdateProcessStateRequest {
+  uint32 client_id = 1;
+  uint32 instance_id = 2;
+  int32 state_code = 3;
+}
+
+message UpdateConfigRequest {
+  uint32 client_id = 1;
+  uint32 instance_id = 2;
+  types.v1.InstanceConfig instance_config = 3;
+  types.v1.PlayerConfig player_config = 4;
+}
+
+message ClearPakStateRequest {
+  uint32 client_id = 1;
+  uint32 instance_id = 2;
+}
+
+service InstanceService {
+  rpc RegisterAgent(RegisterAgentRequest) returns (RegisterAgentResponse);
+  rpc AddInstance(AddInstanceRequest) returns (google.protobuf.Empty);
+  rpc DeleteInstance(DeleteInstanceRequest) returns (google.protobuf.Empty);
+  rpc UpdateConfig(UpdateConfigRequest) returns (google.protobuf.Empty);
+  rpc GetStreamerId(GetStreamerIdRequest) returns (GetStreamerIdResponse);
+  rpc UpdateProcessState(UpdateProcessStateRequest) returns (google.protobuf.Empty);
+  rpc UpdateRestarting(UpdateRestartingRequest) returns (google.protobuf.Empty);
+  rpc ClearPakState(ClearPakStateRequest) returns (google.protobuf.Empty);
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+package types.v1;
+import "google/protobuf/timestamp.proto";
+
+message InstanceInfo {
+  uint32 id = 1;
+  int32 pid = 3;
+  int32 state_code = 4;
+  bool streamer_connected = 5;
+  string streamer_id = 6;
+  google.protobuf.Timestamp last_start_at = 7;
+  google.protobuf.Timestamp last_stop_at = 8;
+  InstanceConfig instance_config = 9;
+  PlayerConfig player_config = 10;
+}
+
+message InstanceConfig {
+  string name = 1;
+  string cloud_res = 2;
+  string exec_path = 3;
+  repeated string launch_arguments = 4;
+  string metadata = 5;
+  string paks_config = 6;
+  bool fault_recover = 7;
+  bool enable_relay = 8;
+  bool enable_render_control = 9;
+  bool enable_multiuser_control = 10;
+  bool auto_control = 11;
+  int32 stop_delay = 12;
+}
+
+message PlayerConfig {
+  bool match_viewport_res = 1;
+  bool hide_ui = 2;
+  bool idle_disconnect = 3;
+  uint32 idle_timeout = 4;
+}
+
+message DeviceInfo {
+  string version = 1;
+  string workdir = 2;
+  string hostname = 3;
+  string memory = 4;
+  repeated string cpus = 5;
+  repeated string gpus = 6;
+  repeated string ips = 7;
+  string os_arch = 8;
+  string os_type = 9;
+  string system_user = 10;
+}

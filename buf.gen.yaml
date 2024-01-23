@@ -1,17 +1,21 @@
 version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: thingue-launcher/common/gen/proto/go
 plugins:
   - plugin: go
-    out: proto/v1
+    out: common/gen/proto/go
     opt:
       - paths=source_relative
   - plugin: go-grpc
-    out: proto/v1
+    out: common/gen/proto/go
     opt:
       - paths=source_relative
   - plugin: grpc-gateway
-    out: proto/v1
+    out: common/gen/proto/go
     opt:
       - paths=source_relative
       - generate_unbound_methods=true
   - plugin: openapiv2
-    out: proto/v1
+    out: common/gen/proto/openapi

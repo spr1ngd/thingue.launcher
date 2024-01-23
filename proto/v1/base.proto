@@ -1,5 +1,0 @@
-syntax = "proto3";
-package proto.v1;
-option go_package = "thingue-launcher/proto/v1";
-
-message empty {}
