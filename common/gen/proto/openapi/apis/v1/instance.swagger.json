@@ -1,0 +1,210 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "apis/v1/instance.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "InstanceService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1DeviceInfo": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "workdir": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "memory": {
+          "type": "string"
+        },
+        "cpus": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "gpus": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "osArch": {
+          "type": "string"
+        },
+        "osType": {
+          "type": "string"
+        },
+        "systemUser": {
+          "type": "string"
+        }
+      }
+    },
+    "v1GetStreamerIdResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "v1InstanceConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cloudRes": {
+          "type": "string"
+        },
+        "execPath": {
+          "type": "string"
+        },
+        "launchArguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "string"
+        },
+        "paksConfig": {
+          "type": "string"
+        },
+        "faultRecover": {
+          "type": "boolean"
+        },
+        "enableRelay": {
+          "type": "boolean"
+        },
+        "enableRenderControl": {
+          "type": "boolean"
+        },
+        "enableMultiuserControl": {
+          "type": "boolean"
+        },
+        "autoControl": {
+          "type": "boolean"
+        },
+        "stopDelay": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1InstanceInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "pid": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "stateCode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "streamerConnected": {
+          "type": "boolean"
+        },
+        "streamerId": {
+          "type": "string"
+        },
+        "lastStartAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastStopAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "instanceConfig": {
+          "$ref": "#/definitions/v1InstanceConfig"
+        },
+        "playerConfig": {
+          "$ref": "#/definitions/v1PlayerConfig"
+        }
+      }
+    },
+    "v1PlayerConfig": {
+      "type": "object",
+      "properties": {
+        "matchViewportRes": {
+          "type": "boolean"
+        },
+        "hideUi": {
+          "type": "boolean"
+        },
+        "idleDisconnect": {
+          "type": "boolean"
+        },
+        "idleTimeout": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1RegisterAgentResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

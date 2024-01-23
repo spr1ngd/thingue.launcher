@@ -7,8 +7,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net/http"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/provider"
-	pb "thingue-launcher/common/service/v1"
 )
 
 func createGrpcGatewayHandler() http.Handler {
@@ -19,7 +19,7 @@ func createGrpcGatewayHandler() http.Handler {
 	// 连接 gRPC 服务器
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	// 注册服务
-	err := pb.RegisterTestServiceHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
+	err := pb.RegisterInstanceServiceHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
 	if err != nil {
 		log.Fatalf("Failed to register gRPC gateway: %v", err)
 	}
