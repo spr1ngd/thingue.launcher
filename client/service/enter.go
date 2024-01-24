@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	ServerConnManager        = server.ConnManager
+	ConnManager              = server.ConnManager
+	GrpcClient               = server.GrpcClient
 	RunnerManager            = instance.RunnerManager
 	InstanceManager          = instance.InstanceManager
 	SyncManager              = instance.SyncManager

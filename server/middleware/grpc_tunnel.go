@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/jhump/grpctunnel"
 	"log"
+	"thingue-launcher/common/logger"
 )
 
 func CreateGrpcTunnelServiceHandler() *grpctunnel.TunnelServiceHandler {
@@ -15,10 +15,10 @@ func CreateGrpcTunnelServiceHandler() *grpctunnel.TunnelServiceHandler {
 				// 客户端池
 
 				<-channel.Context().Done()
-				fmt.Printf("quxiaoguanbi")
+				logger.Zap.Info("完成")
 			},
 			OnReverseTunnelClose: func(channel grpctunnel.TunnelChannel) {
-				log.Printf("Tunnel Closed%p\n", channel)
+				logger.Zap.Info("Tunnel Closed%p\n", channel)
 			},
 		},
 	)

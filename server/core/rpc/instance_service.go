@@ -11,7 +11,7 @@ type InstanceService struct {
 }
 
 func (s InstanceService) RegisterAgent(context.Context, *pb.RegisterAgentRequest) (*pb.RegisterAgentResponse, error) {
-	return &pb.RegisterAgentResponse{Id: 0}, nil
+	return &pb.RegisterAgentResponse{Id: 919}, nil
 }
 
 func (s InstanceService) AddInstance(context.Context, *pb.AddInstanceRequest) (*emptypb.Empty, error) {

@@ -1,11 +1,15 @@
 package instance
 
 import (
+	"context"
 	"errors"
 	"github.com/mitchellh/mapstructure"
 	"os"
 	"path/filepath"
+	"thingue-launcher/client/global"
+	"thingue-launcher/client/service/server"
 	"thingue-launcher/common/domain"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"time"
@@ -107,7 +111,6 @@ func (m *runnerManager) GetRunnerById(id uint) *Runner {
 }
 
 func (m *runnerManager) CloseAllRunner() {
-	logger.Zap.Info("关闭所有正在运行的实例")
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
 			runner.Stop()
@@ -130,13 +133,32 @@ func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
 			logger.Zap.Infof("执行重启任务 %s", runner.Name)
-			_ = runner.Stop()
-			ClientService.SetRestarting(runner.SID, true)
+			err := runner.Stop()
+			if err != nil {
+				logger.Zap.Error(err)
+				continue
+			}
+			_, err = server.GrpcClient.InstanceService.UpdateRestarting(context.Background(), &pb.UpdateRestartingRequest{
+				ClientId:   uint32(global.ClientId),
+				InstanceId: uint32(runner.CID),
+				Restarting: true,
+			})
+			if err != nil {
+				logger.Zap.Error(err)
+				continue
+			}
 			time.Sleep(3 * time.Second) //kill发出停顿三秒，等待进程关闭
-			err := runner.Start()
+			err = runner.Start()
 			if err != nil {
 				logger.Zap.Errorf("重启失败 %s %s", runner.Name, err)
-				ClientService.SetRestarting(runner.SID, false)
+				_, err = server.GrpcClient.InstanceService.UpdateRestarting(context.Background(), &pb.UpdateRestartingRequest{
+					ClientId:   uint32(global.ClientId),
+					InstanceId: uint32(runner.CID),
+					Restarting: true,
+				})
+				if err != nil {
+					logger.Zap.Error(err)
+				}
 			}
 		}
 	}

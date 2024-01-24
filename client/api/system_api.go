@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	goruntime "runtime"
 	"thingue-launcher/client/service"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/provider"
 )
@@ -70,5 +71,5 @@ func (a *systemApi) UpdateSystemSettings(systemSettings provider.SystemSettings)
 }
 
 func (a *systemApi) GetVersionInfo() *domain.VersionInfo {
-	return provider.VersionInfo
+	return constants.VersionInfo
 }

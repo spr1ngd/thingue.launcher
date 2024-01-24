@@ -27,6 +27,7 @@ type LocalServer struct {
 	AutoStart         bool   `json:"autoStart" yaml:"autoStart"`
 	UseExternalStatic bool   `json:"useExternalStatic" yaml:"useExternalStatic"`
 	StaticDir         string `json:"staticDir" yaml:"staticDir"`
+	EnableMQTT        bool   `json:"enableMQTT" yaml:"enableMQTT"`
 }
 
 type SystemSettings struct {

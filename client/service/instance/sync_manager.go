@@ -230,7 +230,9 @@ func (m *syncManager) downloadFile(cloudRes string, fileName string, packagePath
 	}
 	out, _ := os.Create(downfile + ".tmp")
 
-	apiUrl := SyncRequest.BaseUrl.JoinPath("/storage", cloudRes, strings.ReplaceAll(fileName, "\\", "/")).String()
+	// todo
+	//apiUrl := SyncRequest.BaseUrl.JoinPath("/storage", cloudRes, strings.ReplaceAll(fileName, "\\", "/")).String()
+	apiUrl := ""
 	resp, err := http.Get(apiUrl)
 	if err != nil {
 		return err

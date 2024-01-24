@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"errors"
+	"thingue-launcher/client/global"
 	"thingue-launcher/client/service"
-	"thingue-launcher/client/service/instance"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -49,7 +51,8 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	service.InstanceManager.Create(instance)
 	err := service.RunnerManager.NewRunner(instance)
 	if err == nil {
-		service.ServerConnManager.Reconnect()
+		// todo
+		//service.ServerConnManager.Reconnect()
 	} else {
 		service.InstanceManager.Delete(instance.CID)
 	}
@@ -59,7 +62,8 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 	err := service.InstanceManager.SaveConfig(instance)
 	if err == nil {
-		service.ServerConnManager.Reconnect()
+		// todo
+		//service.ServerConnManager.Reconnect()
 	}
 	return err
 }
@@ -67,7 +71,8 @@ func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 func (u *instanceApi) DeleteInstance(cid uint) error {
 	err := service.RunnerManager.DeleteRunner(cid)
 	if err == nil {
-		service.ServerConnManager.Reconnect()
+		// todo
+		//service.ServerConnManager.Reconnect()
 		service.InstanceManager.Delete(cid)
 	}
 	return err
@@ -85,7 +90,13 @@ func (u *instanceApi) StartInstance(id uint) error {
 func (u *instanceApi) StopInstance(id uint) error {
 	runner := service.RunnerManager.GetRunnerById(id)
 	if runner != nil {
-		instance.ClientService.ClearPak(runner.SID)
+		_, err := service.GrpcClient.InstanceService.ClearPakState(context.Background(), &pb.ClearPakStateRequest{
+			ClientId:   uint32(global.ClientId),
+			InstanceId: uint32(runner.CID),
+		})
+		if err != nil {
+			logger.Zap.Error(err)
+		}
 		return runner.Stop()
 	} else {
 		return errors.New("实例不存在")

@@ -1,2 +1,14 @@
 syntax = "proto3";
 package apis.v1;
+
+message ControlProcessRequest {
+  string name = 1;
+}
+
+message ControlProcessResponse {
+  string name = 1;
+}
+
+service AgentService {
+  rpc ControlProcess(ControlProcessRequest) returns (ControlProcessResponse);
+}

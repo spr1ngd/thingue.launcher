@@ -4,8 +4,8 @@ import (
 	"github.com/gorilla/websocket"
 	"sync"
 	"thingue-launcher/common/logger"
-	"thingue-launcher/server/global"
 	"thingue-launcher/server/sgcc/provider"
+	"thingue-launcher/server/sgcc/service"
 	"time"
 )
 
@@ -49,7 +49,7 @@ func (m *connManager) connect() error {
 			m.StartConnectTask()
 		}()
 		// 注册
-		global.SgccService.Register()
+		service.SgccService.Register()
 	}
 	return err
 }
