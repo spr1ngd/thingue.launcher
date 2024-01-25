@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"errors"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 
@@ -14,14 +13,14 @@ type clientConnProvider struct {
 
 var ClientConnProvider = clientConnProvider{ConnMap: make(map[uint]*websocket.Conn)}
 
-func (p *clientConnProvider) SendToClient(clientId uint, message *message.Message) error {
-	conn := p.ConnMap[clientId]
-	if conn != nil {
-		return conn.WriteMessage(websocket.TextMessage, message.GetBytes())
-	} else {
-		return errors.New("客户端不存在")
-	}
-}
+//func (p *clientConnProvider) SendToClient(clientId uint, message *message.Message) error {
+//	conn := p.ConnMap[clientId]
+//	if conn != nil {
+//		return conn.WriteMessage(websocket.TextMessage, message.GetBytes())
+//	} else {
+//		return errors.New("客户端不存在")
+//	}
+//}
 
 func (p *clientConnProvider) SendToAllClients(message *message.Message) {
 	for _, conn := range p.ConnMap {

@@ -23,6 +23,6 @@ type Client struct {
 	SystemUser string            `json:"systemUser"`
 }
 
-func (client *Client) SetDeviceInfo(info domain.DeviceInfo) {
-	mapstructure.Decode(&info, client)
+func (client *Client) SetDeviceInfo(info *domain.DeviceInfo) {
+	mapstructure.Decode(info, client)
 }
