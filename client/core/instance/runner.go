@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"strconv"
 	"thingue-launcher/client/global"
-	"thingue-launcher/client/service/server"
 	"thingue-launcher/common/domain"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
@@ -32,7 +31,7 @@ func (r *Runner) Start() error {
 	}
 	var launchArguments []string
 	// 设置PixelStreamingURL启动参数
-	streamerIdResponse, err := server.GrpcClient.InstanceService.GetStreamerId(context.Background(), &pb.GetStreamerIdRequest{
+	streamerIdResponse, err := global.GrpcClient.GetStreamerId(context.Background(), &pb.GetStreamerIdRequest{
 		ClientId:   uint32(global.ClientId),
 		InstanceId: uint32(r.CID),
 	})
@@ -109,7 +108,7 @@ func (r *Runner) Stop() error {
 
 func (r *Runner) updateProcessState(stateCode int8) {
 	r.StateCode = stateCode
-	_, err := server.GrpcClient.InstanceService.UpdateProcessState(context.Background(), &pb.UpdateProcessStateRequest{
+	_, err := global.GrpcClient.UpdateProcessState(context.Background(), &pb.UpdateProcessStateRequest{
 		ClientId:   uint32(global.ClientId),
 		InstanceId: uint32(r.CID),
 		StateCode:  int32(stateCode),

@@ -2,8 +2,8 @@ package client
 
 import (
 	"embed"
+	"thingue-launcher/client/core"
 	"thingue-launcher/client/initialize"
-	"thingue-launcher/client/service"
 )
 
 //go:embed all:frontend/dist
@@ -15,7 +15,7 @@ func Startup() {
 	//初始化并运行App
 	initialize.InitApp(assets)
 	//App关闭时清理进程
-	service.RunnerManager.CloseAllRunner()
+	core.RunnerManager.CloseAllRunner()
 }
 
 func Shutdown() {

@@ -2,9 +2,8 @@ package api
 
 import (
 	"context"
-	"errors"
+	"thingue-launcher/client/core"
 	"thingue-launcher/client/global"
-	"thingue-launcher/client/service"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
@@ -22,45 +21,45 @@ var InstanceApi = new(instanceApi)
 
 func (u *instanceApi) Init(ctx context.Context) {
 	u.ctx = ctx
-	service.RunnerManager.Init()
+	core.RunnerManager.Init()
 	// 启动实例异常退出监听
 	go func() {
 		for {
-			id := <-service.RunnerManager.RunnerUnexpectedExitChanel
+			id := <-core.RunnerManager.RunnerUnexpectedExitChanel
 			runtime.EventsEmit(ctx, constants.RUNNER_UNEXPECTED_EXIT, id)
 		}
 	}()
 	// 启动实例状态变化监听
 	go func() {
 		for {
-			id := <-service.RunnerManager.RunnerStatusUpdateChanel
+			id := <-core.RunnerManager.RunnerStatusUpdateChanel
 			runtime.EventsEmit(ctx, constants.RUNNER_STATUS_UPDATE, id)
 		}
 	}()
 }
 
 func (u *instanceApi) GetInstanceById(id uint) *model.ClientInstance {
-	return service.InstanceManager.GetById(id)
+	return core.InstanceManager.GetById(id)
 }
 
 func (u *instanceApi) ListInstance() []*domain.Instance {
-	return service.RunnerManager.List()
+	return core.RunnerManager.List()
 }
 
 func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
-	service.InstanceManager.Create(instance)
-	err := service.RunnerManager.NewRunner(instance)
+	core.InstanceManager.Create(instance)
+	err := core.RunnerManager.NewRunner(instance)
 	if err == nil {
 		// todo
 		//service.ServerConnManager.Reconnect()
 	} else {
-		service.InstanceManager.Delete(instance.CID)
+		core.InstanceManager.Delete(instance.CID)
 	}
 	return err
 }
 
 func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
-	err := service.InstanceManager.SaveConfig(instance)
+	err := core.InstanceManager.SaveConfig(instance)
 	if err == nil {
 		// todo
 		//service.ServerConnManager.Reconnect()
@@ -69,49 +68,50 @@ func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 }
 
 func (u *instanceApi) DeleteInstance(cid uint) error {
-	err := service.RunnerManager.DeleteRunner(cid)
+	err := core.RunnerManager.DeleteRunner(cid)
 	if err == nil {
 		// todo
 		//service.ServerConnManager.Reconnect()
-		service.InstanceManager.Delete(cid)
+		core.InstanceManager.Delete(cid)
 	}
 	return err
 }
 
 func (u *instanceApi) StartInstance(id uint) error {
-	runner := service.RunnerManager.GetRunnerById(id)
-	if runner != nil {
-		return runner.Start()
-	} else {
-		return errors.New("实例不存在")
+	runner, err := core.RunnerManager.GetRunnerById(id)
+	if err != nil {
+		return err
 	}
+	return runner.Start()
 }
 
 func (u *instanceApi) StopInstance(id uint) error {
-	runner := service.RunnerManager.GetRunnerById(id)
-	if runner != nil {
-		_, err := service.GrpcClient.InstanceService.ClearPakState(context.Background(), &pb.ClearPakStateRequest{
-			ClientId:   uint32(global.ClientId),
-			InstanceId: uint32(runner.CID),
-		})
-		if err != nil {
-			logger.Zap.Error(err)
-		}
-		return runner.Stop()
-	} else {
-		return errors.New("实例不存在")
+	runner, err := core.RunnerManager.GetRunnerById(id)
+	if err != nil {
+		return err
 	}
+	_, err = global.GrpcClient.ClearPakState(context.Background(), &pb.ClearPakStateRequest{
+		ClientId:   uint32(global.ClientId),
+		InstanceId: uint32(runner.CID),
+	})
+	if err != nil {
+		logger.Zap.Error(err)
+	}
+	return runner.Stop()
 }
 
 func (u *instanceApi) OpenInstanceLog(id uint) error {
-	runner := service.RunnerManager.GetRunnerById(id)
+	runner, err := core.RunnerManager.GetRunnerById(id)
+	if err != nil {
+		return err
+	}
 	return runner.OpenLog()
 }
 
 func (u *instanceApi) StartUpload(id uint) (string, error) {
-	return service.SyncManager.StartUpload(id)
+	return core.SyncManager.StartUpload(id)
 }
 
 func (u *instanceApi) StartDownload(id uint) (string, error) {
-	return service.SyncManager.StartUpdate(id)
+	return core.SyncManager.StartUpdate(id)
 }

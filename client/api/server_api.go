@@ -7,10 +7,10 @@ import (
 	"net"
 	"net/url"
 	"strings"
+	"thingue-launcher/client/core"
+	"thingue-launcher/client/core/conn"
+	"thingue-launcher/client/core/instance"
 	"thingue-launcher/client/global"
-	"thingue-launcher/client/service"
-	"thingue-launcher/client/service/instance"
-	"thingue-launcher/client/service/server"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
@@ -35,7 +35,7 @@ func (s *serverApi) Init(ctx context.Context) {
 			logger.Zap.Error(err)
 		}
 	}
-	service.ConnManager.Init(s.ctx)
+	core.ConnManager.Init(s.ctx)
 }
 
 func (s *serverApi) LocalServerStart() error {
@@ -112,12 +112,12 @@ func (s *serverApi) GetConnectServerOptions() []string {
 }
 
 func (s *serverApi) ConnectServer(httpAddr string) error {
-	if server.TunnelServer.IsConnected {
-		service.ConnManager.Close()
+	if conn.TunnelServer.IsConnected {
+		core.ConnManager.Close()
 	}
-	err := service.ConnManager.SetConnAddr(httpAddr)
+	err := core.ConnManager.SetConnAddr(httpAddr)
 	if err == nil {
-		service.ConnManager.StartConnectTask()
+		core.ConnManager.StartConnectTask()
 	}
 	return err
 }
@@ -125,7 +125,7 @@ func (s *serverApi) ConnectServer(httpAddr string) error {
 func (s *serverApi) DisconnectServer() {
 	// 关闭已启动实例
 	instance.RunnerManager.CloseAllRunner()
-	service.ConnManager.Close()
+	core.ConnManager.Close()
 }
 
 func (s *serverApi) GetLocalServerUrl() (*url.URL, error) {
@@ -165,7 +165,7 @@ func (s *serverApi) OpenInstancePreviewUrl(sid string) {
 
 func (s *serverApi) GetServerConnInfo() map[string]any {
 	return map[string]any{
-		"isConnected": server.TunnelServer.IsConnected,
+		"isConnected": conn.TunnelServer.IsConnected,
 		"serverAddr":  provider.AppConfig.ServerURL,
 	}
 }

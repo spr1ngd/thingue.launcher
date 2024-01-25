@@ -19,7 +19,7 @@ func createGrpcGatewayHandler() http.Handler {
 	// 连接 gRPC 服务器
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	// 注册服务
-	err := pb.RegisterInstanceServiceHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
+	err := pb.RegisterServerInstanceServiceHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
 	if err != nil {
 		logger.Zap.Fatalf("Failed to register gRPC gateway: %v", err)
 	}

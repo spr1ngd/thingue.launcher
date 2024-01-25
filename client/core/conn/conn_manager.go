@@ -1,4 +1,4 @@
-package server
+package conn
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"net/url"
 	"sync"
+	"thingue-launcher/client/global"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
@@ -62,8 +63,8 @@ func (c *connManager) UnsetConnAddr() {
 func (c *connManager) Close() {
 	if c.cc != nil {
 		c.UnsetConnAddr()
-		TunnelServer.CloseTunnelServer()
 		err := c.cc.Close()
+		TunnelServer.CloseTunnelServer()
 		if err != nil {
 			log.Error(err)
 		}
@@ -108,9 +109,10 @@ func (c *connManager) connect() error {
 	} else {
 		c.cc = cc
 		// 创建客户端
-		GrpcClient.InstanceService = pb.NewInstanceServiceClient(cc)
+		client := pb.NewServerInstanceServiceClient(cc)
+		global.GrpcClient = client
 		// 测试调用
-		agent, err := GrpcClient.InstanceService.RegisterAgent(context.Background(), &pb.RegisterAgentRequest{
+		agent, err := client.RegisterAgent(context.Background(), &pb.RegisterAgentRequest{
 			Instances:  nil,
 			DeviceInfo: nil,
 		})

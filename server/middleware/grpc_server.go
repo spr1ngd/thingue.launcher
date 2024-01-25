@@ -15,7 +15,7 @@ func CreateGRPCServer() {
 	// 注册反向隧道
 	tunnelpb.RegisterTunnelServiceServer(grpcServer, CreateGrpcTunnelServiceHandler().Service())
 	// 注册服务端gRPC服务
-	pb.RegisterInstanceServiceServer(grpcServer, &rpc.InstanceService{})
+	pb.RegisterServerInstanceServiceServer(grpcServer, &rpc.InstanceService{})
 }
 
 func RunGRPCServer() error {

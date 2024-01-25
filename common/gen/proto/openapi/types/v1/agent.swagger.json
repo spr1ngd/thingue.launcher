@@ -1,14 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "apis/v1/agent.proto",
+    "title": "types/v1/agent.proto",
     "version": "version not set"
   },
-  "tags": [
-    {
-      "name": "AgentService"
-    }
-  ],
   "consumes": [
     "application/json"
   ],
@@ -42,14 +37,6 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
-        }
-      }
-    },
-    "v1ControlProcessResponse": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
         }
       }
     }

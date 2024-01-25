@@ -1,4 +1,4 @@
-package instance
+package conn
 
 import (
 	"github.com/jaypipes/ghw"
@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"strings"
 	"thingue-launcher/common/constants"
-	"thingue-launcher/common/domain"
+	types "thingue-launcher/common/gen/proto/go/types/v1"
 	"thingue-launcher/common/util"
 )
 
-func GetDeviceInfo() *domain.DeviceInfo {
+func GetDeviceInfo() *types.DeviceInfo {
 	workdir, _ := os.Getwd()     //工作目录
 	hostname, _ := os.Hostname() //主机名
 	// 处理器
@@ -67,7 +67,7 @@ func GetDeviceInfo() *domain.DeviceInfo {
 			}
 		}
 	}
-	return &domain.DeviceInfo{
+	return &types.DeviceInfo{
 		Version:    constants.VersionInfo.Version,
 		Workdir:    workdir,
 		Hostname:   hostname,

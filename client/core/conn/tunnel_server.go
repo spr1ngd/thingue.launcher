@@ -1,10 +1,11 @@
-package server
+package conn
 
 import (
 	"context"
 	"github.com/jhump/grpctunnel"
 	"github.com/jhump/grpctunnel/tunnelpb"
 	"google.golang.org/grpc"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
 )
 
@@ -19,8 +20,7 @@ func (s *tunnelServer) CreateTunnelServer(cc grpc.ClientConnInterface) {
 	// Register services for reverse tunnels.
 	tunnelStub := tunnelpb.NewTunnelServiceClient(cc)
 	s.tunnelServer = grpctunnel.NewReverseTunnelServer(tunnelStub)
-	//pb.RegisterYourServiceServer(tunnelServer, &agentService{})
-
+	pb.RegisterAgentServiceServer(s.tunnelServer, &AgentService{})
 }
 
 func (s *tunnelServer) ServeTunnelServer(resultChan chan error, cc grpc.ClientConnInterface) {

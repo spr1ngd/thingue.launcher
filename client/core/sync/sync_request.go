@@ -1,4 +1,4 @@
-package instance
+package sync
 
 import (
 	"thingue-launcher/common/model"

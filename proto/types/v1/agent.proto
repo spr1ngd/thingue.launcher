@@ -1,0 +1,9 @@
+syntax = "proto3";
+package types.v1;
+
+enum Command {
+  COMMAND_UNSPECIFIED = 0;
+  COMMAND_START = 1;
+  COMMAND_STOP = 2;
+  COMMAND_RESTART = 3;
+}

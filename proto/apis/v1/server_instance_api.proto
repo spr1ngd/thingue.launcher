@@ -56,7 +56,7 @@ message ClearPakStateRequest {
   uint32 instance_id = 2;
 }
 
-service InstanceService {
+service ServerInstanceService {
   rpc RegisterAgent(RegisterAgentRequest) returns (RegisterAgentResponse);
   rpc AddInstance(AddInstanceRequest) returns (google.protobuf.Empty);
   rpc DeleteInstance(DeleteInstanceRequest) returns (google.protobuf.Empty);

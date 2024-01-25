@@ -7,7 +7,7 @@ import (
 )
 
 type InstanceService struct {
-	pb.UnimplementedInstanceServiceServer
+	pb.UnimplementedServerInstanceServiceServer
 }
 
 func (s InstanceService) RegisterAgent(context.Context, *pb.RegisterAgentRequest) (*pb.RegisterAgentResponse, error) {
