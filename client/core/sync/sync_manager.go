@@ -1,4 +1,4 @@
-package instance
+package sync
 
 import (
 	"errors"
@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"thingue-launcher/client/core/instance"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/util"
 )
@@ -23,7 +24,10 @@ type FileInfo struct {
 
 func (m *syncManager) StartUpload(id uint) (string, error) {
 	var err error
-	runner := RunnerManager.GetRunnerById(id)
+	runner, err := instance.RunnerManager.GetRunnerById(id)
+	if err != nil {
+		return "", err
+	}
 	cloudRes := strings.TrimSpace(runner.CloudRes)
 	if cloudRes == "" {
 		return "", errors.New("云资源标识未设置")
@@ -82,7 +86,10 @@ func (m *syncManager) StartUpload(id uint) (string, error) {
 
 func (m *syncManager) StartUpdate(id uint) (string, error) {
 	var err error
-	runner := RunnerManager.GetRunnerById(id)
+	runner, err := instance.RunnerManager.GetRunnerById(id)
+	if err != nil {
+		return "", err
+	}
 	cloudRes := strings.TrimSpace(runner.CloudRes)
 	if cloudRes == "" {
 		return "", errors.New("云资源标识未设置")
@@ -96,7 +103,7 @@ func (m *syncManager) StartUpdate(id uint) (string, error) {
 
 func (m *syncManager) UpdateCloudRes(cloudRes string) error {
 	logger.Zap.Debug("检查更新")
-	instances := InstanceManager.GetByCloudRes(cloudRes)
+	instances := instance.InstanceManager.GetByCloudRes(cloudRes)
 	// 筛除使用相同包的实例
 	uniqueMap := make(map[string]int)
 	var uniquePackages []string
@@ -230,7 +237,9 @@ func (m *syncManager) downloadFile(cloudRes string, fileName string, packagePath
 	}
 	out, _ := os.Create(downfile + ".tmp")
 
-	apiUrl := SyncRequest.BaseUrl.JoinPath("/storage", cloudRes, strings.ReplaceAll(fileName, "\\", "/")).String()
+	// todo
+	//apiUrl := SyncRequest.BaseUrl.JoinPath("/storage", cloudRes, strings.ReplaceAll(fileName, "\\", "/")).String()
+	apiUrl := ""
 	resp, err := http.Get(apiUrl)
 	if err != nil {
 		return err

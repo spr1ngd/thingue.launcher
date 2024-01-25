@@ -43,7 +43,10 @@ func (m *instanceManager) GetInternal() (*model.ClientInstance, error) {
 }
 
 func (m *instanceManager) SaveConfig(instance *model.ClientInstance) error {
-	runner := RunnerManager.GetRunnerById(instance.CID)
+	runner, err := RunnerManager.GetRunnerById(instance.CID)
+	if err != nil {
+		return err
+	}
 	if runner.StateCode == 1 {
 		return errors.New("实例运行中无法修改配置")
 	}

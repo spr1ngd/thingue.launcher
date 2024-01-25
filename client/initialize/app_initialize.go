@@ -8,14 +8,14 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"thingue-launcher/client/api"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/logger"
-	"thingue-launcher/common/provider"
 )
 
 func InitApp(assets embed.FS) {
 	// 初始化wails app
 	err := wails.Run(&options.App{
-		Title:  "ThingUE启动器 v" + provider.VersionInfo.Version,
+		Title:  "ThingUE启动器 v" + constants.VersionInfo.Version,
 		Width:  820,
 		Height: 510,
 		AssetServer: &assetserver.Options{
@@ -25,6 +25,7 @@ func InitApp(assets embed.FS) {
 		OnStartup: func(ctx context.Context) {
 			api.InstanceApi.Init(ctx)
 			api.ServerApi.Init(ctx)
+			api.ConnApi.Init(ctx)
 			api.SystemApi.Init(ctx)
 		},
 		Windows: &windows.Options{
@@ -33,6 +34,7 @@ func InitApp(assets embed.FS) {
 		Bind: []any{
 			api.InstanceApi,
 			api.ServerApi,
+			api.ConnApi,
 			api.SystemApi,
 		},
 		Logger: &ZapLogger{},

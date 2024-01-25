@@ -7,9 +7,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"math"
+	"thingue-launcher/common/domain"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
-	"thingue-launcher/common/message"
-	"thingue-launcher/common/message/types"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/server/core/provider"
@@ -30,11 +30,11 @@ var ClientService = clientService{
 func (s *clientService) ClientRegister(registerInfo *request.ClientRegisterInfo) error {
 	var client model.Client
 	global.ServerDB.Find(&client, registerInfo.ClientID)
-	client.SetDeviceInfo(*registerInfo.DeviceInfo)
+	client.SetDeviceInfo(registerInfo.DeviceInfo)
 	var serverInstances = make([]*model.ServerInstance, 0)
 	for _, instance := range registerInfo.Instances {
 		var serverInstance = &model.ServerInstance{}
-		mapstructure.Decode(instance, serverInstance)
+		_ = mapstructure.Decode(instance, serverInstance)
 		if serverInstance.SID == "" {
 			sid, _ := uuid.NewUUID()
 			serverInstance.SID = sid.String()
@@ -53,11 +53,33 @@ func (s *clientService) ClientList() []*model.Client {
 	return clients
 }
 
-func (s *clientService) ClientOnline(client *model.Client) {
+func (s *clientService) CreateClient(client *model.Client) {
 	global.ServerDB.Create(&client)
 }
 
-func (s *clientService) ClientOffline(client *model.Client) {
+func (s *clientService) RegisterClient(client *model.Client, agentInfo *pb.GetAgentInfoResponse) {
+	deviceInfo := &domain.DeviceInfo{}
+	_ = mapstructure.Decode(agentInfo.DeviceInfo, deviceInfo)
+	client.SetDeviceInfo(deviceInfo)
+	var serverInstances = make([]*model.ServerInstance, 0)
+	for _, instance := range agentInfo.Instances {
+		var serverInstance = &model.ServerInstance{}
+		_ = mapstructure.Decode(instance, serverInstance)
+		_ = mapstructure.Decode(instance.InstanceConfig, serverInstance)
+		serverInstance.CID = uint(instance.Id)
+		serverInstance.SID = instance.StreamerId
+		if serverInstance.SID == "" {
+			sid, _ := uuid.NewUUID()
+			serverInstance.SID = sid.String()
+		}
+		serverInstances = append(serverInstances, serverInstance)
+	}
+	client.Instances = serverInstances
+	global.ServerDB.Save(&client)
+	provider.AdminConnProvider.BroadcastUpdate()
+}
+
+func (s *clientService) DeleteClient(client *model.Client) {
 	global.ServerDB.Delete(&client)
 	global.ServerDB.Where("client_id = ?", client.ID).Delete(&model.ServerInstance{})
 	provider.AdminConnProvider.BroadcastUpdate()
@@ -74,11 +96,13 @@ func (s *clientService) GetInstanceSid(clientId string, instanceId string) (stri
 }
 
 func (s *clientService) CollectLogs(req request.LogsCollect) error {
-	s.WsIdMap[req.TraceId] = req.WsId
-	return provider.ClientConnProvider.SendToClient(req.ClientId, &message.Message{
-		Type: types.ServerCollectClientLogs,
-		Data: req.TraceId,
-	})
+	//s.WsIdMap[req.TraceId] = req.WsId
+	//return provider.ClientConnProvider.SendToClient(req.ClientId, &message.Message{
+	//	Type: types.ServerCollectClientLogs,
+	//	Data: req.TraceId,
+	//})
+	// todo
+	return nil
 }
 
 func (s *clientService) UploadLogs(traceId string, buf *bytes.Buffer) error {

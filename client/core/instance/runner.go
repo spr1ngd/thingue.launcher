@@ -1,7 +1,9 @@
 package instance
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
@@ -9,6 +11,7 @@ import (
 	"strconv"
 	"thingue-launcher/client/global"
 	"thingue-launcher/common/domain"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
 	"thingue-launcher/common/util"
@@ -27,18 +30,22 @@ func (r *Runner) Start() error {
 		return errors.New("实例已在运行")
 	}
 	var launchArguments []string
-	// 设置PixelStreamingURL
-	sid, err := ClientService.GetInstanceSid(global.ClientId, r.CID)
+	// 设置PixelStreamingURL启动参数
+	streamerIdResponse, err := global.GrpcClient.GetStreamerId(context.Background(), &pb.GetStreamerIdRequest{
+		ClientId:   uint32(global.ClientId),
+		InstanceId: uint32(r.CID),
+	})
 	if err == nil {
-		r.SID = sid
+		r.SID = streamerIdResponse.GetId()
 		wsUrl := util.HttpUrlToWsUrl(provider.AppConfig.ServerURL, "/ws/streamer")
-		launchArguments = append(r.LaunchArguments, "-PixelStreamingURL="+wsUrl+"/"+r.SID)
+		launchArguments = append(r.LaunchArguments,
+			fmt.Sprintf("-PixelStreamingURL=%s/%s", wsUrl, r.SID))
 	} else {
 		return err
 	}
-	// 设置日志文件名称为实例名称
+	// 设置日志文件名称启动参数
 	if r.Name != "" {
-		launchArguments = append(launchArguments, "LOG="+r.Name+".log")
+		launchArguments = append(launchArguments, fmt.Sprintf("LOG=%s.log", r.Name))
 	}
 	// 运行前
 	logger.Zap.Debug(r.ExecPath, launchArguments)
@@ -49,7 +56,7 @@ func (r *Runner) Start() error {
 	}
 	r.Pid = command.Process.Pid
 	r.process = command.Process
-	r.updateStateCode(1)
+	r.updateProcessState(1)
 	r.LastStartAt = time.Now()
 	RunnerManager.RunnerStatusUpdateChanel <- r.CID
 	logger.Zap.Infof("实例启动 %s", r.Name)
@@ -61,12 +68,12 @@ func (r *Runner) Start() error {
 		r.StreamerConnected = false
 		select {
 		case r.ExitSignalChannel <- exitCode:
-			r.updateStateCode(0)
+			r.updateProcessState(0)
 			RunnerManager.RunnerStatusUpdateChanel <- r.CID
 			logger.Zap.Debugf("退出码发送成功 %s", r.Name)
 			r.faultCount = 0
 		default:
-			r.updateStateCode(-1)
+			r.updateProcessState(-1)
 			RunnerManager.RunnerUnexpectedExitChanel <- r.CID
 			logger.Zap.Warnf("实例异常退出 %s %d", r.Name, r.faultCount)
 			if r.FaultRecover && r.faultCount < 3 {
@@ -99,9 +106,17 @@ func (r *Runner) Stop() error {
 	return err
 }
 
-func (r *Runner) updateStateCode(stateCode int8) {
+func (r *Runner) updateProcessState(stateCode int8) {
 	r.StateCode = stateCode
-	ClientService.SendProcessState(r.SID, stateCode, r.Pid)
+	_, err := global.GrpcClient.UpdateProcessState(context.Background(), &pb.UpdateProcessStateRequest{
+		ClientId:   uint32(global.ClientId),
+		InstanceId: uint32(r.CID),
+		StateCode:  int32(stateCode),
+		Pid:        int32(r.Pid),
+	})
+	if err != nil {
+		logger.Zap.Error(err)
+	}
 }
 
 func (r *Runner) OpenLog() error {

@@ -6,7 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
-	"thingue-launcher/client/service"
+	"thingue-launcher/client/core"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/provider"
 )
@@ -19,7 +20,7 @@ var SystemApi = new(systemApi)
 
 func (a *systemApi) Init(ctx context.Context) {
 	a.ctx = ctx
-	service.RunnerRestartTaskManager.Init()
+	core.RunnerRestartTaskManager.Init()
 }
 
 func (a *systemApi) OpenFileDialog(title string, displayName string, pattern string) (string, error) {
@@ -52,9 +53,9 @@ func (a *systemApi) GetAppConfig() *provider.Config {
 func (a *systemApi) ControlRestartTask(enable bool) error {
 	var err error
 	if enable {
-		err = service.RunnerRestartTaskManager.Start()
+		err = core.RunnerRestartTaskManager.Start()
 	} else {
-		service.RunnerRestartTaskManager.Stop()
+		core.RunnerRestartTaskManager.Stop()
 	}
 	if err == nil {
 		provider.AppConfig.SystemSettings.EnableRestartTask = enable
@@ -70,5 +71,5 @@ func (a *systemApi) UpdateSystemSettings(systemSettings provider.SystemSettings)
 }
 
 func (a *systemApi) GetVersionInfo() *domain.VersionInfo {
-	return provider.VersionInfo
+	return constants.VersionInfo
 }

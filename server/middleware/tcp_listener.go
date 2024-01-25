@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"github.com/soheilhy/cmux"
 	"net"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
 )
 
@@ -41,7 +41,7 @@ func CreateMux() {
 
 func ServeMux() {
 	err := cmx.Serve()
-	fmt.Println(err)
+	logger.Zap.Error(err)
 }
 
 func CloseMux() {

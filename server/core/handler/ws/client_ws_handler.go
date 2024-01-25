@@ -21,7 +21,7 @@ func (g *HandlerGroup) ClientWebSocketHandler(c *gin.Context) {
 		return nil
 	})
 	client := model.Client{}
-	core.ClientService.ClientOnline(&client)
+	core.ClientService.CreateClient(&client)
 	callbackMsg := message.ServerConnectCallback(client.ID)
 	provider.ClientConnProvider.ConnMap[client.ID] = conn
 	err = conn.WriteMessage(websocket.TextMessage, callbackMsg.Pack().GetBytes())
@@ -41,5 +41,5 @@ func (g *HandlerGroup) ClientWebSocketHandler(c *gin.Context) {
 	}
 	conn.Close()
 	delete(provider.ClientConnProvider.ConnMap, client.ID)
-	core.ClientService.ClientOffline(&client)
+	core.ClientService.DeleteClient(&client)
 }

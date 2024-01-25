@@ -11,9 +11,11 @@ import (
 	"time"
 )
 
-type SgccService struct{}
+type sgccService struct{}
 
-func (s *SgccService) GetNodeStatus(node string) int {
+var SgccService = &sgccService{}
+
+func (s *sgccService) GetNodeStatus(node string) int {
 	instance := service.InstanceService.GetInstanceBySid(node)
 	if instance != nil {
 		return s.GetInstanceStatus(instance)
@@ -22,7 +24,7 @@ func (s *SgccService) GetNodeStatus(node string) int {
 	return -1
 }
 
-func (s *SgccService) GetInstanceStatus(instance *model.ServerInstance) int {
+func (s *sgccService) GetInstanceStatus(instance *model.ServerInstance) int {
 	if instance.StateCode == 1 {
 		if instance.PakName == "" {
 			return 0
@@ -42,13 +44,13 @@ func (s *SgccService) GetInstanceStatus(instance *model.ServerInstance) int {
 	return -1
 }
 
-func (s *SgccService) Register() {
+func (s *sgccService) Register() {
 	maxNode := len(service.InstanceService.InstanceList())
 	registerMessage := message.NewRegister(maxNode)
 	provider.SendCloudMessage(registerMessage.GetBytes())
 }
 
-func (s *SgccService) Init() {
+func (s *sgccService) Init() {
 	// instance start + // 获取nodes状态
 	var callback *message.InitCallback
 	var nodes []message.Node
@@ -72,7 +74,7 @@ func (s *SgccService) Init() {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *SgccService) Deploy(deploy *message.Deploy) {
+func (s *sgccService) Deploy(deploy *message.Deploy) {
 	// instance pakload
 	var callback *message.DeployCallback
 	_ = service.InstanceService.PakControl(request.PakControl{
@@ -88,7 +90,7 @@ func (s *SgccService) Deploy(deploy *message.Deploy) {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *SgccService) Release(nodes []string) {
+func (s *sgccService) Release(nodes []string) {
 	// instance pakunload
 	var callback *message.ReleaseCallback
 	var callbackNodes []*message.CallBackNode
@@ -109,7 +111,7 @@ func (s *SgccService) Release(nodes []string) {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *SgccService) Status() {
+func (s *sgccService) Status() {
 	statistic := message.Statistic{}
 	status := message.Status{
 		Statistic: statistic,
@@ -117,7 +119,7 @@ func (s *SgccService) Status() {
 	provider.SendCloudMessage(status.GetBytes())
 }
 
-func (s *SgccService) Restart(nodes []string) {
+func (s *sgccService) Restart(nodes []string) {
 	// instance restart
 	var callback *message.RestartCallback
 	var callbackNodes []*message.CallBackNode
@@ -136,7 +138,7 @@ func (s *SgccService) Restart(nodes []string) {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *SgccService) Kill(nodes []string) {
+func (s *sgccService) Kill(nodes []string) {
 	// instance stop
 	var callback *message.KillCallback
 	var callbackNodes []*message.CallBackNode

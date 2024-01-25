@@ -1,7 +1,8 @@
 <script setup>
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import {
-  GetLocalServerStatus,
+  GetHttpServerStatus,
+  GetGrpcServerStatus,
   LocalServerShutdown,
   LocalServerStart,
   OpenLocalServerUrl,
@@ -11,6 +12,7 @@ import {
 import {GetAppConfig} from "@wails/go/api/systemApi";
 import {Notify} from "quasar";
 import * as monaco from "monaco-editor";
+import {GetMqttServerStatus} from "@wails/go/api/serverApi";
 
 
 const tab = ref("local")
@@ -18,26 +20,40 @@ const tab = ref("local")
 let editor = null
 const PeerConnectionOptionsRef = ref()
 
-const localServerConfig = reactive({
-  data: {
+const localServer = reactive({
+  config: {
     bindAddr: "",
     contentPath: "",
     autoStart: false,
+    enableMQTT: false,
     useExternalStatic: false,
     staticDir: ""
+  },
+  status: {
+    httpServerRunning: false,
+    grpcServerRunning: false,
+    mqttServerRunning: false
   }
 })
 
-let localServerStatus = ref(false)
-
-function serverStart() {
-  localServerStatus.value = true
-  LocalServerStart();
+async function serverStart() {
+  localServer.status.httpServerRunning = true
+  localServer.status.grpcServerRunning = true
+  try {
+    await LocalServerStart();
+  } catch (error) {
+    localServer.status.httpServerRunning = false
+    localServer.status.grpcServerRunning = false
+    Notify.create(`启动失败，${error}`)
+  }
 }
 
 async function serverShutdown() {
-  await LocalServerShutdown()
-  localServerStatus.value = await GetLocalServerStatus()
+  try {
+    await LocalServerShutdown()
+  } catch (error) {
+    Notify.create(`关闭失败，${error}`)
+  }
 }
 
 async function savePeerConnectionOptions() {
@@ -58,6 +74,12 @@ async function rollbackChange() {
   editor.setValue(appConfig.peerConnectionOptions)
 }
 
+async function getServerStatus() {
+  localServer.status.httpServerRunning = await GetHttpServerStatus()
+  localServer.status.grpcServerRunning = await GetGrpcServerStatus()
+  localServer.status.mqttServerRunning = await GetMqttServerStatus()
+}
+
 onMounted(async () => {
   editor = monaco.editor.create(PeerConnectionOptionsRef.value, {
     value: "",
@@ -74,16 +96,18 @@ onMounted(async () => {
   // 获取本地server配置
   let appConfig = await GetAppConfig();
   editor.setValue(appConfig.peerConnectionOptions)
-  localServerConfig.data = appConfig.localServer
-  // 获取本地server状态
-  localServerStatus.value = await GetLocalServerStatus()
-  //注册事件监听
-  window.runtime.EventsOn("local_server_close", (err) => {
-    localServerStatus.value = false
-    Notify.create(`服务关闭退出 ${err}`)
+  localServer.config = appConfig.localServer
+  // 获取server状态
+  await getServerStatus()
+  // 注册事件监听
+  window.runtime.EventsOn("local_server_close", async (errMsg) => {
+    await getServerStatus()
+    if (errMsg) {
+      Notify.create(`服务关闭退出 ${errMsg}`)
+    }
   })
-  watch(localServerConfig, async (value, oldValue, onCleanup) => {
-    UpdateLocalServerConfig(localServerConfig.data)
+  watch(localServer, async (value, oldValue, onCleanup) => {
+    UpdateLocalServerConfig(localServer.config)
   })
 })
 
@@ -94,57 +118,85 @@ onUnmounted(() => {
 
 <template>
   <div class="row reverse-wrap">
-    <div class="col-auto q-pa-sm" style="width: 300px">
+    <div class="col-auto q-pa-sm" style="width: 320px">
       <q-card>
         <q-card-section class="q-pa-sm">
           <div class="row no-wrap items-center q-pa-sm">
-            <div class="text-h6">内置信令服务配置</div>
+            <div class="text-h6">服务控制面板</div>
+            <q-space/>
+            <div class="q-gutter-xs">
+              <q-btn dense flat round icon="lens" size="8.5px"
+                     :color="localServer.status.httpServerRunning?'green':'grey'">
+                <q-tooltip anchor="top middle" self="center middle">
+                  {{ localServer.status.httpServerRunning ? "HTTP服务运行中" : "HTTP服务未运行" }}
+                </q-tooltip>
+              </q-btn>
+              <q-btn dense flat round icon="lens" size="8.5px"
+                     :color="localServer.status.grpcServerRunning?'green':'grey'">
+                <q-tooltip anchor="top middle" self="center middle">
+                  {{ localServer.status.grpcServerRunning ? "gRPC服务运行中" : "gRPC服务未运行" }}
+                </q-tooltip>
+              </q-btn>
+              <q-btn dense flat round icon="lens" size="8.5px"
+                     :color="localServer.status.mqttServerRunning?'green':'grey'">
+                <q-tooltip anchor="top middle" self="center middle">
+                  {{ localServer.status.mqttServerRunning ? "MQTT服务运行中" : "MQTT服务未运行" }}
+                </q-tooltip>
+              </q-btn>
+            </div>
           </div>
         </q-card-section>
-        <q-card-section class="q-pa-none q-pt-sm">
+        <q-card-section class="q-pa-none">
           <q-list dense>
             <q-item>
               <q-item-section>
                 <q-item-label>监听地址</q-item-label>
-                <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.data.bindAddr"/>
+                <q-input :readonly="localServer.status.httpServerRunning" dense outlined square type="text"
+                         v-model="localServer.config.bindAddr"/>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section>
                 <q-item-label>服务路径</q-item-label>
-                <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.data.contentPath"/>
+                <q-input :readonly="localServer.status.httpServerRunning" dense outlined square type="text"
+                         v-model="localServer.config.contentPath"/>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section avatar>
-                <q-toggle left-label :disable="localServerStatus"
-                          v-model="localServerConfig.data.useExternalStatic" label="使用外部静态资源"/>
+                <q-toggle left-label :disable="localServer.status.httpServerRunning"
+                          v-model="localServer.config.useExternalStatic" label="使用外部静态资源"/>
               </q-item-section>
             </q-item>
-            <q-item v-if="localServerConfig.data.useExternalStatic">
+            <q-item v-if="localServer.config.useExternalStatic">
               <q-item-section>
                 <q-item-label>静态资源路径</q-item-label>
-                <q-input :readonly="localServerStatus" dense outlined square type="text"
-                         v-model="localServerConfig.data.staticDir"/>
+                <q-input :readonly="localServer.status.httpServerRunning" dense outlined square type="text"
+                         v-model="localServer.config.staticDir"/>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section avatar>
-                <q-toggle left-label v-model="localServerConfig.data.autoStart" label="随应用启动"/>
+                <q-toggle left-label :disable="localServer.status.httpServerRunning"
+                          v-model="localServer.config.enableMQTT" label="启用MQTT"/>
+              </q-item-section>
+              <q-item-section>
+                <q-toggle left-label v-model="localServer.config.autoStart" label="自动启动">
+                  <q-tooltip anchor="top middle" self="center middle" :delay="600">是否随应用程序自动启动</q-tooltip>
+                </q-toggle>
               </q-item-section>
             </q-item>
             <q-item>
               <q-item-section>
-                <q-btn dense label="启动" color="positive" @click="serverStart" :disable="localServerStatus"></q-btn>
+                <q-btn dense label="启动" color="positive" @click="serverStart" :disable="localServer.status.httpServerRunning"></q-btn>
               </q-item-section>
               <q-item-section>
-                <q-btn dense label="关闭" color="negative" @click="serverShutdown"
-                       :disable="!localServerStatus"></q-btn>
+                <q-btn dense label="关闭" color="negative" @click="serverShutdown" :disable="!localServer.status.httpServerRunning"></q-btn>
               </q-item-section>
               <q-item-section avatar>
-                <q-btn flat round icon="open_in_new" @click="OpenLocalServerUrl"/>
+                <q-btn flat round icon="open_in_new" @click="OpenLocalServerUrl">
+                  <q-tooltip :delay="600">打开控制台</q-tooltip>
+                </q-btn>
               </q-item-section>
             </q-item>
           </q-list>

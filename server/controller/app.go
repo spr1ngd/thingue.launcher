@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"fmt"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/server/middleware"
 )
 
@@ -31,14 +31,14 @@ func (a *application) Start() error {
 		a.GrpcServerRunning = true
 		grpcServerStopErr := middleware.RunGRPCServer()
 		a.GrpcServerRunning = false
-		fmt.Println("Grpc关闭", grpcServerStopErr)
+		logger.Zap.Info("Grpc关闭", grpcServerStopErr)
 		a.GrpcStopChanel <- grpcServerStopErr
 	}()
 	go func() {
 		a.HttpServerRunning = true
 		httpServerClosedErr := middleware.RunHttpServer()
 		a.HttpServerRunning = false
-		fmt.Println("Http关闭", httpServerClosedErr)
+		logger.Zap.Info("Http关闭", httpServerClosedErr)
 		a.HttpCloseChanel <- httpServerClosedErr
 	}()
 	go middleware.ServeMux()
@@ -64,11 +64,11 @@ func (a *application) StartMain() {
 	middleware.CreateHttpServer()
 	go func() {
 		grpcServerStopErr := middleware.RunGRPCServer()
-		fmt.Println("Grpc关闭", grpcServerStopErr)
+		logger.Zap.Info("Grpc关闭", grpcServerStopErr)
 	}()
 	go func() {
 		httpServerClosedErr := middleware.RunHttpServer()
-		fmt.Println("Http关闭", httpServerClosedErr)
+		logger.Zap.Info("Http关闭", httpServerClosedErr)
 	}()
 	middleware.ServeMux()
 }

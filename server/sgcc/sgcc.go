@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
-	"thingue-launcher/server/global"
 	"thingue-launcher/server/sgcc/provider"
-	"thingue-launcher/server/sgcc/service"
 	"thingue-launcher/server/sgcc/ws"
 )
 
@@ -22,8 +20,6 @@ func Init() {
 		fmt.Printf("Failed to unmarshal YAML: %v", err)
 		panic(err)
 	}
-	// 创建服务
-	global.SgccService = &service.SgccService{}
 	// 连接云端
 	ws.ConnManager.StartConnectTask()
 }

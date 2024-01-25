@@ -9,7 +9,7 @@ import (
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
-	"thingue-launcher/server/initialize"
+	"thingue-launcher/server/controller"
 	"thingue-launcher/server/sgcc"
 )
 
@@ -41,9 +41,9 @@ func main() {
 	}
 	// 初始化日志
 	logger.InitZapLogger(viper.GetString("logLevel"), "server.log")
-	// 启动连接云端
+	// 启动连接sgcc云端
 	if viper.GetBool("enableSgcc") {
 		sgcc.Init()
 	}
-	initialize.Server.Serve()
+	controller.Application.StartMain()
 }

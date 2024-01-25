@@ -8,13 +8,12 @@ import (
 	"net/url"
 	"strings"
 	"thingue-launcher/client/global"
-	"thingue-launcher/client/service"
-	"thingue-launcher/client/service/instance"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
-	"thingue-launcher/server/initialize"
+	"thingue-launcher/server/controller"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"gopkg.in/yaml.v3"
@@ -29,36 +28,39 @@ var ServerApi = new(serverApi)
 func (s *serverApi) Init(ctx context.Context) {
 	s.ctx = ctx
 	if provider.AppConfig.LocalServer.AutoStart {
-		s.LocalServerStart()
-	}
-	service.ServerConnManager.Init()
-	// 监听server连接状态
-	go func() {
-		for {
-			wsUrl := <-service.ServerConnManager.ServerConnUpdateChanel
-			runtime.EventsEmit(s.ctx, constants.REMOTE_SERVER_CONN_UPDATE, wsUrl)
+		err := s.LocalServerStart()
+		if err != nil {
+			logger.Zap.Error(err)
 		}
-	}()
+	}
 	// 监听localserver关闭
-	initialize.Server.CloseReturnChanel = make(chan string)
 	go func() {
 		for {
-			closeErr := <-initialize.Server.CloseReturnChanel
+			closeErr := <-controller.Application.HttpCloseChanel
 			runtime.EventsEmit(s.ctx, constants.LOCAL_SERVER_CLOSE, closeErr)
 		}
 	}()
 }
 
-func (s *serverApi) LocalServerStart() {
-	initialize.Server.Start()
+func (s *serverApi) LocalServerStart() error {
+	return controller.Application.Start()
 }
 
-func (s *serverApi) LocalServerShutdown() {
-	initialize.Server.Stop()
+func (s *serverApi) LocalServerShutdown() error {
+	err := controller.Application.Stop()
+	return err
 }
 
-func (s *serverApi) GetLocalServerStatus() bool {
-	return initialize.Server.IsRunning
+func (s *serverApi) GetHttpServerStatus() bool {
+	return controller.Application.HttpServerRunning
+}
+
+func (s *serverApi) GetGrpcServerStatus() bool {
+	return controller.Application.GrpcServerRunning
+}
+
+func (s *serverApi) GetMqttServerStatus() bool {
+	return false
 }
 
 func (s *serverApi) UpdateLocalServerConfig(localServerConfig provider.LocalServer) {
@@ -97,37 +99,6 @@ func (s *serverApi) DeleteRemoteServer(id uint) {
 	global.AppDB.Delete(&model.RemoteServer{}, id)
 }
 
-func (s *serverApi) GetConnectServerOptions() []string {
-	var options []string
-	if s.GetLocalServerStatus() {
-		serverUrl, err := s.GetLocalServerUrl()
-		if err == nil {
-			options = append(options, serverUrl.String())
-		}
-	}
-	for _, remoteServer := range s.ListRemoteServer() {
-		options = append(options, remoteServer.Url)
-	}
-	return options
-}
-
-func (s *serverApi) ConnectServer(httpUrl string) error {
-	if service.ServerConnManager.IsConnected {
-		service.ServerConnManager.Disconnect()
-	}
-	err := service.ServerConnManager.SetServerAddr(httpUrl)
-	if err == nil {
-		service.ServerConnManager.StartConnectTask()
-	}
-	return err
-}
-
-func (s *serverApi) DisconnectServer() {
-	// 关闭已启动实例
-	instance.RunnerManager.CloseAllRunner()
-	service.ServerConnManager.Disconnect()
-}
-
 func (s *serverApi) GetLocalServerUrl() (*url.URL, error) {
 	split := strings.Split(provider.AppConfig.LocalServer.BindAddr, ":")
 	if split[1] == "" {
@@ -156,16 +127,25 @@ func (s *serverApi) OpenLocalServerUrl() {
 }
 
 func (s *serverApi) OpenInstancePreviewUrl(sid string) {
-	serverUrl, err := service.ServerConnManager.GetConnectedUrl()
+	ServerURL, err := url.Parse(provider.AppConfig.ServerURL)
 	if err == nil {
-		path := serverUrl.JoinPath("/static/player.html")
+		path := ServerURL.JoinPath("/static/player.html")
 		runtime.BrowserOpenURL(s.ctx, fmt.Sprintf("%s?sid=%s", path.String(), sid))
 	}
 }
 
-func (s *serverApi) GetServerConnInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"isConnected": service.ServerConnManager.IsConnected,
-		"serverAddr":  service.ServerConnManager.ServerAddr,
+func (s *serverApi) GetConnectServerOptions() []string {
+	var options []string
+	if s.GetHttpServerStatus() && s.GetGrpcServerStatus() {
+		serverUrl, err := s.GetLocalServerUrl()
+		if err == nil {
+			options = append(options, serverUrl.String())
+		}
 	}
+	for _, remoteServer := range s.ListRemoteServer() {
+		if remoteServer.Url != "" {
+			options = append(options, remoteServer.Url)
+		}
+	}
+	return options
 }

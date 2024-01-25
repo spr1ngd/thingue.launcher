@@ -1,9 +1,12 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"sync"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
+	types "thingue-launcher/common/gen/proto/go/types/v1"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
@@ -46,11 +49,14 @@ func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 	provider.AdminConnProvider.BroadcastUpdate()
 	instance := model.ServerInstance{}
 	global.ServerDB.Where("s_id = ?", sid).First(&instance)
-	updateMsg := message.ServerStreamerConnectedUpdate{
-		CID:       instance.CID,
-		Connected: connected,
+	client := provider.GrpcClientProvider.ConnMap[instance.ClientID]
+	_, err := client.UpdateStreamerState(context.Background(), &pb.UpdateStreamerStateRequest{
+		InstanceId:    uint32(instance.CID),
+		StreamerState: connected,
+	})
+	if err != nil {
+		logger.Zap.Error(err)
 	}
-	provider.ClientConnProvider.SendToClient(instance.ClientID, updateMsg.Pack())
 }
 
 func (s *instanceService) UpdateProcessState(msg *message.ClientProcessStateUpdate) {
@@ -85,15 +91,21 @@ func (s *instanceService) UpdatePak(sid, currentPakValue string) {
 func (s *instanceService) ProcessControl(processControl request.ProcessControl) {
 	var instance model.ServerInstance
 	global.ServerDB.Where("s_id = ?", processControl.SID).First(&instance)
-	control := message.ServerProcessControl{
-		CID:     instance.CID,
-		Command: processControl.Command,
-	}
-	provider.ClientConnProvider.SendToClient(instance.ClientID, control.Pack())
-	if processControl.Command == "STOP" {
-		s.UpdatePak(instance.SID, "")
-	}
 
+	client := provider.GrpcClientProvider.ConnMap[instance.ClientID]
+	req := &pb.ControlProcessRequest{
+		InstanceId: uint32(instance.CID),
+	}
+	if processControl.Command == "STOP" {
+		req.Command = types.Command_COMMAND_STOP
+		s.UpdatePak(instance.SID, "")
+	} else {
+		req.Command = types.Command_COMMAND_START
+	}
+	_, err := client.ControlProcess(context.Background(), req)
+	if err != nil {
+		logger.Zap.Error(err)
+	}
 }
 
 func (s *instanceService) PakControl(control request.PakControl) error {

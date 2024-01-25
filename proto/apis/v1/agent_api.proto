@@ -1,0 +1,32 @@
+syntax = "proto3";
+package apis.v1;
+import "google/protobuf/empty.proto";
+import "types/v1/agent.proto";
+import "types/v1/instance.proto";
+
+message GetAgentInfoRequest {
+  uint32 client_id = 1;
+}
+
+message GetAgentInfoResponse {
+  types.v1.DeviceInfo device_info = 1;
+  repeated types.v1.InstanceInfo instances = 2;
+}
+
+message ControlProcessRequest {
+  uint32 instance_id = 1;
+  types.v1.Command command = 2;
+}
+
+message UpdateStreamerStateRequest {
+  uint32 instance_id = 1;
+  bool streamer_state = 2;
+}
+
+message UpdateStreamerStateResponse {}
+
+service AgentService {
+  rpc GetAgentInfo(GetAgentInfoRequest) returns (GetAgentInfoResponse);
+  rpc ControlProcess(ControlProcessRequest) returns (google.protobuf.Empty);
+  rpc UpdateStreamerState(UpdateStreamerStateRequest) returns (google.protobuf.Empty);
+}
