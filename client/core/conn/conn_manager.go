@@ -41,6 +41,7 @@ func (c *connManager) Init(ctx context.Context) {
 
 func (c *connManager) SetConnAddr(httpAddr string) error {
 	if TunnelServer.IsConnected {
+		logger.Zap.Error("连接未断开")
 		return errors.New("连接未断开")
 	} else {
 		httpURL, err := url.Parse(httpAddr)
@@ -126,8 +127,8 @@ func (c *connManager) connect() error {
 		case err := <-resultChan:
 			return err
 		case <-time.After(5 * time.Second):
-			// 稳定5秒视为成功
-			logger.Zap.Info("grpc反向隧道开启成功")
+			// 稳定5秒返回
+			logger.Zap.Info("grpc反向隧道连接稳定")
 			return nil
 		}
 	}

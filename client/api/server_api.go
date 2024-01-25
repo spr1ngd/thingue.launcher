@@ -7,10 +7,8 @@ import (
 	"net"
 	"net/url"
 	"strings"
-	"thingue-launcher/client/core"
-	"thingue-launcher/client/core/conn"
-	"thingue-launcher/client/core/instance"
 	"thingue-launcher/client/global"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
@@ -35,7 +33,13 @@ func (s *serverApi) Init(ctx context.Context) {
 			logger.Zap.Error(err)
 		}
 	}
-	core.ConnManager.Init(s.ctx)
+	// 监听localserver关闭
+	go func() {
+		for {
+			closeErr := <-controller.Application.HttpCloseChanel
+			runtime.EventsEmit(s.ctx, constants.LOCAL_SERVER_CLOSE, closeErr)
+		}
+	}()
 }
 
 func (s *serverApi) LocalServerStart() error {
@@ -95,39 +99,6 @@ func (s *serverApi) DeleteRemoteServer(id uint) {
 	global.AppDB.Delete(&model.RemoteServer{}, id)
 }
 
-func (s *serverApi) GetConnectServerOptions() []string {
-	var options []string
-	if s.GetHttpServerStatus() && s.GetGrpcServerStatus() {
-		serverUrl, err := s.GetLocalServerUrl()
-		if err == nil {
-			options = append(options, serverUrl.String())
-		}
-	}
-	for _, remoteServer := range s.ListRemoteServer() {
-		if remoteServer.Url != "" {
-			options = append(options, remoteServer.Url)
-		}
-	}
-	return options
-}
-
-func (s *serverApi) ConnectServer(httpAddr string) error {
-	if conn.TunnelServer.IsConnected {
-		core.ConnManager.Close()
-	}
-	err := core.ConnManager.SetConnAddr(httpAddr)
-	if err == nil {
-		core.ConnManager.StartConnectTask()
-	}
-	return err
-}
-
-func (s *serverApi) DisconnectServer() {
-	// 关闭已启动实例
-	instance.RunnerManager.CloseAllRunner()
-	core.ConnManager.Close()
-}
-
 func (s *serverApi) GetLocalServerUrl() (*url.URL, error) {
 	split := strings.Split(provider.AppConfig.LocalServer.BindAddr, ":")
 	if split[1] == "" {
@@ -163,9 +134,18 @@ func (s *serverApi) OpenInstancePreviewUrl(sid string) {
 	}
 }
 
-func (s *serverApi) GetServerConnInfo() map[string]any {
-	return map[string]any{
-		"isConnected": conn.TunnelServer.IsConnected,
-		"serverAddr":  provider.AppConfig.ServerURL,
+func (s *serverApi) GetConnectServerOptions() []string {
+	var options []string
+	if s.GetHttpServerStatus() && s.GetGrpcServerStatus() {
+		serverUrl, err := s.GetLocalServerUrl()
+		if err == nil {
+			options = append(options, serverUrl.String())
+		}
 	}
+	for _, remoteServer := range s.ListRemoteServer() {
+		if remoteServer.Url != "" {
+			options = append(options, remoteServer.Url)
+		}
+	}
+	return options
 }

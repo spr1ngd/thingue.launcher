@@ -25,6 +25,7 @@ func InitApp(assets embed.FS) {
 		OnStartup: func(ctx context.Context) {
 			api.InstanceApi.Init(ctx)
 			api.ServerApi.Init(ctx)
+			api.ConnApi.Init(ctx)
 			api.SystemApi.Init(ctx)
 		},
 		Windows: &windows.Options{
@@ -33,6 +34,7 @@ func InitApp(assets embed.FS) {
 		Bind: []any{
 			api.InstanceApi,
 			api.ServerApi,
+			api.ConnApi,
 			api.SystemApi,
 		},
 		Logger: &ZapLogger{},

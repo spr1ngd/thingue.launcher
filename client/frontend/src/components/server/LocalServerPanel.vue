@@ -188,10 +188,10 @@ onUnmounted(() => {
             </q-item>
             <q-item>
               <q-item-section>
-                <q-btn dense label="启动" color="positive" @click="serverStart"></q-btn>
+                <q-btn dense label="启动" color="positive" @click="serverStart" :disable="localServer.status.httpServerRunning"></q-btn>
               </q-item-section>
               <q-item-section>
-                <q-btn dense label="关闭" color="negative" @click="serverShutdown"></q-btn>
+                <q-btn dense label="关闭" color="negative" @click="serverShutdown" :disable="!localServer.status.httpServerRunning"></q-btn>
               </q-item-section>
               <q-item-section avatar>
                 <q-btn flat round icon="open_in_new" @click="OpenLocalServerUrl">

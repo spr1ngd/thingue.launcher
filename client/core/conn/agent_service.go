@@ -14,7 +14,7 @@ type AgentService struct {
 	pb.UnimplementedAgentServiceServer
 }
 
-func (s AgentService) GetAgentInfo(context context.Context, request *pb.GetAgentInfoRequest) (*pb.GetAgentInfoResponse, error) {
+func (s AgentService) GetAgentInfo(ctx context.Context, request *pb.GetAgentInfoRequest) (*pb.GetAgentInfoResponse, error) {
 	global.ClientId = uint(request.ClientId)
 	var instanceInfos []*types.InstanceInfo
 	instances := instance.RunnerManager.List()

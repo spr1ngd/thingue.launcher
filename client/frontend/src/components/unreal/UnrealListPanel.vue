@@ -10,13 +10,9 @@ import {
   StopInstance
 } from "@wails/go/api/instanceApi";
 import {OpenExplorer} from "@wails/go/api/systemApi.js";
-import {
-  ConnectServer,
-  DisconnectServer,
-  GetConnectServerOptions,
-  GetServerConnInfo,
-  OpenInstancePreviewUrl
-} from "@wails/go/api/serverApi";
+import {ConnectServer, DisconnectServer, GetConnState} from "@wails/go/api/connApi";
+
+import {GetConnectServerOptions, OpenInstancePreviewUrl} from "@wails/go/api/serverApi";
 
 import {Notify} from "quasar";
 import {GoTimeFormat, RunnerStateCodeToString} from "@/utils";
@@ -43,8 +39,8 @@ onMounted(async () => {
   }
 
   //注册事件监听
-  window.runtime.EventsOn("remote_server_conn_update", async () => {
-    const connInfo = await GetServerConnInfo()
+  window.runtime.EventsOn("conn_state_update", async () => {
+    const connInfo = await GetConnState()
     serverAddr.value = connInfo.serverAddr
     isConnected.value = connInfo.isConnected
   })
@@ -54,7 +50,7 @@ onMounted(async () => {
   window.runtime.EventsOn("runner_status_update", () => {
     list()
   })
-  const connInfo = await GetServerConnInfo()
+  const connInfo = await GetConnState()
   serverAddr.value = connInfo.serverAddr
   isConnected.value = connInfo.isConnected
 })
