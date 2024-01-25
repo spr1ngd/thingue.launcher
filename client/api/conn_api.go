@@ -23,8 +23,9 @@ func (c *connApi) Init(ctx context.Context) {
 	//监听连接状态变化
 	go func() {
 		for {
-			<-conn.TunnelServer.StateUpdateChanel
-			runtime.EventsEmit(c.ctx, constants.CONN_STATE_UPDATE)
+			state := <-conn.TunnelServer.StateUpdateChanel
+			url := provider.AppConfig.ServerURL
+			runtime.EventsEmit(c.ctx, constants.CONN_STATE_UPDATE, state, url)
 		}
 	}()
 }

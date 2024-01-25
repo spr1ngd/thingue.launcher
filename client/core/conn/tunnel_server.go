@@ -13,12 +13,12 @@ import (
 type tunnelServer struct {
 	tunnelServer      *grpctunnel.ReverseTunnelServer
 	IsConnected       bool
-	StateUpdateChanel chan string
+	StateUpdateChanel chan bool
 	Wg                sync.WaitGroup
 }
 
 var TunnelServer = &tunnelServer{
-	StateUpdateChanel: make(chan string, 1),
+	StateUpdateChanel: make(chan bool, 1),
 }
 
 func (s *tunnelServer) CreateTunnelServer(cc grpc.ClientConnInterface) {
@@ -33,9 +33,9 @@ func (s *tunnelServer) ServeTunnelServer(resultChan chan error, cc grpc.ClientCo
 	// Open the reverse tunnel and serve requests.
 	s.IsConnected = true
 	s.Wg.Add(1)
-	s.StateUpdateChanel <- ""
+	s.StateUpdateChanel <- true
 	started, err := s.tunnelServer.Serve(context.Background()) //启动成功会阻塞
-	s.StateUpdateChanel <- ""
+	s.StateUpdateChanel <- false
 	s.Wg.Done()
 	s.IsConnected = false
 	if started {

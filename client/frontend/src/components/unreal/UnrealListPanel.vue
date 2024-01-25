@@ -39,10 +39,9 @@ onMounted(async () => {
   }
 
   //注册事件监听
-  window.runtime.EventsOn("conn_state_update", async () => {
-    const connInfo = await GetConnState()
-    serverAddr.value = connInfo.serverAddr
-    isConnected.value = connInfo.isConnected
+  window.runtime.EventsOn("conn_state_update", (state, url) => {
+    isConnected.value = state
+    serverAddr.value = url
   })
   window.runtime.EventsOn("runner_unexpected_exit", () => {
     list()
