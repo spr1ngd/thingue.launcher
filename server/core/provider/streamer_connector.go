@@ -12,7 +12,7 @@ import (
 )
 
 type StreamerConnector struct {
-	SID                 string
+	StreamerId          string
 	PlayerConnectors    []*PlayerConnector
 	conn                *websocket.Conn
 	heartbeatTimer      *time.Timer
@@ -129,7 +129,7 @@ func (s *StreamerConnector) SendCommand(command *message.Command) {
 
 func (s *StreamerConnector) Close() {
 	_ = s.conn.Close()
-	delete(SdpConnProvider.idStreamerMap, s.SID)
+	delete(SdpConnProvider.idStreamerMap, s.StreamerId)
 }
 
 func (s *StreamerConnector) ControlRendering(rendering bool) {

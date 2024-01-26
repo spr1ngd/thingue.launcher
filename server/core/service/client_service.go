@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"math"
-	"thingue-launcher/common/domain"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
@@ -27,26 +26,6 @@ var ClientService = clientService{
 	BufferCache: gcache.New(math.MaxInt64).LRU().Build(),
 }
 
-func (s *clientService) ClientRegister(registerInfo *request.ClientRegisterInfo) error {
-	var client model.Client
-	global.ServerDB.Find(&client, registerInfo.ClientID)
-	client.SetDeviceInfo(registerInfo.DeviceInfo)
-	var serverInstances = make([]*model.ServerInstance, 0)
-	for _, instance := range registerInfo.Instances {
-		var serverInstance = &model.ServerInstance{}
-		_ = mapstructure.Decode(instance, serverInstance)
-		if serverInstance.SID == "" {
-			sid, _ := uuid.NewUUID()
-			serverInstance.SID = sid.String()
-		}
-		serverInstances = append(serverInstances, serverInstance)
-	}
-	client.Instances = serverInstances
-	global.ServerDB.Save(&client)
-	provider.AdminConnProvider.BroadcastUpdate()
-	return nil
-}
-
 func (s *clientService) ClientList() []*model.Client {
 	var clients []*model.Client
 	global.ServerDB.Preload("Instances").Find(&clients)
@@ -58,19 +37,18 @@ func (s *clientService) CreateClient(client *model.Client) {
 }
 
 func (s *clientService) RegisterClient(client *model.Client, agentInfo *pb.GetAgentInfoResponse) {
-	deviceInfo := &domain.DeviceInfo{}
-	_ = mapstructure.Decode(agentInfo.DeviceInfo, deviceInfo)
-	client.SetDeviceInfo(deviceInfo)
+	_ = mapstructure.Decode(agentInfo.DeviceInfo, client)
 	var serverInstances = make([]*model.ServerInstance, 0)
 	for _, instance := range agentInfo.Instances {
 		var serverInstance = &model.ServerInstance{}
 		_ = mapstructure.Decode(instance, serverInstance)
 		_ = mapstructure.Decode(instance.InstanceConfig, serverInstance)
-		serverInstance.CID = uint(instance.Id)
-		serverInstance.SID = instance.StreamerId
-		if serverInstance.SID == "" {
-			sid, _ := uuid.NewUUID()
-			serverInstance.SID = sid.String()
+		serverInstance.ID = instance.Id
+		if serverInstance.StreamerId == "" {
+			streamerId, _ := uuid.NewUUID()
+			serverInstance.StreamerId = streamerId.String()
+		} else {
+			serverInstance.StreamerId = instance.StreamerId
 		}
 		serverInstances = append(serverInstances, serverInstance)
 	}
@@ -85,11 +63,11 @@ func (s *clientService) DeleteClient(client *model.Client) {
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
-func (s *clientService) GetInstanceSid(clientId string, instanceId string) (string, error) {
+func (s *clientService) GetInstanceStreamerId(clientId, instanceId uint32) (string, error) {
 	var instance model.ServerInstance
-	err := global.ServerDB.Where("client_id = ? AND c_id = ?", clientId, instanceId).First(&instance).Error
+	err := global.ServerDB.Where("client_id = ? AND id = ?", clientId, instanceId).First(&instance).Error
 	if err == nil {
-		return instance.SID, err
+		return instance.StreamerId, err
 	} else {
 		return "", err
 	}

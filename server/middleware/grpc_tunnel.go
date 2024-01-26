@@ -21,7 +21,7 @@ func CreateGrpcTunnelServiceHandler() *grpctunnel.TunnelServiceHandler {
 				core.ClientService.CreateClient(client)
 				agentClient := pb.NewAgentServiceClient(channel)
 				response, err := agentClient.GetAgentInfo(context.Background(), &pb.GetAgentInfoRequest{
-					ClientId: uint32(client.ID),
+					ClientId: client.ID,
 				})
 				if err == nil {
 					core.ClientService.RegisterClient(client, response)

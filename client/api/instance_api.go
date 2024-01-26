@@ -50,10 +50,12 @@ func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
 	core.InstanceManager.Create(instance)
 	err := core.RunnerManager.NewRunner(instance)
 	if err == nil {
-		// todo
-		//service.ServerConnManager.Reconnect()
+		_, err := global.GrpcClient.AddInstance(context.Background(), &pb.AddInstanceRequest{InstanceInfo: nil})
+		if err != nil {
+			logger.Zap.Error(err)
+		}
 	} else {
-		core.InstanceManager.Delete(instance.CID)
+		core.InstanceManager.Delete(instance.ID)
 	}
 	return err
 }
@@ -67,17 +69,22 @@ func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
 	return err
 }
 
-func (u *instanceApi) DeleteInstance(cid uint) error {
-	err := core.RunnerManager.DeleteRunner(cid)
+func (u *instanceApi) DeleteInstance(id uint32) error {
+	err := core.RunnerManager.DeleteRunner(id)
 	if err == nil {
-		// todo
-		//service.ServerConnManager.Reconnect()
-		core.InstanceManager.Delete(cid)
+		_, err := global.GrpcClient.DeleteInstance(context.Background(), &pb.DeleteInstanceRequest{
+			ClientId:   global.ClientId,
+			InstanceId: id,
+		})
+		if err != nil {
+			logger.Zap.Error(err)
+		}
+		core.InstanceManager.Delete(id)
 	}
 	return err
 }
 
-func (u *instanceApi) StartInstance(id uint) error {
+func (u *instanceApi) StartInstance(id uint32) error {
 	runner, err := core.RunnerManager.GetRunnerById(id)
 	if err != nil {
 		return err
@@ -85,14 +92,14 @@ func (u *instanceApi) StartInstance(id uint) error {
 	return runner.Start()
 }
 
-func (u *instanceApi) StopInstance(id uint) error {
+func (u *instanceApi) StopInstance(id uint32) error {
 	runner, err := core.RunnerManager.GetRunnerById(id)
 	if err != nil {
 		return err
 	}
 	_, err = global.GrpcClient.ClearPakState(context.Background(), &pb.ClearPakStateRequest{
-		ClientId:   uint32(global.ClientId),
-		InstanceId: uint32(runner.CID),
+		ClientId:   global.ClientId,
+		InstanceId: runner.ID,
 	})
 	if err != nil {
 		logger.Zap.Error(err)
@@ -100,7 +107,7 @@ func (u *instanceApi) StopInstance(id uint) error {
 	return runner.Stop()
 }
 
-func (u *instanceApi) OpenInstanceLog(id uint) error {
+func (u *instanceApi) OpenInstanceLog(id uint32) error {
 	runner, err := core.RunnerManager.GetRunnerById(id)
 	if err != nil {
 		return err
@@ -108,10 +115,10 @@ func (u *instanceApi) OpenInstanceLog(id uint) error {
 	return runner.OpenLog()
 }
 
-func (u *instanceApi) StartUpload(id uint) (string, error) {
+func (u *instanceApi) StartUpload(id uint32) (string, error) {
 	return core.SyncManager.StartUpload(id)
 }
 
-func (u *instanceApi) StartDownload(id uint) (string, error) {
+func (u *instanceApi) StartDownload(id uint32) (string, error) {
 	return core.SyncManager.StartUpdate(id)
 }

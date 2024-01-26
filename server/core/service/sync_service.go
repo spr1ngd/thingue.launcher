@@ -7,9 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"thingue-launcher/common/constants"
-	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
-	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/global"
 	"time"
 )
@@ -59,8 +57,9 @@ func (s *syncService) UpdateCloudFiles(res string, files []*model.CloudFile) {
 	global.StorageDB.Find(&resource)
 	resource.LastUpdateAt = time.Now()
 	global.StorageDB.Save(&resource)
-	updateMsg := message.SyncUpdate(res)
-	provider.ClientConnProvider.SendToAllClients(updateMsg.Pack())
+	// todo
+	//updateMsg := message.SyncUpdate(res)
+	//provider.ClientConnProvider.SendToAllClients(updateMsg.Pack())
 }
 
 func (s *syncService) UploadFile(res string, name string, reader io.ReadCloser) error {

@@ -30,8 +30,8 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 	if selectCond.StreamerConnected == true {
 		query = query.Where("streamer_connected = ?", selectCond.StreamerConnected)
 	}
-	if selectCond.SID != "" {
-		query = query.Where("s_id = ?", selectCond.SID)
+	if selectCond.StreamerId != "" {
+		query = query.Where("streamer_id = ?", selectCond.StreamerId)
 	}
 	if selectCond.Name != "" {
 		query = query.Where("name = ?", selectCond.Name)
@@ -66,7 +66,7 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 				//生成ticket
 				ticketId, _ := uuid.NewUUID()
 				//添加缓存
-				s.cache.SetWithExpire(ticketId.String(), instance.SID, 10*time.Second)
+				s.cache.SetWithExpire(ticketId.String(), instance.StreamerId, 10*time.Second)
 				ticket.SetInstanceInfo(instance)
 				ticket.Ticket = ticketId.String()
 				return ticket, nil
@@ -77,20 +77,20 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 		//不需要label匹配，挑选第一个生成ticket
 		ticketId, _ := uuid.NewUUID()
 		//添加缓存
-		s.cache.SetWithExpire(ticketId.String(), readyInstances[0].SID, 10*time.Second)
+		s.cache.SetWithExpire(ticketId.String(), readyInstances[0].StreamerId, 10*time.Second)
 		ticket.SetInstanceInfo(readyInstances[0])
 		ticket.Ticket = ticketId.String()
 		return ticket, nil
 	}
 }
 
-func (s *ticketService) GetTicketById(sid string) (string, error) {
+func (s *ticketService) GetTicketById(streamerId string) (string, error) {
 	var instance model.ServerInstance
-	err := global.ServerDB.Where("s_id = ?", sid).First(&instance).Error
+	err := global.ServerDB.Where("streamer_id = ?", streamerId).First(&instance).Error
 	if err == nil {
 		ticket, _ := uuid.NewUUID()
 		//添加缓存
-		err = s.cache.SetWithExpire(ticket.String(), instance.SID, 10*time.Second)
+		err = s.cache.SetWithExpire(ticket.String(), instance.StreamerId, 10*time.Second)
 		if err == nil {
 			return ticket.String(), err
 		}
@@ -98,10 +98,10 @@ func (s *ticketService) GetTicketById(sid string) (string, error) {
 	return "", err
 }
 
-func (s *ticketService) GetSidByTicket(ticket string) (string, error) {
-	sid, err := s.cache.Get(ticket)
+func (s *ticketService) GetStreamerByTicket(ticket string) (string, error) {
+	streamerId, err := s.cache.Get(ticket)
 	if err == nil {
-		return sid.(string), nil
+		return streamerId.(string), nil
 	} else {
 		return "", errors.New("ticket无效或过期")
 	}

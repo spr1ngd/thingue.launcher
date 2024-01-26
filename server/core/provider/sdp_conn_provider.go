@@ -22,9 +22,9 @@ var SdpConnProvider = sdpConnProvider{
 	restartingMap: make(map[string]bool),
 }
 
-func (sdp *sdpConnProvider) NewStreamer(sid string, conn *websocket.Conn, enableRelay bool, enableRenderControl bool) *StreamerConnector {
+func (sdp *sdpConnProvider) NewStreamer(streamerId string, conn *websocket.Conn, enableRelay bool, enableRenderControl bool) *StreamerConnector {
 	streamer := &StreamerConnector{
-		SID:                 sid,
+		StreamerId:          streamerId,
 		conn:                conn,
 		PlayerConnectors:    make([]*PlayerConnector, 0),
 		AutoStopTimer:       time.NewTimer(999 * time.Second),
@@ -32,7 +32,7 @@ func (sdp *sdpConnProvider) NewStreamer(sid string, conn *websocket.Conn, enable
 		EnableRenderControl: enableRenderControl,
 	}
 	streamer.AutoStopTimer.Stop()
-	sdp.idStreamerMap[streamer.SID] = streamer
+	sdp.idStreamerMap[streamer.StreamerId] = streamer
 	return streamer
 }
 

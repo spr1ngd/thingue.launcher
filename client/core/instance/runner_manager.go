@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"errors"
-	"github.com/mitchellh/mapstructure"
 	"os"
 	"path/filepath"
 	"thingue-launcher/client/global"
@@ -15,17 +14,17 @@ import (
 )
 
 type runnerManager struct {
-	IdRunnerMap                map[uint]*Runner
-	RunnerUnexpectedExitChanel chan uint
-	RunnerStatusUpdateChanel   chan uint
+	IdRunnerMap                map[uint32]*Runner
+	RunnerUnexpectedExitChanel chan uint32
+	RunnerStatusUpdateChanel   chan uint32
 	HaveInternalInstance       bool
 	IsInternalInstanceStarted  bool
 }
 
 var RunnerManager = &runnerManager{
-	IdRunnerMap:                make(map[uint]*Runner),
-	RunnerUnexpectedExitChanel: make(chan uint),
-	RunnerStatusUpdateChanel:   make(chan uint),
+	IdRunnerMap:                make(map[uint32]*Runner),
+	RunnerUnexpectedExitChanel: make(chan uint32),
+	RunnerStatusUpdateChanel:   make(chan uint32),
 }
 
 func (m *runnerManager) Init() {
@@ -44,7 +43,7 @@ func (m *runnerManager) Init() {
 						LaunchArguments: []string{"-AudioMixer", "-RenderOffScreen", "-ForceRes", "-ResX=1920", "-ResY=1080"},
 						IsInternal:      true,
 						EnableRelay:     true,
-						PlayerConfig: domain.PlayerConfig{
+						PlayerConfig: model.PlayerConfig{
 							MatchViewportRes: true,
 							HideUI:           false,
 							IdleDisconnect:   false,
@@ -64,43 +63,44 @@ func (m *runnerManager) Init() {
 
 	// 从持久化数据中实例化非内置Runners
 	instances := InstanceManager.List()
-	for index := range instances {
-		if !instances[index].IsInternal {
-			_ = m.NewRunner(&instances[index])
+	for _, item := range instances {
+		if !item.IsInternal {
+			_ = m.NewRunner(item)
 		}
 	}
 }
 
 func (m *runnerManager) List() []*domain.Instance {
-	var instances = make([]*domain.Instance, 0)
-	for _, instance := range InstanceManager.List() {
-		runner, err := m.GetRunnerById(instance.CID)
+	var instanceList = make([]*domain.Instance, 0)
+	for _, item := range InstanceManager.List() {
+		logger.Zap.Warn(item)
+		runner, err := m.GetRunnerById(item.ID)
 		if err == nil {
-			if !m.HaveInternalInstance && runner.IsInternal { //处理内置
+			// 排除掉没有内置实例但数据中有内置实例配置的情况
+			if !m.HaveInternalInstance && runner.IsInternal {
 				continue
 			}
-			//todo 排查这里为什么会NullPointerException
-			instances = append(instances, runner.Instance)
+			instanceList = append(instanceList, runner.Instance)
 		}
 	}
-	return instances
+	return instanceList
 }
 
 func (m *runnerManager) NewRunner(clientInstance *model.ClientInstance) error {
-	if _, ok := m.IdRunnerMap[clientInstance.CID]; ok {
+	if _, ok := m.IdRunnerMap[clientInstance.ID]; ok {
 		return errors.New("无法重复创建")
 	}
 	var instance = &domain.Instance{}
-	mapstructure.Decode(clientInstance, instance)
+	instance.FromClientModel(clientInstance)
 	r := &Runner{
 		Instance:          instance,
 		ExitSignalChannel: make(chan error, 1),
 	}
-	m.IdRunnerMap[r.CID] = r
+	m.IdRunnerMap[r.ID] = r
 	return nil
 }
 
-func (m *runnerManager) GetRunnerById(id uint) (*Runner, error) {
+func (m *runnerManager) GetRunnerById(id uint32) (*Runner, error) {
 	value, ok := m.IdRunnerMap[id]
 	if ok {
 		return value, nil
@@ -117,7 +117,7 @@ func (m *runnerManager) CloseAllRunner() {
 	}
 }
 
-func (m *runnerManager) ExecCommand(id uint, command string) {
+func (m *runnerManager) ExecCommand(id uint32, command string) {
 	runner, err := m.GetRunnerById(id)
 	if err == nil {
 		if command == "START" {
@@ -131,15 +131,15 @@ func (m *runnerManager) ExecCommand(id uint, command string) {
 func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
-			logger.Zap.Infof("执行重启任务 %s", runner.Name)
+			logger.Zap.Infof("执行重启任务 %s", runner.InstanceConfig.Name)
 			err := runner.Stop()
 			if err != nil {
 				logger.Zap.Error(err)
 				continue
 			}
 			_, err = global.GrpcClient.UpdateRestarting(context.Background(), &pb.UpdateRestartingRequest{
-				ClientId:   uint32(global.ClientId),
-				InstanceId: uint32(runner.CID),
+				ClientId:   global.ClientId,
+				InstanceId: runner.ID,
 				Restarting: true,
 			})
 			if err != nil {
@@ -149,10 +149,10 @@ func (m *runnerManager) RestartAllRunner() {
 			time.Sleep(3 * time.Second) //kill发出停顿三秒，等待进程关闭
 			err = runner.Start()
 			if err != nil {
-				logger.Zap.Errorf("重启失败 %s %s", runner.Name, err)
+				logger.Zap.Errorf("重启失败 %s %s", runner.InstanceConfig.Name, err)
 				_, err = global.GrpcClient.UpdateRestarting(context.Background(), &pb.UpdateRestartingRequest{
-					ClientId:   uint32(global.ClientId),
-					InstanceId: uint32(runner.CID),
+					ClientId:   global.ClientId,
+					InstanceId: runner.ID,
 					Restarting: true,
 				})
 				if err != nil {
@@ -163,7 +163,7 @@ func (m *runnerManager) RestartAllRunner() {
 	}
 }
 
-func (m *runnerManager) DeleteRunner(id uint) error {
+func (m *runnerManager) DeleteRunner(id uint32) error {
 	runner, err := m.GetRunnerById(id)
 	if err == nil {
 		if runner.IsInternal {
@@ -172,7 +172,7 @@ func (m *runnerManager) DeleteRunner(id uint) error {
 		if runner.StateCode == 1 {
 			return errors.New("实例正在运行，无法删除")
 		}
-		delete(m.IdRunnerMap, runner.CID)
+		delete(m.IdRunnerMap, runner.ID)
 	} else {
 		return err
 	}
@@ -183,7 +183,7 @@ func (m *runnerManager) StartInternalRunner() {
 	if m.HaveInternalInstance && !m.IsInternalInstanceStarted {
 		internal, err := InstanceManager.GetInternal()
 		if err == nil {
-			runner, err := m.GetRunnerById(internal.CID)
+			runner, err := m.GetRunnerById(internal.ID)
 			if err == nil {
 				err := runner.Start()
 				if err != nil {

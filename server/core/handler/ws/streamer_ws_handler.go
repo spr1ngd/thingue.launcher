@@ -17,10 +17,10 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 		logger.Zap.Error("WebSocket upgrade error:", err)
 		return
 	}
-	sid := c.Param("id")
-	instance := service.InstanceService.GetInstanceBySid(sid)
+	streamerId := c.Param("id")
+	instance := service.InstanceService.GetInstanceByStreamerId(streamerId)
 	if instance != nil {
-		streamer := provider.SdpConnProvider.NewStreamer(sid, conn, instance.EnableRelay, instance.EnableRenderControl)
+		streamer := provider.SdpConnProvider.NewStreamer(streamerId, conn, instance.EnableRelay, instance.EnableRenderControl)
 		streamer.SendConfig()
 		service.SdpService.OnStreamerConnect(streamer)
 		for {
@@ -51,15 +51,15 @@ func (g *HandlerGroup) StreamerWebSocketHandler(c *gin.Context) {
 				state, err := getRenderingStateFromMsg(msg)
 				if err == nil {
 					streamer.UpdateRenderingState(state)
-					service.InstanceService.UpdateRenderingState(streamer.SID, state)
+					service.InstanceService.UpdateRenderingState(streamer.StreamerId, state)
 				}
 			} else if msgType == "hotReloadComplete" {
-				service.InstanceService.UpdatePak(streamer.SID, "")
+				service.InstanceService.UpdatePak(streamer.StreamerId, "")
 			} else if msgType == "nodeRestarted" {
 				service.SdpService.OnStreamerNodeRestarted(streamer)
 			} else if msgType == "loadComplete" {
 				service.SdpService.OnStreamerLoadBundleComplete(streamer)
-				service.InstanceService.UpdatePak(streamer.SID, msg["bundleName"].(string))
+				service.InstanceService.UpdatePak(streamer.StreamerId, msg["bundleName"].(string))
 			} else {
 				streamer.SendCloseMsg(1008, "不支持的消息类型")
 			}

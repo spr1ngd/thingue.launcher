@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"strconv"
-	"thingue-launcher/common/message"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/response"
@@ -16,17 +15,6 @@ import (
 )
 
 type InstanceGroup struct{}
-
-func (g *InstanceGroup) ClientRegister(c *gin.Context) {
-	var registerInfo request.ClientRegisterInfo
-	err := c.ShouldBindJSON(&registerInfo)
-	err = core.ClientService.ClientRegister(&registerInfo)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	response.OkWithMessage("注册成功", c)
-}
 
 func (g *InstanceGroup) InstanceSelect(c *gin.Context) {
 	var selectCond request.SelectorCond
@@ -39,33 +27,11 @@ func (g *InstanceGroup) InstanceSelect(c *gin.Context) {
 	}
 }
 
-func (g *InstanceGroup) GetInstanceSid(c *gin.Context) {
-	clientId := c.Query("clientId")
-	instanceId := c.Query("instanceId")
-	sid, err := core.ClientService.GetInstanceSid(clientId, instanceId)
-	if err != nil {
-		response.FailWithDetailed("", err.Error(), c)
-		return
-	}
-	response.OkWithData(sid, c)
-}
-
 func (g *InstanceGroup) ClientList(c *gin.Context) {
 	list := core.ClientService.ClientList()
 	response.OkWithDetailed(response.PageResult[*model.Client]{
 		List: list,
 	}, "", c)
-}
-
-func (g *InstanceGroup) UpdateProcessState(c *gin.Context) {
-	var msg message.ClientProcessStateUpdate
-	err := c.ShouldBindJSON(&msg)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	core.InstanceService.UpdateProcessState(&msg)
-	response.Ok(c)
 }
 
 func (g *InstanceGroup) ProcessControl(c *gin.Context) {
@@ -149,7 +115,7 @@ func (g *InstanceGroup) TicketSelect(c *gin.Context) {
 }
 
 func (g *InstanceGroup) GetTicketById(c *gin.Context) {
-	ticket, err := core.TicketService.GetTicketById(c.Query("sid"))
+	ticket, err := core.TicketService.GetTicketById(c.Query("streamerId"))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
@@ -194,36 +160,18 @@ func (g *InstanceGroup) KickPlayerUser(c *gin.Context) {
 	}
 }
 
-func (g *InstanceGroup) ClearPak(c *gin.Context) {
-	sid := c.Query("sid")
-	core.InstanceService.UpdatePak(sid, "")
-	response.OkWithMessage("状态更新成功", c)
-}
-
 func (g *InstanceGroup) SendMsgToStreamer(c *gin.Context) {
 	var msg map[string]any
 	err := c.BindJSON(&msg)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
-		sid := c.Query("sid")
-		streamer, err := provider.SdpConnProvider.GetStreamer(sid)
+		streamerId := c.Query("streamerId")
+		streamer, err := provider.SdpConnProvider.GetStreamer(streamerId)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
 		}
 		streamer.SendMessage(util.MapToJson(msg))
 		response.OkWithMessage("消息发送成功", c)
-	}
-}
-
-func (g *InstanceGroup) SetRestarting(c *gin.Context) {
-	sid := c.Query("sid")
-	restarting := c.Query("restarting")
-	restartingBool, err := strconv.ParseBool(restarting)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-	} else {
-		provider.SdpConnProvider.SetStreamerRestartingState(sid, restartingBool)
-		response.OkWithMessage("状态更新成功", c)
 	}
 }

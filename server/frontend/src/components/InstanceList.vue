@@ -10,7 +10,7 @@ const rows = ref([])
 const columns = [
   {name: 'id', label: '客户端编号', field: 'id', align: 'center'},
   {name: 'hostname', label: '主机名', field: 'hostname', align: 'center'},
-  {name: 'ips', label: 'IP地址', field: 'ips', align: 'center'},
+  {name: 'ips', label: 'IP地址', field: (row) => row.ips[0], align: 'center', style: 'width: 10px',headerStyle: 'width: 10px',},
   {
     name: 'instanceCount',
     label: '实例数量',

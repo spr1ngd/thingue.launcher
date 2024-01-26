@@ -22,13 +22,13 @@ type FileInfo struct {
 	Hash     string
 }
 
-func (m *syncManager) StartUpload(id uint) (string, error) {
+func (m *syncManager) StartUpload(id uint32) (string, error) {
 	var err error
 	runner, err := instance.RunnerManager.GetRunnerById(id)
 	if err != nil {
 		return "", err
 	}
-	cloudRes := strings.TrimSpace(runner.CloudRes)
+	cloudRes := strings.TrimSpace(runner.InstanceConfig.CloudRes)
 	if cloudRes == "" {
 		return "", errors.New("云资源标识未设置")
 	}
@@ -37,7 +37,7 @@ func (m *syncManager) StartUpload(id uint) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	localFileInfoSet, localFileInfos, err := m.getLocalFiles(filepath.Dir(runner.ExecPath))
+	localFileInfoSet, localFileInfos, err := m.getLocalFiles(filepath.Dir(runner.InstanceConfig.ExecPath))
 	if err != nil {
 		return "", err
 	}
@@ -84,13 +84,13 @@ func (m *syncManager) StartUpload(id uint) (string, error) {
 	return strings.Join(results, "，"), nil
 }
 
-func (m *syncManager) StartUpdate(id uint) (string, error) {
+func (m *syncManager) StartUpdate(id uint32) (string, error) {
 	var err error
 	runner, err := instance.RunnerManager.GetRunnerById(id)
 	if err != nil {
 		return "", err
 	}
-	cloudRes := strings.TrimSpace(runner.CloudRes)
+	cloudRes := strings.TrimSpace(runner.InstanceConfig.CloudRes)
 	if cloudRes == "" {
 		return "", errors.New("云资源标识未设置")
 	}
@@ -98,7 +98,7 @@ func (m *syncManager) StartUpdate(id uint) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return m.updatePackage(cloudRes, filepath.Dir(runner.ExecPath), cloudFileInfoSet)
+	return m.updatePackage(cloudRes, filepath.Dir(runner.InstanceConfig.ExecPath), cloudFileInfoSet)
 }
 
 func (m *syncManager) UpdateCloudRes(cloudRes string) error {

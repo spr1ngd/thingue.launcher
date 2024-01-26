@@ -32,34 +32,34 @@ func (r *Runner) Start() error {
 	var launchArguments []string
 	// 设置PixelStreamingURL启动参数
 	streamerIdResponse, err := global.GrpcClient.GetStreamerId(context.Background(), &pb.GetStreamerIdRequest{
-		ClientId:   uint32(global.ClientId),
-		InstanceId: uint32(r.CID),
+		ClientId:   global.ClientId,
+		InstanceId: r.ID,
 	})
 	if err == nil {
-		r.SID = streamerIdResponse.GetId()
+		r.StreamerId = streamerIdResponse.GetId()
 		wsUrl := util.HttpUrlToWsUrl(provider.AppConfig.ServerURL, "/ws/streamer")
-		launchArguments = append(r.LaunchArguments,
-			fmt.Sprintf("-PixelStreamingURL=%s/%s", wsUrl, r.SID))
+		launchArguments = append(r.InstanceConfig.LaunchArguments,
+			fmt.Sprintf("-PixelStreamingURL=%s/%s", wsUrl, r.StreamerId))
 	} else {
 		return err
 	}
 	// 设置日志文件名称启动参数
-	if r.Name != "" {
-		launchArguments = append(launchArguments, fmt.Sprintf("LOG=%s.log", r.Name))
+	if r.InstanceConfig.Name != "" {
+		launchArguments = append(launchArguments, fmt.Sprintf("LOG=%s.log", r.InstanceConfig.Name))
 	}
 	// 运行前
-	logger.Zap.Debug(r.ExecPath, launchArguments)
-	command := exec.Command(r.ExecPath, launchArguments...)
+	logger.Zap.Debug(r.InstanceConfig.ExecPath, launchArguments)
+	command := exec.Command(r.InstanceConfig.ExecPath, launchArguments...)
 	err = command.Start()
 	if err != nil {
 		return err
 	}
-	r.Pid = command.Process.Pid
+	r.Pid = int32(command.Process.Pid)
 	r.process = command.Process
 	r.updateProcessState(1)
 	r.LastStartAt = time.Now()
-	RunnerManager.RunnerStatusUpdateChanel <- r.CID
-	logger.Zap.Infof("实例启动 %s", r.Name)
+	RunnerManager.RunnerStatusUpdateChanel <- r.ID
+	logger.Zap.Infof("实例启动 %s", r.InstanceConfig.Name)
 	go func() {
 		exitCode := command.Wait()
 		r.Pid = 0
@@ -69,14 +69,14 @@ func (r *Runner) Start() error {
 		select {
 		case r.ExitSignalChannel <- exitCode:
 			r.updateProcessState(0)
-			RunnerManager.RunnerStatusUpdateChanel <- r.CID
-			logger.Zap.Debugf("退出码发送成功 %s", r.Name)
+			RunnerManager.RunnerStatusUpdateChanel <- r.ID
+			logger.Zap.Debugf("退出码发送成功 %s", r.InstanceConfig.Name)
 			r.faultCount = 0
 		default:
 			r.updateProcessState(-1)
-			RunnerManager.RunnerUnexpectedExitChanel <- r.CID
-			logger.Zap.Warnf("实例异常退出 %s %d", r.Name, r.faultCount)
-			if r.FaultRecover && r.faultCount < 3 {
+			RunnerManager.RunnerUnexpectedExitChanel <- r.ID
+			logger.Zap.Warnf("实例异常退出 %s %d", r.InstanceConfig.Name, r.faultCount)
+			if r.InstanceConfig.FaultRecover && r.faultCount < 3 {
 				time.Sleep(3 * time.Second)
 				r.Start()
 			}
@@ -92,9 +92,9 @@ func (r *Runner) Stop() error {
 	}
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("taskkill", "/F", "/T", "/PID", strconv.Itoa(r.Pid))
+		cmd = exec.Command("taskkill", "/F", "/T", "/PID", strconv.Itoa(int(r.Pid)))
 	} else if runtime.GOOS == "linux" {
-		cmd = exec.Command("pkill", "-TERM", "-P", strconv.Itoa(r.Pid))
+		cmd = exec.Command("pkill", "-TERM", "-P", strconv.Itoa(int(r.Pid)))
 	} else {
 		return errors.New("不支持的系统")
 	}
@@ -102,17 +102,17 @@ func (r *Runner) Stop() error {
 	cmd.Stdout = os.Stdout
 	err := cmd.Start()
 	exitStatus := <-r.ExitSignalChannel
-	logger.Zap.Infof("实例停止 %s %s", r.Name, exitStatus)
+	logger.Zap.Infof("实例停止 %s %s", r.InstanceConfig.Name, exitStatus)
 	return err
 }
 
-func (r *Runner) updateProcessState(stateCode int8) {
+func (r *Runner) updateProcessState(stateCode int32) {
 	r.StateCode = stateCode
 	_, err := global.GrpcClient.UpdateProcessState(context.Background(), &pb.UpdateProcessStateRequest{
-		ClientId:   uint32(global.ClientId),
-		InstanceId: uint32(r.CID),
-		StateCode:  int32(stateCode),
-		Pid:        int32(r.Pid),
+		ClientId:   global.ClientId,
+		InstanceId: r.ID,
+		StateCode:  stateCode,
+		Pid:        r.Pid,
 	})
 	if err != nil {
 		logger.Zap.Error(err)

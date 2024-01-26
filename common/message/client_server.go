@@ -34,13 +34,6 @@ func (data ServerConnectCallback) Pack() *Message {
 	return &msg
 }
 
-// ClientProcessStateUpdate 消息体3
-type ClientProcessStateUpdate struct {
-	SID       string `json:"sid"`
-	Pid       int    `json:"pid"`
-	StateCode int8   `json:"stateCode"`
-}
-
 // ServerStreamerConnectedUpdate 消息体4
 type ServerStreamerConnectedUpdate struct {
 	CID       uint `json:"cid"`

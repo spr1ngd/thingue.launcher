@@ -1,13 +1,11 @@
 package model
 
 import (
-	"github.com/mitchellh/mapstructure"
-	"thingue-launcher/common/domain"
 	"time"
 )
 
 type Client struct {
-	ID         uint              `json:"id" gorm:"primarykey"`
+	ID         uint32            `json:"id" gorm:"primarykey"`
 	CreatedAt  time.Time         `json:"createdAt"`
 	UpdatedAt  time.Time         `json:"updatedAt"`
 	Instances  []*ServerInstance `json:"instances" gorm:"foreignKey:ClientID"`
@@ -21,8 +19,4 @@ type Client struct {
 	OsArch     string            `json:"osArch"`
 	OsType     string            `json:"osType"`
 	SystemUser string            `json:"systemUser"`
-}
-
-func (client *Client) SetDeviceInfo(info *domain.DeviceInfo) {
-	mapstructure.Decode(info, client)
 }

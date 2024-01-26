@@ -14,7 +14,6 @@ func (s *wsRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	{
 		wsRouter.GET("/streamer/:id", handler.WsGroup.StreamerWebSocketHandler)
 		wsRouter.GET("/player/:ticket", handler.WsGroup.PlayerWebSocketHandler)
-		wsRouter.GET("/client", handler.WsGroup.ClientWebSocketHandler)
 		wsRouter.GET("/admin", handler.WsGroup.AdminWebSocketHandler)
 	}
 	return wsRouter

@@ -7,6 +7,6 @@ import (
 
 var (
 	AppDB      *gorm.DB
-	ClientId   uint
+	ClientId   uint32
 	GrpcClient pb.ServerInstanceServiceClient
 )

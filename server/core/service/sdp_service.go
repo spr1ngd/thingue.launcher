@@ -14,13 +14,13 @@ type sdpService struct{}
 var SdpService = sdpService{}
 
 func (m *sdpService) OnStreamerConnect(streamer *provider.StreamerConnector) {
-	InstanceService.UpdateStreamerConnected(streamer.SID, true)
+	InstanceService.UpdateStreamerConnected(streamer.StreamerId, true)
 	// 开启自动停止任务
 	go func() {
 		for {
 			// todo 释放资源
 			<-streamer.AutoStopTimer.C
-			getStreamer, err := provider.SdpConnProvider.GetStreamer(streamer.SID)
+			getStreamer, err := provider.SdpConnProvider.GetStreamer(streamer.StreamerId)
 			if err == nil {
 				if streamer != getStreamer {
 					logger.Zap.Warn("streamer已重启，自动停止任务关闭")
@@ -28,8 +28,8 @@ func (m *sdpService) OnStreamerConnect(streamer *provider.StreamerConnector) {
 				}
 				if len(getStreamer.PlayerConnectors) == 0 {
 					InstanceService.ProcessControl(request.ProcessControl{
-						SID:     getStreamer.SID,
-						Command: "STOP",
+						StreamerId: getStreamer.StreamerId,
+						Command:    "STOP",
 					})
 					logger.Zap.Info("检查完毕，自动停止控制指令发送")
 				} else {
@@ -48,7 +48,7 @@ func (m *sdpService) OnStreamerDisconnect(streamer *provider.StreamerConnector) 
 	for _, playerConnector := range streamer.PlayerConnectors {
 		playerConnector.Close()
 	}
-	InstanceService.UpdateStreamerConnected(streamer.SID, false)
+	InstanceService.UpdateStreamerConnected(streamer.StreamerId, false)
 	streamer.Close()
 }
 
@@ -60,22 +60,22 @@ func (m *sdpService) ConnectStreamer(playerConnector *provider.PlayerConnector, 
 		}
 		return err
 	}
-	sid, err := TicketService.GetSidByTicket(ticket)
+	streamerId, err := TicketService.GetStreamerByTicket(ticket)
 	if err == nil {
-		streamer, err := provider.SdpConnProvider.GetStreamer(sid)
+		streamer, err := provider.SdpConnProvider.GetStreamer(streamerId)
 		if err == nil {
 			playerConnector.StreamerConnector = streamer
 		} else {
-			instance := InstanceService.GetInstanceBySid(sid)
+			instance := InstanceService.GetInstanceByStreamerId(streamerId)
 			if instance.AutoControl {
 				InstanceService.ProcessControl(request.ProcessControl{
-					SID:     sid,
-					Command: "START",
+					StreamerId: streamerId,
+					Command:    "START",
 				})
 				ticker := time.NewTicker(2 * time.Second)
 				for {
 					<-ticker.C
-					streamer, err := provider.SdpConnProvider.GetStreamer(sid)
+					streamer, err := provider.SdpConnProvider.GetStreamer(streamerId)
 					if err == nil {
 						playerConnector.StreamerConnector = streamer
 						ticker.Stop()
@@ -94,7 +94,7 @@ func (m *sdpService) ConnectStreamer(playerConnector *provider.PlayerConnector, 
 func (m *sdpService) OnStreamerLoadBundleComplete(streamer *provider.StreamerConnector) {
 	if len(streamer.PlayerConnectors) == 0 {
 		streamer.ControlRendering(false)
-		InstanceService.UpdateRenderingState(streamer.SID, false)
+		InstanceService.UpdateRenderingState(streamer.StreamerId, false)
 	}
 }
 
@@ -105,7 +105,7 @@ func (m *sdpService) OnPlayerPaired(player *provider.PlayerConnector) {
 	// 如果未开启渲染，则发消息开启
 	if !player.StreamerConnector.RenderingState {
 		player.StreamerConnector.ControlRendering(true)
-		InstanceService.UpdateRenderingState(player.StreamerConnector.SID, true)
+		InstanceService.UpdateRenderingState(player.StreamerConnector.StreamerId, true)
 	}
 }
 
@@ -116,7 +116,7 @@ func (m *sdpService) OnPlayerDisConnect(player *provider.PlayerConnector) {
 	if len(player.StreamerConnector.PlayerConnectors) == 0 {
 		// 关闭渲染
 		player.StreamerConnector.ControlRendering(false)
-		InstanceService.UpdateRenderingState(player.StreamerConnector.SID, false)
+		InstanceService.UpdateRenderingState(player.StreamerConnector.StreamerId, false)
 		if instance.AutoControl && instance.StopDelay >= 0 {
 			// 启动自动启停延时任务
 			player.StreamerConnector.AutoStopTimer.Reset(time.Duration(instance.StopDelay) * time.Second)
@@ -141,16 +141,16 @@ func (m *sdpService) KickPlayerUser(userQueryMap map[string]string) (int, error)
 }
 
 func (m *sdpService) OnStreamerNodeRestarted(streamer *provider.StreamerConnector) {
-	instance := InstanceService.GetInstanceBySid(streamer.SID)
-	restarting := provider.SdpConnProvider.GetStreamerRestartingState(streamer.SID)
+	instance := InstanceService.GetInstanceByStreamerId(streamer.StreamerId)
+	restarting := provider.SdpConnProvider.GetStreamerRestartingState(streamer.StreamerId)
 	if restarting && instance.CurrentPak != "" {
 		logger.Zap.Infof("重启后加载 %s %s", instance.Name, instance.CurrentPak)
 		command := message.Command{}
 		command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.CurrentPak})
 		streamer.SendCommand(&command)
-		provider.SdpConnProvider.SetStreamerRestartingState(streamer.SID, false)
+		provider.SdpConnProvider.SetStreamerRestartingState(streamer.StreamerId, false)
 	} else if restarting {
-		provider.SdpConnProvider.SetStreamerRestartingState(streamer.SID, false)
+		provider.SdpConnProvider.SetStreamerRestartingState(streamer.StreamerId, false)
 		logger.Zap.Infof("重启后不需要加载pak %s %s", instance.Name, instance.CurrentPak)
 	} else {
 		logger.Zap.Warnf("非重启时忽略nodeRestarted消息 %s", instance.Name)

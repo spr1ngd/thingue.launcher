@@ -13,15 +13,15 @@ type instanceManager struct{}
 
 var InstanceManager = new(instanceManager)
 
-func (m *instanceManager) List() []model.ClientInstance {
-	var instances []model.ClientInstance
+func (m *instanceManager) List() []*model.ClientInstance {
+	var instances []*model.ClientInstance
 	global.AppDB.Find(&instances)
 	return instances
 }
 
-func (m *instanceManager) Create(instance *model.ClientInstance) uint {
+func (m *instanceManager) Create(instance *model.ClientInstance) uint32 {
 	global.AppDB.Create(&instance)
-	return instance.CID
+	return instance.ID
 }
 
 func (m *instanceManager) GetById(id uint) *model.ClientInstance {
@@ -43,7 +43,7 @@ func (m *instanceManager) GetInternal() (*model.ClientInstance, error) {
 }
 
 func (m *instanceManager) SaveConfig(instance *model.ClientInstance) error {
-	runner, err := RunnerManager.GetRunnerById(instance.CID)
+	runner, err := RunnerManager.GetRunnerById(instance.ID)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (m *instanceManager) SaveConfig(instance *model.ClientInstance) error {
 	return copier.Copy(runner.Instance, instance)
 }
 
-func (m *instanceManager) Delete(id uint) {
+func (m *instanceManager) Delete(id uint32) {
 	global.AppDB.Delete(&model.ClientInstance{}, id)
 }
 

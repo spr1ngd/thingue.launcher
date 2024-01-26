@@ -16,11 +16,11 @@ type sgccService struct{}
 var SgccService = &sgccService{}
 
 func (s *sgccService) GetNodeStatus(node string) int {
-	instance := service.InstanceService.GetInstanceBySid(node)
+	instance := service.InstanceService.GetInstanceByStreamerId(node)
 	if instance != nil {
 		return s.GetInstanceStatus(instance)
 	}
-	log.Error("获取实例状态失败", instance.SID)
+	log.Error("获取实例状态失败", instance.StreamerId)
 	return -1
 }
 
@@ -40,7 +40,7 @@ func (s *sgccService) GetInstanceStatus(instance *model.ServerInstance) int {
 	} else if instance.StateCode == -1 {
 		return 4
 	}
-	log.Error("获取实例状态失败", instance.SID)
+	log.Error("获取实例状态失败", instance.StreamerId)
 	return -1
 }
 
@@ -57,11 +57,11 @@ func (s *sgccService) Init() {
 	instances := service.InstanceService.InstanceList()
 	for _, instance := range instances {
 		service.InstanceService.ProcessControl(request.ProcessControl{
-			SID:     instance.SID,
-			Command: "START",
+			StreamerId: instance.StreamerId,
+			Command:    "START",
 		})
 		node := message.Node{
-			Id:       instance.SID,
+			Id:       instance.StreamerId,
 			Status:   s.GetInstanceStatus(instance),
 			Datetime: util.DateFormat(time.Now()),
 			Station:  instance.PakName,
@@ -78,9 +78,9 @@ func (s *sgccService) Deploy(deploy *message.Deploy) {
 	// instance pakload
 	var callback *message.DeployCallback
 	_ = service.InstanceService.PakControl(request.PakControl{
-		SID:  deploy.Node,
-		Type: "load",
-		Pak:  deploy.Station,
+		StreamerId: deploy.Node,
+		Type:       "load",
+		Pak:        deploy.Station,
 	})
 	callback = message.NewDeployCallback(true)
 	callback.Datetime = util.DateFormat(time.Now())
@@ -96,9 +96,9 @@ func (s *sgccService) Release(nodes []string) {
 	var callbackNodes []*message.CallBackNode
 	for _, node := range nodes {
 		_ = service.InstanceService.PakControl(request.PakControl{
-			SID:  node,
-			Type: "unload",
-			Pak:  "",
+			StreamerId: node,
+			Type:       "unload",
+			Pak:        "",
 		})
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,
@@ -125,8 +125,8 @@ func (s *sgccService) Restart(nodes []string) {
 	var callbackNodes []*message.CallBackNode
 	for _, node := range nodes {
 		service.InstanceService.ProcessControl(request.ProcessControl{
-			SID:     node,
-			Command: "RESTART",
+			StreamerId: node,
+			Command:    "RESTART",
 		})
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,
@@ -144,8 +144,8 @@ func (s *sgccService) Kill(nodes []string) {
 	var callbackNodes []*message.CallBackNode
 	for _, node := range nodes {
 		service.InstanceService.ProcessControl(request.ProcessControl{
-			SID:     node,
-			Command: "STOP",
+			StreamerId: node,
+			Command:    "STOP",
 		})
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,

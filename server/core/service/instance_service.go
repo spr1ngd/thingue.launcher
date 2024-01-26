@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
+	"github.com/mitchellh/mapstructure"
 	"k8s.io/apimachinery/pkg/labels"
 	"sync"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
@@ -21,37 +23,37 @@ type instanceService struct {
 
 var InstanceService = new(instanceService)
 
-func (s *instanceService) GetInstanceBySid(sid string) *model.ServerInstance {
+func (s *instanceService) GetInstanceByStreamerId(streamerId string) *model.ServerInstance {
 	instance := &model.ServerInstance{}
-	global.ServerDB.Where("s_id = ?", sid).First(instance)
+	global.ServerDB.Where("streamer_id = ?", streamerId).First(instance)
 	return instance
 }
 
 func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *model.ServerInstance {
 	s.updateLock.Lock()
 	defer s.updateLock.Unlock()
-	instance := s.GetInstanceBySid(streamer.SID)
+	instance := s.GetInstanceByStreamerId(streamer.StreamerId)
 	var playerIds []uint
 	for _, connector := range streamer.PlayerConnectors {
 		playerIds = append(playerIds, connector.PlayerId)
 	}
 	instance.PlayerIds = playerIds
-	instance.PlayerCount = uint(len(streamer.PlayerConnectors))
+	instance.PlayerCount = uint32(len(streamer.PlayerConnectors))
 	global.ServerDB.Save(&instance)
 	provider.AdminConnProvider.BroadcastUpdate()
 	return instance
 }
 
-func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
+func (s *instanceService) UpdateStreamerConnected(streamerId string, connected bool) {
 	s.updateLock.Lock()
 	defer s.updateLock.Unlock()
-	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("streamer_connected", connected)
+	global.ServerDB.Model(&model.ServerInstance{}).Where("streamer_id = ?", streamerId).Update("streamer_connected", connected)
 	provider.AdminConnProvider.BroadcastUpdate()
 	instance := model.ServerInstance{}
-	global.ServerDB.Where("s_id = ?", sid).First(&instance)
+	global.ServerDB.Where("streamer_id = ?", streamerId).First(&instance)
 	client := provider.GrpcClientProvider.ConnMap[instance.ClientID]
 	_, err := client.UpdateStreamerState(context.Background(), &pb.UpdateStreamerStateRequest{
-		InstanceId:    uint32(instance.CID),
+		InstanceId:    instance.ID,
 		StreamerState: connected,
 	})
 	if err != nil {
@@ -59,19 +61,20 @@ func (s *instanceService) UpdateStreamerConnected(sid string, connected bool) {
 	}
 }
 
-func (s *instanceService) UpdateProcessState(msg *message.ClientProcessStateUpdate) {
-	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", msg.SID).Updates(map[string]any{"Pid": msg.Pid, "StateCode": msg.StateCode})
+func (s *instanceService) UpdateProcessState(clientId uint32, cId uint32, StateCode int32, Pid int32) {
+	global.ServerDB.Model(&model.ServerInstance{}).Where("client_id = ? and id = ? ", clientId, cId).Updates(
+		map[string]any{"Pid": Pid, "StateCode": StateCode})
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
-func (s *instanceService) UpdateRenderingState(sid string, rendering bool) {
-	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("rendering", rendering)
+func (s *instanceService) UpdateRenderingState(streamerId string, rendering bool) {
+	global.ServerDB.Model(&model.ServerInstance{}).Where("streamer_id = ?", streamerId).Update("rendering", rendering)
 }
 
-func (s *instanceService) UpdatePak(sid, currentPakValue string) {
+func (s *instanceService) UpdatePak(streamerId, currentPakValue string) {
 	if currentPakValue != "" {
 		instance := model.ServerInstance{}
-		global.ServerDB.Where("s_id = ?", sid).First(&instance)
+		global.ServerDB.Where("streamer_id = ?", streamerId).First(&instance)
 		found := false
 		for _, pak := range instance.Paks {
 			if pak.Value == currentPakValue {
@@ -84,21 +87,21 @@ func (s *instanceService) UpdatePak(sid, currentPakValue string) {
 			return
 		}
 	}
-	global.ServerDB.Model(&model.ServerInstance{}).Where("s_id = ?", sid).Update("current_pak", currentPakValue)
+	global.ServerDB.Model(&model.ServerInstance{}).Where("streamer_id = ?", streamerId).Update("current_pak", currentPakValue)
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) ProcessControl(processControl request.ProcessControl) {
 	var instance model.ServerInstance
-	global.ServerDB.Where("s_id = ?", processControl.SID).First(&instance)
+	global.ServerDB.Where("streamer_id = ?", processControl.StreamerId).First(&instance)
 
 	client := provider.GrpcClientProvider.ConnMap[instance.ClientID]
 	req := &pb.ControlProcessRequest{
-		InstanceId: uint32(instance.CID),
+		InstanceId: instance.ID,
 	}
 	if processControl.Command == "STOP" {
 		req.Command = types.Command_COMMAND_STOP
-		s.UpdatePak(instance.SID, "")
+		s.UpdatePak(instance.StreamerId, "")
 	} else {
 		req.Command = types.Command_COMMAND_START
 	}
@@ -111,7 +114,7 @@ func (s *instanceService) ProcessControl(processControl request.ProcessControl) 
 func (s *instanceService) PakControl(control request.PakControl) error {
 	command := message.Command{}
 	if control.Type == "load" {
-		instance := s.GetInstanceBySid(control.SID)
+		instance := s.GetInstanceByStreamerId(control.StreamerId)
 		if instance.CurrentPak != control.Pak {
 			command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: control.Pak})
 		} else {
@@ -122,7 +125,7 @@ func (s *instanceService) PakControl(control request.PakControl) error {
 	} else {
 		return errors.New("不支持的消息类型")
 	}
-	streamer, err := provider.SdpConnProvider.GetStreamer(control.SID)
+	streamer, err := provider.SdpConnProvider.GetStreamer(control.StreamerId)
 	if err == nil {
 		streamer.SendCommand(&command)
 	}
@@ -142,8 +145,8 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 	if selectCond.StreamerConnected == true {
 		query = query.Where("streamer_connected = ?", selectCond.StreamerConnected)
 	}
-	if selectCond.SID != "" {
-		query = query.Where("s_id = ?", selectCond.SID)
+	if selectCond.StreamerId != "" {
+		query = query.Where("streamer_id = ?", selectCond.StreamerId)
 	}
 	if selectCond.Name != "" {
 		query = query.Where("name = ?", selectCond.Name)
@@ -188,4 +191,26 @@ func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) 
 	} else {
 		return nil, tx.Error
 	}
+}
+
+func (s *instanceService) DeleteInstance(request *pb.DeleteInstanceRequest) error {
+	tx := global.ServerDB.Where("client_id = ? and id = ?", request.ClientId, request.InstanceId).Delete(&model.ServerInstance{})
+	provider.AdminConnProvider.BroadcastUpdate()
+	return tx.Error
+}
+
+func (s *instanceService) AddInstance(req *pb.AddInstanceRequest) error {
+	var serverInstance = &model.ServerInstance{}
+	_ = mapstructure.Decode(req.InstanceInfo, serverInstance)
+	_ = mapstructure.Decode(req.InstanceInfo.InstanceConfig, serverInstance)
+	serverInstance.ID = req.InstanceInfo.Id
+	serverInstance.StreamerId = req.InstanceInfo.StreamerId
+	if serverInstance.StreamerId == "" {
+		streamerId, _ := uuid.NewUUID()
+		serverInstance.StreamerId = streamerId.String()
+	} else {
+		serverInstance.StreamerId = req.InstanceInfo.StreamerId
+	}
+	tx := global.ServerDB.Create(serverInstance)
+	return tx.Error
 }

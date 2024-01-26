@@ -14,7 +14,8 @@ message RegisterAgentResponse {
 }
 
 message AddInstanceRequest{
-  types.v1.InstanceInfo instance_info = 1;
+  uint32 client_id = 1;
+  types.v1.InstanceInfo instance_info = 2;
 }
 
 message DeleteInstanceRequest {
