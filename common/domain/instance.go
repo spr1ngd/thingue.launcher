@@ -44,9 +44,9 @@ type PlayerConfig struct {
 	IdleTimeout      uint32 `json:"idleTimeout"`
 }
 
-func (i *Instance) ToServerModel() *model.ServerInstance { return nil }
+func (i *Instance) ToServerModel() *model.Instance { return nil }
 
-func (i *Instance) FromServerModel(client *model.ServerInstance) {}
+func (i *Instance) FromServerModel(client *model.Instance) {}
 
 func (i *Instance) ToInstanceInfoTypes() *types.InstanceInfo {
 	var instanceInfo types.InstanceInfo

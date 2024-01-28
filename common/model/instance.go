@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type ServerInstance struct {
+type Instance struct {
 	ID                uint32    `json:"id" gorm:"primarykey;autoIncrement:false"`
 	ClientID          uint32    `json:"clientID" gorm:"primarykey;autoIncrement:false"`
 	StreamerId        string    `json:"streamerId" gorm:"unique"`
@@ -43,7 +43,7 @@ type ServerInstance struct {
 	Paks   []Pak         `json:"paks" gorm:"-"`
 }
 
-func (instance *ServerInstance) AfterFind(tx *gorm.DB) (err error) {
+func (instance *Instance) AfterFind(tx *gorm.DB) (err error) {
 	if instance.Metadata != "" {
 		var metaData MetaData
 		err := yaml.Unmarshal([]byte(instance.Metadata), &metaData)

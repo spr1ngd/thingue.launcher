@@ -122,7 +122,7 @@ func (p *PlayerConnector) StartPingSendTask() {
 			} else {
 				err := p.SendPingMsg()
 				if err != nil {
-					logger.Zap.Error("无法向Player发送心跳")
+					logger.Zap.Warn("无法向Player发送心跳")
 					p.Close()
 					p.heartbeatTicker.Stop()
 					break

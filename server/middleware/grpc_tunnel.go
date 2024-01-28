@@ -26,12 +26,13 @@ func CreateGrpcTunnelServiceHandler() *grpctunnel.TunnelServiceHandler {
 				})
 				if err == nil {
 					core.ClientService.RegisterClient(client, response)
-					provider.GrpcClientProvider.ConnMap[client.ID] = agentClient
+					provider.GrpcClientProvider.AddClient(client.ID, agentClient)
 				} else {
 					logger.Zap.Errorf("获取Agent信息失败 %s", err)
 				}
 				<-channel.Context().Done()
 				core.ClientService.DeleteClient(client)
+				provider.GrpcClientProvider.RemoveClient(client.ID)
 			},
 			OnReverseTunnelClose: func(channel grpctunnel.TunnelChannel) {
 				logger.Zap.Infof("Tunnel Closed %p", channel)

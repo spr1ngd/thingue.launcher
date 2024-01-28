@@ -15,7 +15,7 @@ func InitGorm() {
 		openServerDB()
 		openStorageDB()
 		global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Client{})
-		global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
+		global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Instance{})
 	}
 }
 
@@ -29,7 +29,7 @@ func openServerDB() {
 	global.ServerDB = db
 	if err = db.AutoMigrate(
 		&model.Client{},
-		&model.ServerInstance{},
+		&model.Instance{},
 	); err != nil {
 		logger.Zap.Error(err)
 	}
