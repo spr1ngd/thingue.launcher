@@ -45,50 +45,6 @@
         }
       }
     },
-    "v1DeviceInfo": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "string"
-        },
-        "workdir": {
-          "type": "string"
-        },
-        "hostname": {
-          "type": "string"
-        },
-        "memory": {
-          "type": "string"
-        },
-        "cpus": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "gpus": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "osArch": {
-          "type": "string"
-        },
-        "osType": {
-          "type": "string"
-        },
-        "systemUser": {
-          "type": "string"
-        }
-      }
-    },
     "v1GetStreamerIdResponse": {
       "type": "object",
       "properties": {
@@ -192,15 +148,6 @@
           "type": "boolean"
         },
         "idleTimeout": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "v1RegisterAgentResponse": {
-      "type": "object",
-      "properties": {
-        "id": {
           "type": "integer",
           "format": "int64"
         }

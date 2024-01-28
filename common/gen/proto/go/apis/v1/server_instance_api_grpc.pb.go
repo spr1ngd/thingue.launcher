@@ -23,7 +23,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServerInstanceServiceClient interface {
-	RegisterAgent(ctx context.Context, in *RegisterAgentRequest, opts ...grpc.CallOption) (*RegisterAgentResponse, error)
 	AddInstance(ctx context.Context, in *AddInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteInstance(ctx context.Context, in *DeleteInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UpdateConfig(ctx context.Context, in *UpdateConfigRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -39,15 +38,6 @@ type serverInstanceServiceClient struct {
 
 func NewServerInstanceServiceClient(cc grpc.ClientConnInterface) ServerInstanceServiceClient {
 	return &serverInstanceServiceClient{cc}
-}
-
-func (c *serverInstanceServiceClient) RegisterAgent(ctx context.Context, in *RegisterAgentRequest, opts ...grpc.CallOption) (*RegisterAgentResponse, error) {
-	out := new(RegisterAgentResponse)
-	err := c.cc.Invoke(ctx, "/apis.v1.ServerInstanceService/RegisterAgent", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *serverInstanceServiceClient) AddInstance(ctx context.Context, in *AddInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -117,7 +107,6 @@ func (c *serverInstanceServiceClient) ClearPakState(ctx context.Context, in *Cle
 // All implementations must embed UnimplementedServerInstanceServiceServer
 // for forward compatibility
 type ServerInstanceServiceServer interface {
-	RegisterAgent(context.Context, *RegisterAgentRequest) (*RegisterAgentResponse, error)
 	AddInstance(context.Context, *AddInstanceRequest) (*emptypb.Empty, error)
 	DeleteInstance(context.Context, *DeleteInstanceRequest) (*emptypb.Empty, error)
 	UpdateConfig(context.Context, *UpdateConfigRequest) (*emptypb.Empty, error)
@@ -132,9 +121,6 @@ type ServerInstanceServiceServer interface {
 type UnimplementedServerInstanceServiceServer struct {
 }
 
-func (UnimplementedServerInstanceServiceServer) RegisterAgent(context.Context, *RegisterAgentRequest) (*RegisterAgentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterAgent not implemented")
-}
 func (UnimplementedServerInstanceServiceServer) AddInstance(context.Context, *AddInstanceRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddInstance not implemented")
 }
@@ -167,24 +153,6 @@ type UnsafeServerInstanceServiceServer interface {
 
 func RegisterServerInstanceServiceServer(s grpc.ServiceRegistrar, srv ServerInstanceServiceServer) {
 	s.RegisterService(&ServerInstanceService_ServiceDesc, srv)
-}
-
-func _ServerInstanceService_RegisterAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterAgentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServerInstanceServiceServer).RegisterAgent(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/apis.v1.ServerInstanceService/RegisterAgent",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerInstanceServiceServer).RegisterAgent(ctx, req.(*RegisterAgentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _ServerInstanceService_AddInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -320,10 +288,6 @@ var ServerInstanceService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "apis.v1.ServerInstanceService",
 	HandlerType: (*ServerInstanceServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "RegisterAgent",
-			Handler:    _ServerInstanceService_RegisterAgent_Handler,
-		},
 		{
 			MethodName: "AddInstance",
 			Handler:    _ServerInstanceService_AddInstance_Handler,

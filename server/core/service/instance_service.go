@@ -109,21 +109,25 @@ func (s *instanceService) ProcessControl(processControl request.ProcessControl) 
 	}
 }
 
-func (s *instanceService) PakControl(control request.PakControl) error {
+func (s *instanceService) PakControl(StreamerId, Type, PakName string) error {
 	command := message.Command{}
-	if control.Type == "load" {
-		instance := s.GetInstanceByStreamerId(control.StreamerId)
-		if instance.PakValue != control.Pak {
-			command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: control.Pak})
+	if Type == "load" {
+		instance := s.GetInstanceByStreamerId(StreamerId)
+		if instance.PakName != PakName {
+			for _, pak := range instance.Paks {
+				if pak.Name == PakName {
+					command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: pak.Value})
+				}
+			}
 		} else {
 			return errors.New("已经加载当前Pak")
 		}
-	} else if control.Type == "unload" {
+	} else if Type == "unload" {
 		command.BuildBundleUnloadCommand()
 	} else {
 		return errors.New("不支持的消息类型")
 	}
-	streamer, err := provider.SdpConnProvider.GetStreamer(control.StreamerId)
+	streamer, err := provider.SdpConnProvider.GetStreamer(StreamerId)
 	if err == nil {
 		streamer.SendCommand(&command)
 	}

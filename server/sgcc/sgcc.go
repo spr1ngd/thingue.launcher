@@ -22,4 +22,6 @@ func Init() {
 	}
 	// 连接云端
 	ws.ConnManager.StartConnectTask()
+	// 定时发送状态
+
 }

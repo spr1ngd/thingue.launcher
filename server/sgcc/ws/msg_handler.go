@@ -1,8 +1,8 @@
 package ws
 
 import (
-	"github.com/labstack/gommon/log"
 	"github.com/mitchellh/mapstructure"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/server/sgcc/message"
 	"thingue-launcher/server/sgcc/service"
 )
@@ -15,7 +15,7 @@ func MsgReceive(msg map[string]any) {
 		case "register_callback":
 			callback := &message.RegisterCallback{}
 			if err = mapstructure.Decode(msg, callback); err == nil {
-				log.Info("注册成功", callback.Id)
+				logger.Zap.Info("注册成功", callback.Id)
 			}
 		case "init":
 			init := &message.Init{}
@@ -43,10 +43,10 @@ func MsgReceive(msg map[string]any) {
 				service.SgccService.Kill(kill.Nodes)
 			}
 		default:
-			log.Info("不支持的消息类型")
+			logger.Zap.Error("不支持的消息类型")
 		}
 		if err != nil {
-			log.Error(msgType, "格式不正确")
+			logger.Zap.Error(msgType, "格式不正确")
 		}
 	}
 }

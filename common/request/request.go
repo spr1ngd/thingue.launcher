@@ -30,7 +30,7 @@ type ProcessControl struct {
 type PakControl struct {
 	StreamerId string `json:"streamerId"`
 	Type       string `json:"type"`
-	Pak        string `json:"pak"`
+	PakName    string `json:"pakName"`
 }
 
 type LogsCollect struct {

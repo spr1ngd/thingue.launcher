@@ -11,9 +11,9 @@ type Status struct {
 }
 
 type Statistic struct {
-	Gpu    int `json:"gpu"`
-	Cpu    int `json:"cpu"`
-	Memory int `json:"memory"`
+	Gpu    int     `json:"gpu"`
+	Cpu    int     `json:"cpu"`
+	Memory float32 `json:"memory"`
 }
 
 func (m *Status) GetBytes() []byte {

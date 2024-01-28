@@ -1,10 +1,16 @@
 package service
 
 import (
-	"github.com/labstack/gommon/log"
+	"context"
+	"math"
+	"math/rand"
+	pb "thingue-launcher/common/gen/proto/go/apis/v1"
+	types "thingue-launcher/common/gen/proto/go/types/v1"
+	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/util"
+	coreprovider "thingue-launcher/server/core/provider"
 	"thingue-launcher/server/core/service"
 	"thingue-launcher/server/sgcc/message"
 	"thingue-launcher/server/sgcc/provider"
@@ -20,7 +26,7 @@ func (s *sgccService) GetNodeStatus(node string) int {
 	if instance != nil {
 		return s.GetInstanceStatus(instance)
 	}
-	log.Error("获取实例状态失败", instance.StreamerId)
+	logger.Zap.Error("获取实例状态失败", instance.StreamerId)
 	return -1
 }
 
@@ -40,7 +46,7 @@ func (s *sgccService) GetInstanceStatus(instance *model.Instance) int {
 	} else if instance.StateCode == -1 {
 		return 4
 	}
-	log.Error("获取实例状态失败", instance.StreamerId)
+	logger.Zap.Error("获取实例状态失败", instance.StreamerId)
 	return -1
 }
 
@@ -56,10 +62,16 @@ func (s *sgccService) Init() {
 	var nodes []message.Node
 	instances := service.InstanceService.InstanceList()
 	for _, instance := range instances {
-		service.InstanceService.ProcessControl(request.ProcessControl{
-			StreamerId: instance.StreamerId,
-			Command:    "START",
-		})
+		client, err := coreprovider.GrpcClientProvider.GetClient(instance.ClientID)
+		if err == nil {
+			_, err := client.ControlProcess(context.Background(), &pb.ControlProcessRequest{
+				InstanceId: instance.ID,
+				Command:    types.Command_COMMAND_START,
+			})
+			if err != nil {
+				logger.Zap.Error("负载初始化时启动实例失败")
+			}
+		}
 		node := message.Node{
 			Id:       instance.StreamerId,
 			Status:   s.GetInstanceStatus(instance),
@@ -77,11 +89,7 @@ func (s *sgccService) Init() {
 func (s *sgccService) Deploy(deploy *message.Deploy) {
 	// instance pakload
 	var callback *message.DeployCallback
-	_ = service.InstanceService.PakControl(request.PakControl{
-		StreamerId: deploy.Node,
-		Type:       "load",
-		Pak:        deploy.Station,
-	})
+	_ = service.InstanceService.PakControl(deploy.Node, "load", deploy.Station)
 	callback = message.NewDeployCallback(true)
 	callback.Datetime = util.DateFormat(time.Now())
 	callback.Node = deploy.Node
@@ -95,11 +103,7 @@ func (s *sgccService) Release(nodes []string) {
 	var callback *message.ReleaseCallback
 	var callbackNodes []*message.CallBackNode
 	for _, node := range nodes {
-		_ = service.InstanceService.PakControl(request.PakControl{
-			StreamerId: node,
-			Type:       "unload",
-			Pak:        "",
-		})
+		_ = service.InstanceService.PakControl(node, "unload", "")
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,
 			Status:   s.GetNodeStatus(node),
@@ -111,12 +115,19 @@ func (s *sgccService) Release(nodes []string) {
 	provider.SendCloudMessage(callback.GetBytes())
 }
 
-func (s *sgccService) Status() {
-	statistic := message.Statistic{}
-	status := message.Status{
+func (s *sgccService) SendStatus(node string) {
+	statistic := message.Statistic{
+		Gpu:    int(math.Round(rand.Float64()*4 + 20)),
+		Cpu:    int(math.Round(rand.Float64()*10 + 5)),
+		Memory: rand.Float32()*1.5 + 1.5,
+	}
+	msg := message.Status{
+		Type:      "status",
+		Node:      node,
+		Status:    s.GetNodeStatus(node),
 		Statistic: statistic,
 	}
-	provider.SendCloudMessage(status.GetBytes())
+	provider.SendCloudMessage(msg.GetBytes())
 }
 
 func (s *sgccService) Restart(nodes []string) {
@@ -126,7 +137,11 @@ func (s *sgccService) Restart(nodes []string) {
 	for _, node := range nodes {
 		service.InstanceService.ProcessControl(request.ProcessControl{
 			StreamerId: node,
-			Command:    "RESTART",
+			Command:    "STOP",
+		})
+		service.InstanceService.ProcessControl(request.ProcessControl{
+			StreamerId: node,
+			Command:    "START",
 		})
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,

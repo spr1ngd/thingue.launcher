@@ -41,7 +41,7 @@ function handleChange(row) {
     sendPakControl({
       streamerId: row.streamerId,
       type: "load",
-      pak: row.paks.filter(pak => pak.name === newPak)[0].value
+      pakName: row.paks.filter(item => item.name === newPak)[0].name
     }).then((r) => {
       if (r.code === 500) {
         row.pakName = '';
