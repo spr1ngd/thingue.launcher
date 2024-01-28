@@ -23,13 +23,13 @@ type instanceService struct {
 
 var InstanceService = new(instanceService)
 
-func (s *instanceService) GetInstanceByStreamerId(streamerId string) *model.ServerInstance {
-	instance := &model.ServerInstance{}
+func (s *instanceService) GetInstanceByStreamerId(streamerId string) *model.Instance {
+	instance := &model.Instance{}
 	global.ServerDB.Where("streamer_id = ?", streamerId).First(instance)
 	return instance
 }
 
-func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *model.ServerInstance {
+func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *model.Instance {
 	s.updateLock.Lock()
 	defer s.updateLock.Unlock()
 	instance := s.GetInstanceByStreamerId(streamer.StreamerId)
@@ -47,9 +47,9 @@ func (s *instanceService) UpdatePlayers(streamer *provider.StreamerConnector) *m
 func (s *instanceService) UpdateStreamerConnected(streamerId string, connected bool) {
 	s.updateLock.Lock()
 	defer s.updateLock.Unlock()
-	global.ServerDB.Model(&model.ServerInstance{}).Where("streamer_id = ?", streamerId).Update("streamer_connected", connected)
+	global.ServerDB.Model(&model.Instance{}).Where("streamer_id = ?", streamerId).Update("streamer_connected", connected)
 	provider.AdminConnProvider.BroadcastUpdate()
-	instance := model.ServerInstance{}
+	instance := model.Instance{}
 	global.ServerDB.Where("streamer_id = ?", streamerId).First(&instance)
 	client := provider.GrpcClientProvider.ConnMap[instance.ClientID]
 	_, err := client.UpdateStreamerState(context.Background(), &pb.UpdateStreamerStateRequest{
@@ -61,19 +61,19 @@ func (s *instanceService) UpdateStreamerConnected(streamerId string, connected b
 	}
 }
 
-func (s *instanceService) UpdateProcessState(clientId uint32, cId uint32, StateCode int32, Pid int32) {
-	global.ServerDB.Model(&model.ServerInstance{}).Where("client_id = ? and id = ? ", clientId, cId).Updates(
+func (s *instanceService) UpdateProcessState(clientId uint32, id uint32, StateCode int32, Pid int32) {
+	global.ServerDB.Model(&model.Instance{}).Where("client_id = ? and id = ? ", clientId, id).Updates(
 		map[string]any{"Pid": Pid, "StateCode": StateCode})
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) UpdateRenderingState(streamerId string, rendering bool) {
-	global.ServerDB.Model(&model.ServerInstance{}).Where("streamer_id = ?", streamerId).Update("rendering", rendering)
+	global.ServerDB.Model(&model.Instance{}).Where("streamer_id = ?", streamerId).Update("rendering", rendering)
 }
 
 func (s *instanceService) UpdatePak(streamerId, currentPakValue string) {
 	if currentPakValue != "" {
-		instance := model.ServerInstance{}
+		instance := model.Instance{}
 		global.ServerDB.Where("streamer_id = ?", streamerId).First(&instance)
 		found := false
 		for _, pak := range instance.Paks {
@@ -87,12 +87,12 @@ func (s *instanceService) UpdatePak(streamerId, currentPakValue string) {
 			return
 		}
 	}
-	global.ServerDB.Model(&model.ServerInstance{}).Where("streamer_id = ?", streamerId).Update("current_pak", currentPakValue)
+	global.ServerDB.Model(&model.Instance{}).Where("streamer_id = ?", streamerId).Update("current_pak", currentPakValue)
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *instanceService) ProcessControl(processControl request.ProcessControl) {
-	var instance model.ServerInstance
+	var instance model.Instance
 	global.ServerDB.Where("streamer_id = ?", processControl.StreamerId).First(&instance)
 
 	client := provider.GrpcClientProvider.ConnMap[instance.ClientID]
@@ -132,13 +132,13 @@ func (s *instanceService) PakControl(control request.PakControl) error {
 	return err
 }
 
-func (s *instanceService) InstanceList() []*model.ServerInstance {
-	var instances []*model.ServerInstance
+func (s *instanceService) InstanceList() []*model.Instance {
+	var instances []*model.Instance
 	global.ServerDB.Find(&instances)
 	return instances
 }
 
-func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*model.ServerInstance, error) {
+func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*model.Instance, error) {
 	// 数据库查询
 	//query := global.SERVER_DB.Where("state_code = ? or auto_control = ?", 1, true)
 	query := global.ServerDB
@@ -154,10 +154,10 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 	if selectCond.PlayerCount != nil && *selectCond.PlayerCount >= 0 {
 		query = query.Where("player_count = ?", selectCond.PlayerCount)
 	}
-	var findInstances []*model.ServerInstance
+	var findInstances []*model.Instance
 	query.Find(&findInstances)
 	// 筛选掉未启动且未开启自动启停的实例
-	var readyInstances []*model.ServerInstance
+	var readyInstances []*model.Instance
 	for _, instance := range findInstances {
 		if instance.StateCode == 1 || instance.AutoControl == true {
 			readyInstances = append(readyInstances, instance)
@@ -169,7 +169,7 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 		if err != nil {
 			return nil, err // label解析失败
 		}
-		var matchInstances []*model.ServerInstance
+		var matchInstances []*model.Instance
 		for _, instance := range readyInstances {
 			if selector.Matches(instance.Labels) {
 				matchInstances = append(matchInstances, instance)
@@ -181,9 +181,9 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 	}
 }
 
-func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) (*model.ServerInstance, error) {
+func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) (*model.Instance, error) {
 	db := global.ServerDB
-	instance := &model.ServerInstance{}
+	instance := &model.Instance{}
 	tx := db.Debug().Select("server_instances.*").Joins("JOIN clients ON server_instances.client_id=clients.id AND clients.hostname = ? AND server_instances.pid = ?",
 		hostname, pid).First(instance)
 	if tx.Error == nil {
@@ -194,15 +194,15 @@ func (s *instanceService) GetInstanceByHostnameAndPid(hostname string, pid int) 
 }
 
 func (s *instanceService) DeleteInstance(request *pb.DeleteInstanceRequest) error {
-	tx := global.ServerDB.Where("client_id = ? and id = ?", request.ClientId, request.InstanceId).Delete(&model.ServerInstance{})
+	tx := global.ServerDB.Where("client_id = ? and id = ?", request.ClientId, request.InstanceId).Delete(&model.Instance{})
 	provider.AdminConnProvider.BroadcastUpdate()
 	return tx.Error
 }
 
 func (s *instanceService) AddInstance(req *pb.AddInstanceRequest) error {
-	var serverInstance = &model.ServerInstance{}
-	_ = mapstructure.Decode(req.InstanceInfo, serverInstance)
-	_ = mapstructure.Decode(req.InstanceInfo.InstanceConfig, serverInstance)
+	var serverInstance model.Instance
+	_ = mapstructure.Decode(req.InstanceInfo, &serverInstance)
+	_ = mapstructure.Decode(req.InstanceInfo.Config, &serverInstance)
 	serverInstance.ID = req.InstanceInfo.Id
 	serverInstance.StreamerId = req.InstanceInfo.StreamerId
 	if serverInstance.StreamerId == "" {
@@ -211,6 +211,6 @@ func (s *instanceService) AddInstance(req *pb.AddInstanceRequest) error {
 	} else {
 		serverInstance.StreamerId = req.InstanceInfo.StreamerId
 	}
-	tx := global.ServerDB.Create(serverInstance)
+	tx := global.ServerDB.Create(&serverInstance)
 	return tx.Error
 }

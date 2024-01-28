@@ -9,7 +9,6 @@ import (
 	"thingue-launcher/common/domain"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
-	"thingue-launcher/common/model"
 	"time"
 )
 
@@ -35,45 +34,40 @@ func (m *runnerManager) Init() {
 		if !entry.IsDir() {
 			if "ThingUE.exe" == entry.Name() || "ThingUE.sh" == entry.Name() {
 				m.HaveInternalInstance = true
-				instance, err := InstanceManager.GetInternal()
+				instance, err := ConfigManager.GetInternal()
 				if err != nil {
-					instance = &model.ClientInstance{
-						Name:            "ThingUE",
-						ExecPath:        filepath.Join(pwd, entry.Name()),
-						LaunchArguments: []string{"-AudioMixer", "-RenderOffScreen", "-ForceRes", "-ResX=1920", "-ResY=1080"},
-						IsInternal:      true,
-						EnableRelay:     true,
-						PlayerConfig: model.PlayerConfig{
-							MatchViewportRes: true,
-							HideUI:           false,
-							IdleDisconnect:   false,
-							IdleTimeout:      5,
-						},
-					}
-					InstanceManager.Create(instance)
-					_ = m.NewRunner(instance)
+					defaultInstance := ConfigManager.GetDefault()
+					defaultInstance.Config.Name = "ThingUE"
+					defaultInstance.Config.ExecPath = filepath.Join(pwd, entry.Name())
+					defaultInstance.IsInternal = true
+					id := ConfigManager.Create(defaultInstance)
+					_ = m.NewRunner(id, defaultInstance.Config)
 				} else {
-					instance.ExecPath = filepath.Join(pwd, entry.Name())
-					_ = m.NewRunner(instance)
-					_ = InstanceManager.SaveConfig(instance)
+					instance.Config.ExecPath = filepath.Join(pwd, entry.Name())
+					_ = m.NewRunner(instance.ID, instance.Config)
+					_ = ConfigManager.Update(instance)
 				}
 			}
 		}
 	}
 
 	// 从持久化数据中实例化非内置Runners
-	instances := InstanceManager.List()
+	instances := ConfigManager.List()
 	for _, item := range instances {
 		if !item.IsInternal {
-			_ = m.NewRunner(item)
+			var instance domain.Instance
+			instance.FromInstanceConfig(item)
+			err := m.NewRunner(instance.ID, instance.Config)
+			if err != nil {
+				logger.Zap.Error("从配置中初始化runner失败")
+			}
 		}
 	}
 }
 
 func (m *runnerManager) List() []*domain.Instance {
 	var instanceList = make([]*domain.Instance, 0)
-	for _, item := range InstanceManager.List() {
-		logger.Zap.Warn(item)
+	for _, item := range ConfigManager.List() {
 		runner, err := m.GetRunnerById(item.ID)
 		if err == nil {
 			// 排除掉没有内置实例但数据中有内置实例配置的情况
@@ -86,17 +80,18 @@ func (m *runnerManager) List() []*domain.Instance {
 	return instanceList
 }
 
-func (m *runnerManager) NewRunner(clientInstance *model.ClientInstance) error {
-	if _, ok := m.IdRunnerMap[clientInstance.ID]; ok {
+func (m *runnerManager) NewRunner(id uint32, config domain.Config) error {
+	if _, ok := m.IdRunnerMap[id]; ok {
 		return errors.New("无法重复创建")
 	}
-	var instance = &domain.Instance{}
-	instance.FromClientModel(clientInstance)
 	r := &Runner{
-		Instance:          instance,
+		Instance: &domain.Instance{
+			ID:     id,
+			Config: config,
+		},
 		ExitSignalChannel: make(chan error, 1),
 	}
-	m.IdRunnerMap[r.ID] = r
+	m.IdRunnerMap[id] = r
 	return nil
 }
 
@@ -131,7 +126,7 @@ func (m *runnerManager) ExecCommand(id uint32, command string) {
 func (m *runnerManager) RestartAllRunner() {
 	for _, runner := range m.IdRunnerMap {
 		if runner.StateCode == 1 {
-			logger.Zap.Infof("执行重启任务 %s", runner.InstanceConfig.Name)
+			logger.Zap.Infof("执行重启任务 %s", runner.Config.Name)
 			err := runner.Stop()
 			if err != nil {
 				logger.Zap.Error(err)
@@ -149,7 +144,7 @@ func (m *runnerManager) RestartAllRunner() {
 			time.Sleep(3 * time.Second) //kill发出停顿三秒，等待进程关闭
 			err = runner.Start()
 			if err != nil {
-				logger.Zap.Errorf("重启失败 %s %s", runner.InstanceConfig.Name, err)
+				logger.Zap.Errorf("重启失败 %s %s", runner.Config.Name, err)
 				_, err = global.GrpcClient.UpdateRestarting(context.Background(), &pb.UpdateRestartingRequest{
 					ClientId:   global.ClientId,
 					InstanceId: runner.ID,
@@ -181,7 +176,7 @@ func (m *runnerManager) DeleteRunner(id uint32) error {
 
 func (m *runnerManager) StartInternalRunner() {
 	if m.HaveInternalInstance && !m.IsInternalInstanceStarted {
-		internal, err := InstanceManager.GetInternal()
+		internal, err := ConfigManager.GetInternal()
 		if err == nil {
 			runner, err := m.GetRunnerById(internal.ID)
 			if err == nil {

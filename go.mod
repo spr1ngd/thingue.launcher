@@ -12,7 +12,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
 	github.com/jaypipes/ghw v0.12.0
 	github.com/jhump/grpctunnel v0.3.0
-	github.com/jinzhu/copier v0.3.5
 	github.com/labstack/gommon v0.4.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mochi-mqtt/server/v2 v2.4.5

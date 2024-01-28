@@ -171,7 +171,7 @@
           "type": "string",
           "format": "date-time"
         },
-        "instanceConfig": {
+        "config": {
           "$ref": "#/definitions/v1InstanceConfig"
         },
         "playerConfig": {

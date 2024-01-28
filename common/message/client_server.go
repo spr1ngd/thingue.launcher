@@ -7,7 +7,7 @@ import (
 
 // ServerProcessControl 消息体1
 type ServerProcessControl struct {
-	CID     uint   `json:"cid"`
+	id      uint   `json:"id"`
 	Command string `json:"command"`
 }
 
@@ -36,7 +36,7 @@ func (data ServerConnectCallback) Pack() *Message {
 
 // ServerStreamerConnectedUpdate 消息体4
 type ServerStreamerConnectedUpdate struct {
-	CID       uint `json:"cid"`
+	id        uint `json:"id"`
 	Connected bool `json:"connected"`
 }
 

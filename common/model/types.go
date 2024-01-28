@@ -12,10 +12,3 @@ type Pak struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
-
-type PlayerConfig struct {
-	MatchViewportRes bool   `json:"matchViewportRes"`
-	HideUI           bool   `json:"hideUI"`
-	IdleDisconnect   bool   `json:"idleDisconnect"`
-	IdleTimeout      uint32 `json:"idleTimeout"`
-}

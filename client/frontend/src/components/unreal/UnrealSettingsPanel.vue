@@ -2,7 +2,7 @@
 import {onMounted, ref, watch} from "vue";
 import {Notify, useQuasar} from "quasar";
 import {OpenFileDialog} from "@wails/go/api/systemApi";
-import {CreateInstance, SaveInstance, StopInstance} from "@wails/go/api/instanceApi";
+import {CreateInstance, UpdateConfig, StopInstance} from "@wails/go/api/instanceApi";
 import {createLaunchArgumentsEditor, createMetadataEditor, createPaksConfigEditor} from "@/components/unreal/settingsEditor";
 
 const $q = useQuasar();
@@ -18,10 +18,10 @@ const editor = {
   paksConfigEditor: null,
 }
 onMounted(async () => {
-  enableH265.value = props.data.settings.launchArguments.includes('-PSForceH265')
-  editor.launchArgumentsEditor = createLaunchArgumentsEditor(launchArgumentsEditorRef.value, props.data.settings.launchArguments)
-  editor.metadataEditor = createMetadataEditor(metadataEditorRef.value, props.data.settings.metadata)
-  editor.paksConfigEditor = createPaksConfigEditor(paksConfigEditorRef.value, props.data.settings.paksConfig)
+  enableH265.value = props.data.settings.instanceConfig.launchArguments.includes('-PSForceH265')
+  editor.launchArgumentsEditor = createLaunchArgumentsEditor(launchArgumentsEditorRef.value, props.data.settings.instanceConfig.launchArguments)
+  editor.metadataEditor = createMetadataEditor(metadataEditorRef.value, props.data.settings.instanceConfig.metadata)
+  editor.paksConfigEditor = createPaksConfigEditor(paksConfigEditorRef.value, props.data.settings.instanceConfig.paksConfig)
 })
 
 watch(enableH265, (newValue, oldValue) => {
@@ -43,7 +43,7 @@ watch(enableH265, (newValue, oldValue) => {
 function select() {
   OpenFileDialog("选择文件", "ThingUE (*.exe, *.sh)", "*.exe;*.sh").then(result => {
     if (result) {
-      props.data.settings.execPath = result;
+      props.data.settings.instanceConfig.execPath = result;
     } else {
       Notify.create({
         message: '文件选择取消'
@@ -58,17 +58,23 @@ function select() {
 
 async function save() {
   const settings = JSON.parse(JSON.stringify(props.data.settings))
-  settings.stopDelay = Number(settings.stopDelay)
+  settings.instanceConfig.stopDelay = Number(settings.instanceConfig.stopDelay)
   settings.playerConfig.idleTimeout = Number(settings.playerConfig.idleTimeout)
-  settings.launchArguments = editor.launchArgumentsEditor.getValue().split('\n')
-  settings.metadata = editor.metadataEditor.getValue()
-  settings.paksConfig = editor.paksConfigEditor.getValue()
+  settings.instanceConfig.launchArguments = editor.launchArgumentsEditor.getValue().split('\n')
+  settings.instanceConfig.metadata = editor.metadataEditor.getValue()
+  settings.instanceConfig.paksConfig = editor.paksConfigEditor.getValue()
   if (props.data.type === 'new') {
-    await CreateInstance(settings)
-    emit('openListPanel')
+    try {
+      await CreateInstance(settings)
+      emit('openListPanel')
+    } catch (err) {
+      Notify.create({
+        message: err
+      })
+    }
   } else if (props.data.type === 'edit') {
     try {
-      await SaveInstance(settings)
+      await UpdateConfig(settings)
       emit('openListPanel')
     } catch (err) {
       if (err === "实例运行中无法修改配置") {
@@ -117,7 +123,7 @@ async function save() {
             </q-tooltip>
           </q-icon>
         </q-item-label>
-        <q-input dense outlined square v-model="props.data.settings.name"/>
+        <q-input dense outlined square v-model="props.data.settings.instanceConfig.name"/>
       </q-item-section>
       <q-item-section>
         <q-item-label style="display: flex;align-items: center">
@@ -128,13 +134,13 @@ async function save() {
             </q-tooltip>
           </q-icon>
         </q-item-label>
-        <q-input dense outlined square v-model="props.data.settings.cloudRes"/>
+        <q-input dense outlined square v-model="props.data.settings.instanceConfig.cloudRes"/>
       </q-item-section>
     </q-item>
     <q-item>
       <q-item-section>
         <q-item-label>启动位置</q-item-label>
-        <q-input dense outlined square v-model="props.data.settings.execPath">
+        <q-input dense outlined square v-model="props.data.settings.instanceConfig.execPath">
           <template v-slot:append>
             <q-btn padding="none" icon="sym_o_file_open" flat dense @click="select"/>
           </template>
@@ -162,7 +168,7 @@ async function save() {
     <q-item-label header>高级设置</q-item-label>
     <q-item dense tag="label" v-ripple>
       <q-item-section side top>
-        <q-checkbox v-model="props.data.settings.enableRenderControl"/>
+        <q-checkbox v-model="props.data.settings.instanceConfig.enableRenderControl"/>
       </q-item-section>
       <q-item-section>
         <q-item-label>渲染控制</q-item-label>
@@ -173,7 +179,7 @@ async function save() {
     </q-item>
     <q-item dense tag="label" v-ripple>
       <q-item-section side top>
-        <q-checkbox v-model="props.data.settings.enableMultiuserControl"/>
+        <q-checkbox v-model="props.data.settings.instanceConfig.enableMultiuserControl"/>
       </q-item-section>
       <q-item-section>
         <q-item-label>多用户同时操作</q-item-label>
@@ -184,7 +190,7 @@ async function save() {
     </q-item>
     <q-item dense tag="label" v-ripple>
       <q-item-section side top>
-        <q-checkbox v-model="props.data.settings.faultRecover"/>
+        <q-checkbox v-model="props.data.settings.instanceConfig.faultRecover"/>
       </q-item-section>
       <q-item-section>
         <q-item-label>故障恢复</q-item-label>
@@ -195,7 +201,7 @@ async function save() {
     </q-item>
     <q-item dense tag="label" v-ripple>
       <q-item-section side top>
-        <q-checkbox v-model="props.data.settings.autoControl"/>
+        <q-checkbox v-model="props.data.settings.instanceConfig.autoControl"/>
       </q-item-section>
       <q-item-section>
         <q-item-label>自动启停</q-item-label>
@@ -204,12 +210,12 @@ async function save() {
         </q-item-label>
       </q-item-section>
       <q-item-section side>
-        <q-input dense v-model="props.data.settings.stopDelay" label="关闭延迟时间（秒）" type="number"/>
+        <q-input dense v-model="props.data.settings.instanceConfig.stopDelay" label="关闭延迟时间（秒）" type="number"/>
       </q-item-section>
     </q-item>
     <q-item dense tag="label" v-ripple>
       <q-item-section side top>
-        <q-checkbox v-model="props.data.settings.enableRelay"/>
+        <q-checkbox v-model="props.data.settings.instanceConfig.enableRelay"/>
       </q-item-section>
       <q-item-section>
         <q-item-label>使用WebRTC中继</q-item-label>

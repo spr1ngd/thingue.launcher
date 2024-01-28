@@ -9,7 +9,7 @@ import (
 var (
 	ConnManager              = conn.ConnManager
 	RunnerManager            = instance.RunnerManager
-	InstanceManager          = instance.InstanceManager
+	ConfigManager            = instance.ConfigManager
 	SyncManager              = sync.SyncManager
-	RunnerRestartTaskManager = new(instance.RunnerRestartTaskManager)
+	RunnerRestartTaskManager = new(instance.RunnerRestartTask)
 )

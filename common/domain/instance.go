@@ -2,26 +2,27 @@ package domain
 
 import (
 	"github.com/mitchellh/mapstructure"
+	types "thingue-launcher/common/gen/proto/go/types/v1"
 	"thingue-launcher/common/model"
 	"time"
 )
 
 type Instance struct {
-	ID                uint32             `json:"id"`
-	Pid               int32              `json:"pid"`
-	StateCode         int32              `json:"stateCode"`
-	StreamerConnected bool               `json:"streamerConnected"`
-	StreamerId        string             `json:"streamerId"`
-	LastStartAt       time.Time          `json:"lastStartAt"`
-	LastStopAt        time.Time          `json:"lastStopAt"`
-	PlayerIds         []string           `json:"playerIds"`
-	PlayerCount       uint32             `json:"playerCount"`
-	IsInternal        bool               `json:"isInternal"`
-	InstanceConfig    InstanceConfig     `json:"instanceConfig"`
-	PlayerConfig      model.PlayerConfig `json:"playerConfig"`
+	ID                uint32       `json:"id"`
+	Pid               int32        `json:"pid"`
+	StateCode         int32        `json:"stateCode"`
+	StreamerConnected bool         `json:"streamerConnected"`
+	StreamerId        string       `json:"streamerId"`
+	LastStartAt       time.Time    `json:"lastStartAt"`
+	LastStopAt        time.Time    `json:"lastStopAt"`
+	PlayerIds         []string     `json:"playerIds"`
+	PlayerCount       uint32       `json:"playerCount"`
+	IsInternal        bool         `json:"isInternal"`
+	Config            Config       `json:"instanceConfig"`
+	PlayerConfig      PlayerConfig `json:"playerConfig"`
 }
 
-type InstanceConfig struct {
+type Config struct {
 	Name                   string   `json:"name"`
 	CloudRes               string   `json:"cloudRes"`
 	ExecPath               string   `json:"execPath"`
@@ -36,19 +37,40 @@ type InstanceConfig struct {
 	StopDelay              int32    `json:"stopDelay"`
 }
 
-func (i *Instance) ToServerModel() *model.ServerInstance { return nil }
+type PlayerConfig struct {
+	MatchViewportRes bool   `json:"matchViewportRes"`
+	HideUI           bool   `json:"hideUI"`
+	IdleDisconnect   bool   `json:"idleDisconnect"`
+	IdleTimeout      uint32 `json:"idleTimeout"`
+}
 
-func (i *Instance) FromServerModel(client *model.ServerInstance) {}
+func (i *Instance) ToServerModel() *model.Instance { return nil }
 
-func (i *Instance) ToClientModel() *model.ClientInstance { return nil }
+func (i *Instance) FromServerModel(client *model.Instance) {}
 
-func (i *Instance) FromClientModel(client *model.ClientInstance) {
-	var config InstanceConfig
-	_ = mapstructure.Decode(client, &config)
-	i.InstanceConfig = config
-	i.ID = client.ID
-	i.LastStartAt = client.LastStartAt
-	i.LastStopAt = client.LastStopAt
-	i.IsInternal = client.IsInternal
-	i.PlayerConfig = client.PlayerConfig
+func (i *Instance) ToInstanceInfoTypes() *types.InstanceInfo {
+	var instanceInfo types.InstanceInfo
+	_ = mapstructure.Decode(i, &instanceInfo)
+	return &instanceInfo
+}
+
+func (i *Instance) ToInstanceConfig() *model.InstanceConfig {
+	var instanceConfig model.InstanceConfig
+	_ = mapstructure.Decode(i, &instanceConfig)
+	_ = mapstructure.Decode(i.Config, &instanceConfig)
+	_ = mapstructure.Decode(i.PlayerConfig, &instanceConfig)
+	return &instanceConfig
+}
+
+func (i *Instance) FromInstanceConfig(instanceConfig *model.InstanceConfig) {
+	var config Config
+	_ = mapstructure.Decode(instanceConfig, &config)
+	i.Config = config
+	var playerConfig PlayerConfig
+	_ = mapstructure.Decode(instanceConfig, &playerConfig)
+	i.PlayerConfig = playerConfig
+	i.ID = instanceConfig.ID
+	i.LastStartAt = instanceConfig.LastStartAt
+	i.LastStopAt = instanceConfig.LastStopAt
+	i.IsInternal = instanceConfig.IsInternal
 }

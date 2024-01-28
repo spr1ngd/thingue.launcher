@@ -6,12 +6,12 @@ import (
 	"thingue-launcher/common/provider"
 )
 
-type RunnerRestartTaskManager struct {
+type RunnerRestartTask struct {
 	restartCron        *cron.Cron
 	restartTaskEntryID cron.EntryID
 }
 
-func (t *RunnerRestartTaskManager) Init() {
+func (t *RunnerRestartTask) Init() {
 	t.restartCron = cron.New()
 	if provider.AppConfig.SystemSettings.EnableRestartTask {
 		err := t.Start()
@@ -23,7 +23,7 @@ func (t *RunnerRestartTaskManager) Init() {
 	}
 }
 
-func (t *RunnerRestartTaskManager) Start() error {
+func (t *RunnerRestartTask) Start() error {
 	var err error
 	appConfig := provider.AppConfig
 	t.restartTaskEntryID, err = t.restartCron.AddFunc(appConfig.SystemSettings.RestartTaskCron, func() {
@@ -35,7 +35,7 @@ func (t *RunnerRestartTaskManager) Start() error {
 	return err
 }
 
-func (t *RunnerRestartTaskManager) Stop() {
+func (t *RunnerRestartTask) Stop() {
 	t.restartCron.Remove(t.restartTaskEntryID)
 	t.restartCron.Stop()
 }

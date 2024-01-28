@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type ServerInstance struct {
+type Instance struct {
 	ID                  uint32        `json:"id" gorm:"primarykey"`
 	ClientID            uint32        `json:"clientID" gorm:"primarykey"`
 	StreamerId          string        `json:"streamerId" gorm:"unique"`
@@ -35,10 +35,13 @@ type ServerInstance struct {
 	Paks                []Pak         `json:"paks" gorm:"-"`
 	PakName             string        `json:"pakName" gorm:"-"`
 	CloudRes            string        `json:"cloudRes"`
-	PlayerConfig        PlayerConfig  `json:"playerConfig" gorm:"serializer:json"`
+	MatchViewportRes    bool          `json:"matchViewportRes"`
+	HideUI              bool          `json:"hideUI"`
+	IdleDisconnect      bool          `json:"idleDisconnect"`
+	IdleTimeout         uint32        `json:"idleTimeout"`
 }
 
-func (instance *ServerInstance) AfterFind(tx *gorm.DB) (err error) {
+func (instance *Instance) AfterFind(tx *gorm.DB) (err error) {
 	if instance.Metadata != "" {
 		var metaData MetaData
 		err := yaml.Unmarshal([]byte(instance.Metadata), &metaData)

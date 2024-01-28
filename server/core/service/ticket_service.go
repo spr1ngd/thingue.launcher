@@ -39,14 +39,14 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 	if selectCond.PlayerCount != nil && *selectCond.PlayerCount >= 0 {
 		query = query.Where("player_count = ?", selectCond.PlayerCount)
 	}
-	var findInstances []*model.ServerInstance
+	var findInstances []*model.Instance
 	query.Find(&findInstances)
 	// 判断查询后是否有结果
 	if len(findInstances) == 0 {
 		return ticket, errors.New("没有匹配的实例")
 	}
 	// 筛选掉未启动且未开启自动启停的实例
-	var readyInstances []*model.ServerInstance
+	var readyInstances []*model.Instance
 	for _, instance := range findInstances {
 		if instance.StateCode == 1 || instance.AutoControl == true {
 			readyInstances = append(readyInstances, instance)
@@ -85,7 +85,7 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 }
 
 func (s *ticketService) GetTicketById(streamerId string) (string, error) {
-	var instance model.ServerInstance
+	var instance model.Instance
 	err := global.ServerDB.Where("streamer_id = ?", streamerId).First(&instance).Error
 	if err == nil {
 		ticket, _ := uuid.NewUUID()

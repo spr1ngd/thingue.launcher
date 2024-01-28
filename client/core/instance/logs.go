@@ -10,8 +10,8 @@ import (
 )
 
 func getLogDir(instance *domain.Instance) (string, error) {
-	execDir := filepath.Dir(instance.InstanceConfig.ExecPath)
-	execName := strings.TrimSuffix(filepath.Base(instance.InstanceConfig.ExecPath), filepath.Ext(instance.InstanceConfig.ExecPath))
+	execDir := filepath.Dir(instance.Config.ExecPath)
+	execName := strings.TrimSuffix(filepath.Base(instance.Config.ExecPath), filepath.Ext(instance.Config.ExecPath))
 	files, err := os.ReadDir(execDir)
 	var hasEngineDir bool
 	var hasGameDir bool
@@ -47,7 +47,7 @@ func getLogFile(instance *domain.Instance) (string, error) {
 	logFile, err := os.ReadDir(logsDir)
 	if err == nil {
 		for _, entry := range logFile {
-			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".log") && (entry.Name() == instance.InstanceConfig.Name+".log" || strings.HasPrefix(entry.Name(), instance.InstanceConfig.Name+"_")) {
+			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".log") && (entry.Name() == instance.Config.Name+".log" || strings.HasPrefix(entry.Name(), instance.Config.Name+"_")) {
 				logFiles = append(logFiles, filepath.Join(logsDir, entry.Name()))
 			}
 		}
@@ -70,7 +70,7 @@ func getLogFiles(instance *domain.Instance) []string {
 	logFile, err := os.ReadDir(logsDir)
 	if err == nil {
 		for _, entry := range logFile {
-			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".log") && (entry.Name() == instance.InstanceConfig.Name+".log" || strings.HasPrefix(entry.Name(), instance.InstanceConfig.Name+"-backup-")) {
+			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".log") && (entry.Name() == instance.Config.Name+".log" || strings.HasPrefix(entry.Name(), instance.Config.Name+"-backup-")) {
 				logFiles = append(logFiles, filepath.Join(logsDir, entry.Name()))
 			}
 		}

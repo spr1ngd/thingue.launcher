@@ -19,7 +19,7 @@ func InitGorm() {
 	global.AppDB = db
 	if err = db.AutoMigrate(
 		&model.RemoteServer{},
-		&model.ClientInstance{},
+		&model.InstanceConfig{},
 	); err != nil {
 		logger.Zap.Panic(err)
 	}

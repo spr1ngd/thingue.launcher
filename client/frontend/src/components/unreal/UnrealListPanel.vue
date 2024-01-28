@@ -7,7 +7,8 @@ import {
   StartDownload,
   StartInstance,
   StartUpload,
-  StopInstance
+  StopInstance,
+  GetDefaultConfig
 } from "@wails/go/api/instanceApi";
 import {OpenExplorer} from "@wails/go/api/systemApi.js";
 import {ConnectServer, DisconnectServer, GetConnState} from "@wails/go/api/connApi";
@@ -63,31 +64,11 @@ async function list() {
 }
 
 function handleNewSettings() {
-  emit("openSettingsPanel", {
-    type: 'new',
-    settings: {
-      launchArguments: [
-        "-AudioMixer",
-        "-RenderOffScreen",
-        "-ForceRes",
-        "-ResX=1920",
-        "-ResY=1080",
-      ],
-      cloudRes: "",
-      faultRecover: false,
-      enableMultiuserControl: false,
-      autoResizeRes: false,
-      autoControl: false,
-      stopDelay: 5,
-      enableRelay: true,
-      enableRenderControl: false,
-      playerConfig: {
-        matchViewportRes: true,
-        hideUI: false,
-        idleDisconnect: false,
-        idleTimeout: 5
-      }
-    }
+  GetDefaultConfig().then(config => {
+    emit("openSettingsPanel", {
+      type: 'new',
+      settings: config
+    })
   })
 }
 
@@ -98,8 +79,8 @@ function handleEditSettings(row) {
   })
 }
 
-function handleDelete(cid) {
-  DeleteInstance(cid).then(() => {
+function handleDelete(id) {
+  DeleteInstance(id).then(() => {
     list()
   }).catch(err => {
     Notify.create(err)
@@ -132,16 +113,16 @@ async function handleSelectChange() {
   }
 }
 
-async function handleOpenInstanceLog(cid) {
+async function handleOpenInstanceLog(id) {
   try {
-    await OpenInstanceLog(cid)
+    await OpenInstanceLog(id)
   } catch (err) {
     Notify.create(err)
   }
 }
 
-function handleStartInstance(cid) {
-  StartInstance(cid).then(() => {
+function handleStartInstance(id) {
+  StartInstance(id).then(() => {
     Notify.create("操作成功")
   }).catch(err => {
     Notify.create(err)
@@ -150,7 +131,7 @@ function handleStartInstance(cid) {
 
 function handleStopInstance(row) {
   row.loading = true
-  StopInstance(row.cid).then(() => {
+  StopInstance(row.id).then(() => {
     Notify.create("进程退出成功")
   }).catch(err => {
     Notify.create(err)
@@ -201,9 +182,9 @@ function handleGotoServer(tab) {
         </div>
       </template>
       <template v-slot:no-data>
-        <img src="@/assets/create.svg" style="padding-left: 108px"/>
+        <img src="@/assets/create.svg" style="padding-left: 108px" alt=""/>
         <q-space/>
-        <img src="@/assets/connect.svg" style="padding-right: 40px"/>
+        <img src="@/assets/connect.svg" style="padding-right: 40px" alt=""/>
       </template>
       <template v-slot:item="props">
         <div
@@ -217,7 +198,7 @@ function handleGotoServer(tab) {
                   <q-item-section avatar class="clickable  cursor-pointer"
                                   @click="OpenInstancePreviewUrl(props.row.sid)">
                     <q-item-label caption class="ellipsis">名称</q-item-label>
-                    <q-item-label class="ellipsis">{{ props.row.name }}</q-item-label>
+                    <q-item-label class="ellipsis">{{ props.row.instanceConfig.name }}</q-item-label>
                   </q-item-section>
                   <q-item-section avatar style="min-width: 74px">
                     <q-tooltip anchor="top middle" self="center middle">
@@ -242,13 +223,13 @@ function handleGotoServer(tab) {
                   </q-item-section>
                 </q-item>
                 <q-item>
-                  <q-item-section @click="handleOpenDir(props.row.execPath)">
+                  <q-item-section @click="handleOpenDir(props.row.instanceConfig.execPath)">
                     <q-item-label caption class="ellipsis cursor-pointer">
                       启动位置
                       <q-badge outline color="blue" v-if="props.row.isInternal">自动配置</q-badge>
                     </q-item-label>
                     <q-item-label class="ellipsis cursor-pointer">
-                      {{ props.row.execPath }}
+                      {{ props.row.instanceConfig.execPath }}
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -257,7 +238,7 @@ function handleGotoServer(tab) {
             <q-card-actions class="q-pt-xs q-pl-md">
               <div class="q-gutter-md">
                 <q-btn padding="none" color="green" :loading="false" flat dense icon="sym_o_play_circle"
-                       @click="handleStartInstance(props.row.cid)">
+                       @click="handleStartInstance(props.row.id)">
                   <q-tooltip :delay="600">启动</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="red" :loading="props.row.loading" flat dense icon="sym_o_stop_circle"
@@ -274,20 +255,20 @@ function handleGotoServer(tab) {
                     <div class="q-pa-sm">
                       确定要删除？
                       <q-btn dense size="sm" label="确认" color="blue" v-close-popup
-                             @click="handleDelete(props.row.cid)"/>
+                             @click="handleDelete(props.row.id)"/>
                     </div>
                   </q-menu>
                 </q-btn>
                 <q-btn padding="none" color="info" flat dense icon="sym_o_description"
-                       @click="handleOpenInstanceLog(props.row.cid)">
+                       @click="handleOpenInstanceLog(props.row.id)">
                   <q-tooltip :delay="600">打开实例日志</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="primary" flat dense icon="sym_o_cloud_upload"
-                       @click="handleCloudUpload(props.row.cid)">
+                       @click="handleCloudUpload(props.row.id)">
                   <q-tooltip :delay="600">上传</q-tooltip>
                 </q-btn>
                 <q-btn padding="none" color="blue" flat dense icon="sym_o_cloud_download"
-                       @click="handleCloudDownload(props.row.cid)">
+                       @click="handleCloudDownload(props.row.id)">
                   <q-tooltip :delay="600">下载</q-tooltip>
                 </q-btn>
                 <!--                <q-icon class="flashing" color="primary" name="sym_o_cloud_upload" size="sm"></q-icon>-->
@@ -305,10 +286,6 @@ function handleGotoServer(tab) {
 </template>
 
 <style scoped>
-.flashing {
-  animation: flashAnimation 1s ease infinite;
-}
-
 @keyframes flashAnimation {
   0%,
   100% {

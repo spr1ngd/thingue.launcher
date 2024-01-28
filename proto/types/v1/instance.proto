@@ -10,7 +10,7 @@ message InstanceInfo {
   string streamer_id = 5;
   google.protobuf.Timestamp last_start_at = 6;
   google.protobuf.Timestamp last_stop_at = 7;
-  InstanceConfig instance_config = 8;
+  InstanceConfig config = 8;
   PlayerConfig player_config = 9;
 }
 

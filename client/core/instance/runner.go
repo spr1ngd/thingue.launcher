@@ -38,18 +38,18 @@ func (r *Runner) Start() error {
 	if err == nil {
 		r.StreamerId = streamerIdResponse.GetId()
 		wsUrl := util.HttpUrlToWsUrl(provider.AppConfig.ServerURL, "/ws/streamer")
-		launchArguments = append(r.InstanceConfig.LaunchArguments,
+		launchArguments = append(r.Config.LaunchArguments,
 			fmt.Sprintf("-PixelStreamingURL=%s/%s", wsUrl, r.StreamerId))
 	} else {
 		return err
 	}
 	// 设置日志文件名称启动参数
-	if r.InstanceConfig.Name != "" {
-		launchArguments = append(launchArguments, fmt.Sprintf("LOG=%s.log", r.InstanceConfig.Name))
+	if r.Config.Name != "" {
+		launchArguments = append(launchArguments, fmt.Sprintf("LOG=%s.log", r.Config.Name))
 	}
 	// 运行前
-	logger.Zap.Debug(r.InstanceConfig.ExecPath, launchArguments)
-	command := exec.Command(r.InstanceConfig.ExecPath, launchArguments...)
+	logger.Zap.Debug(r.Config.ExecPath, launchArguments)
+	command := exec.Command(r.Config.ExecPath, launchArguments...)
 	err = command.Start()
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func (r *Runner) Start() error {
 	r.updateProcessState(1)
 	r.LastStartAt = time.Now()
 	RunnerManager.RunnerStatusUpdateChanel <- r.ID
-	logger.Zap.Infof("实例启动 %s", r.InstanceConfig.Name)
+	logger.Zap.Infof("实例启动 %s", r.Config.Name)
 	go func() {
 		exitCode := command.Wait()
 		r.Pid = 0
@@ -70,13 +70,13 @@ func (r *Runner) Start() error {
 		case r.ExitSignalChannel <- exitCode:
 			r.updateProcessState(0)
 			RunnerManager.RunnerStatusUpdateChanel <- r.ID
-			logger.Zap.Debugf("退出码发送成功 %s", r.InstanceConfig.Name)
+			logger.Zap.Debugf("退出码发送成功 %s", r.Config.Name)
 			r.faultCount = 0
 		default:
 			r.updateProcessState(-1)
 			RunnerManager.RunnerUnexpectedExitChanel <- r.ID
-			logger.Zap.Warnf("实例异常退出 %s %d", r.InstanceConfig.Name, r.faultCount)
-			if r.InstanceConfig.FaultRecover && r.faultCount < 3 {
+			logger.Zap.Warnf("实例异常退出 %s %d", r.Config.Name, r.faultCount)
+			if r.Config.FaultRecover && r.faultCount < 3 {
 				time.Sleep(3 * time.Second)
 				r.Start()
 			}
@@ -102,7 +102,7 @@ func (r *Runner) Stop() error {
 	cmd.Stdout = os.Stdout
 	err := cmd.Start()
 	exitStatus := <-r.ExitSignalChannel
-	logger.Zap.Infof("实例停止 %s %s", r.InstanceConfig.Name, exitStatus)
+	logger.Zap.Infof("实例停止 %s %s", r.Config.Name, exitStatus)
 	return err
 }
 

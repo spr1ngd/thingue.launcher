@@ -28,7 +28,7 @@ func (m *syncManager) StartUpload(id uint32) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cloudRes := strings.TrimSpace(runner.InstanceConfig.CloudRes)
+	cloudRes := strings.TrimSpace(runner.Config.CloudRes)
 	if cloudRes == "" {
 		return "", errors.New("云资源标识未设置")
 	}
@@ -37,7 +37,7 @@ func (m *syncManager) StartUpload(id uint32) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	localFileInfoSet, localFileInfos, err := m.getLocalFiles(filepath.Dir(runner.InstanceConfig.ExecPath))
+	localFileInfoSet, localFileInfos, err := m.getLocalFiles(filepath.Dir(runner.Config.ExecPath))
 	if err != nil {
 		return "", err
 	}
@@ -90,7 +90,7 @@ func (m *syncManager) StartUpdate(id uint32) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cloudRes := strings.TrimSpace(runner.InstanceConfig.CloudRes)
+	cloudRes := strings.TrimSpace(runner.Config.CloudRes)
 	if cloudRes == "" {
 		return "", errors.New("云资源标识未设置")
 	}
@@ -98,12 +98,12 @@ func (m *syncManager) StartUpdate(id uint32) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return m.updatePackage(cloudRes, filepath.Dir(runner.InstanceConfig.ExecPath), cloudFileInfoSet)
+	return m.updatePackage(cloudRes, filepath.Dir(runner.Config.ExecPath), cloudFileInfoSet)
 }
 
 func (m *syncManager) UpdateCloudRes(cloudRes string) error {
 	logger.Zap.Debug("检查更新")
-	instances := instance.InstanceManager.GetByCloudRes(cloudRes)
+	instances := instance.ConfigManager.GetByCloudRes(cloudRes)
 	// 筛除使用相同包的实例
 	uniqueMap := make(map[string]int)
 	var uniquePackages []string

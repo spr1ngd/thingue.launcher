@@ -2,15 +2,13 @@ package api
 
 import (
 	"context"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"thingue-launcher/client/core"
 	"thingue-launcher/client/global"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
-	"thingue-launcher/common/model"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type instanceApi struct {
@@ -38,50 +36,73 @@ func (u *instanceApi) Init(ctx context.Context) {
 	}()
 }
 
-func (u *instanceApi) GetInstanceById(id uint) *model.ClientInstance {
-	return core.InstanceManager.GetById(id)
+func (u *instanceApi) GetInstanceById(id uint) *domain.Instance {
+	return core.ConfigManager.GetById(id)
 }
 
 func (u *instanceApi) ListInstance() []*domain.Instance {
 	return core.RunnerManager.List()
 }
 
-func (u *instanceApi) CreateInstance(instance *model.ClientInstance) error {
-	core.InstanceManager.Create(instance)
-	err := core.RunnerManager.NewRunner(instance)
-	if err == nil {
-		_, err := global.GrpcClient.AddInstance(context.Background(), &pb.AddInstanceRequest{InstanceInfo: nil})
+func (u *instanceApi) GetDefaultConfig() *domain.Instance {
+	return core.ConfigManager.GetDefault()
+}
+
+func (u *instanceApi) CreateInstance(instance *domain.Instance) error {
+	id := core.ConfigManager.Create(instance)
+	instance.ID = id
+	err := core.RunnerManager.NewRunner(id, instance.Config)
+	if err != nil {
+		core.ConfigManager.Delete(id)
+		return err
+	}
+	if global.GrpcClient != nil {
+		_, err := global.GrpcClient.AddInstance(context.Background(),
+			&pb.AddInstanceRequest{InstanceInfo: instance.ToInstanceInfoTypes()})
 		if err != nil {
 			logger.Zap.Error(err)
 		}
-	} else {
-		core.InstanceManager.Delete(instance.ID)
 	}
-	return err
+	return nil
 }
 
-func (u *instanceApi) SaveInstance(instance *model.ClientInstance) error {
-	err := core.InstanceManager.SaveConfig(instance)
-	if err == nil {
-		// todo
-		//service.ServerConnManager.Reconnect()
+func (u *instanceApi) UpdateConfig(instance *domain.Instance) error {
+	//fmt.Printf("%+v", instance)
+	err := core.ConfigManager.Update(instance)
+	if err != nil {
+		return err
 	}
-	return err
+	if global.GrpcClient != nil {
+		instanceInfo := instance.ToInstanceInfoTypes()
+		_, err := global.GrpcClient.UpdateConfig(context.Background(), &pb.UpdateConfigRequest{
+			ClientId:       global.ClientId,
+			InstanceId:     instance.ID,
+			InstanceConfig: instanceInfo.Config,
+			PlayerConfig:   instanceInfo.PlayerConfig,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (u *instanceApi) DeleteInstance(id uint32) error {
-	err := core.RunnerManager.DeleteRunner(id)
-	if err == nil {
+	if global.GrpcClient != nil {
 		_, err := global.GrpcClient.DeleteInstance(context.Background(), &pb.DeleteInstanceRequest{
 			ClientId:   global.ClientId,
 			InstanceId: id,
 		})
 		if err != nil {
-			logger.Zap.Error(err)
+			return err
 		}
-		core.InstanceManager.Delete(id)
 	}
-	return err
+	err := core.RunnerManager.DeleteRunner(id)
+	if err != nil {
+		return err
+	}
+	core.ConfigManager.Delete(id)
+	return nil
 }
 
 func (u *instanceApi) StartInstance(id uint32) error {
