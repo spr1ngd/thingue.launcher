@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"sync"
 	"thingue-launcher/common/logger"
+	"thingue-launcher/server/sgcc/config"
 	"thingue-launcher/server/sgcc/provider"
 	"thingue-launcher/server/sgcc/service"
 	"time"
@@ -29,7 +30,7 @@ func (m *connManager) connect() error {
 	if m.IsConnected {
 		return nil
 	}
-	wsURL := provider.Config.CloudServerURL
+	wsURL := config.Config.CloudServerURL
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	if err == nil {
 		m.IsConnected = true

@@ -2,10 +2,13 @@ package service
 
 import (
 	"errors"
+	"github.com/spf13/viper"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/message"
 	"thingue-launcher/common/request"
 	"thingue-launcher/server/core/provider"
+	provider2 "thingue-launcher/server/sgcc/provider"
+	"thingue-launcher/server/sgcc/utils"
 	"time"
 )
 
@@ -117,9 +120,12 @@ func (m *sdpService) OnPlayerDisConnect(player *provider.PlayerConnector) {
 		// 关闭渲染
 		player.StreamerConnector.ControlRendering(false)
 		InstanceService.UpdateRenderingState(player.StreamerConnector.StreamerId, false)
-		if instance.AutoControl && instance.StopDelay >= 0 {
+		if instance.AutoControl {
 			// 启动自动启停延时任务
 			player.StreamerConnector.AutoStopTimer.Reset(time.Duration(instance.StopDelay) * time.Second)
+			if viper.GetBool("enableSgcc") {
+				provider2.SendStatus(instance.StreamerId, instance.PakName, utils.GetInstanceNodeStatus(instance))
+			}
 		}
 	}
 	player.Close()

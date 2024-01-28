@@ -2,7 +2,7 @@
   <configuration default="false" name="server" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="ThingUE-Launcher" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="--log-level=info" />
+      <parameters value="--log-level=info  --enable-sgcc"/>
     <kind value="PACKAGE" />
     <package value="thingue-launcher/server" />
     <directory value="$PROJECT_DIR$" />

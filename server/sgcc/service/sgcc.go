@@ -2,18 +2,16 @@ package service
 
 import (
 	"context"
-	"math"
-	"math/rand"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	types "thingue-launcher/common/gen/proto/go/types/v1"
 	"thingue-launcher/common/logger"
-	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
 	"thingue-launcher/common/util"
 	coreprovider "thingue-launcher/server/core/provider"
 	"thingue-launcher/server/core/service"
 	"thingue-launcher/server/sgcc/message"
 	"thingue-launcher/server/sgcc/provider"
+	"thingue-launcher/server/sgcc/utils"
 	"time"
 )
 
@@ -24,27 +22,7 @@ var SgccService = &sgccService{}
 func (s *sgccService) GetNodeStatus(node string) int {
 	instance := service.InstanceService.GetInstanceByStreamerId(node)
 	if instance != nil {
-		return s.GetInstanceStatus(instance)
-	}
-	logger.Zap.Error("获取实例状态失败", instance.StreamerId)
-	return -1
-}
-
-func (s *sgccService) GetInstanceStatus(instance *model.Instance) int {
-	if instance.StateCode == 1 {
-		if instance.PakName == "" {
-			return 0
-		} else {
-			if instance.PlayerCount > 0 {
-				return 1
-			} else {
-				return 2
-			}
-		}
-	} else if instance.StateCode == 0 {
-		return 3
-	} else if instance.StateCode == -1 {
-		return 4
+		return utils.GetInstanceNodeStatus(instance)
 	}
 	logger.Zap.Error("获取实例状态失败", instance.StreamerId)
 	return -1
@@ -74,7 +52,7 @@ func (s *sgccService) Init() {
 		}
 		node := message.Node{
 			Id:       instance.StreamerId,
-			Status:   s.GetInstanceStatus(instance),
+			Status:   utils.GetInstanceNodeStatus(instance),
 			Datetime: util.DateFormat(time.Now()),
 			Station:  instance.PakName,
 			LoadType: 3,
@@ -113,21 +91,6 @@ func (s *sgccService) Release(nodes []string) {
 	callback = message.NewReleaseCallback(true, callbackNodes)
 	callback.Nodes = callbackNodes
 	provider.SendCloudMessage(callback.GetBytes())
-}
-
-func (s *sgccService) SendStatus(node string) {
-	statistic := message.Statistic{
-		Gpu:    int(math.Round(rand.Float64()*4 + 20)),
-		Cpu:    int(math.Round(rand.Float64()*10 + 5)),
-		Memory: rand.Float32()*1.5 + 1.5,
-	}
-	msg := message.Status{
-		Type:      "status",
-		Node:      node,
-		Status:    s.GetNodeStatus(node),
-		Statistic: statistic,
-	}
-	provider.SendCloudMessage(msg.GetBytes())
 }
 
 func (s *sgccService) Restart(nodes []string) {

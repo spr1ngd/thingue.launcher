@@ -1,4 +1,4 @@
-package provider
+package config
 
 type config struct {
 	CloudServerURL string    `yaml:"cloud-server-url"`

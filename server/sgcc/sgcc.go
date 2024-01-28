@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
+	"thingue-launcher/server/core/service"
+	"thingue-launcher/server/sgcc/config"
 	"thingue-launcher/server/sgcc/provider"
+	"thingue-launcher/server/sgcc/utils"
 	"thingue-launcher/server/sgcc/ws"
+	"time"
 )
 
 func Init() {
@@ -15,7 +19,7 @@ func Init() {
 		fmt.Printf("Failed to read YAML file: %v\n", err)
 		panic(err)
 	}
-	err = yaml.Unmarshal(yamlFile, provider.Config)
+	err = yaml.Unmarshal(yamlFile, config.Config)
 	if err != nil {
 		fmt.Printf("Failed to unmarshal YAML: %v", err)
 		panic(err)
@@ -23,5 +27,15 @@ func Init() {
 	// 连接云端
 	ws.ConnManager.StartConnectTask()
 	// 定时发送状态
-
+	ticker := time.NewTicker(10 * time.Second)
+	go func() {
+		for {
+			_ = <-ticker.C
+			instances := service.InstanceService.InstanceList()
+			for _, instance := range instances {
+				status := utils.GetInstanceNodeStatus(instance)
+				provider.SendStatus(instance.StreamerId, instance.PakName, status)
+			}
+		}
+	}()
 }

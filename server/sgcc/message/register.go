@@ -2,7 +2,7 @@ package message
 
 import (
 	"encoding/json"
-	"thingue-launcher/server/sgcc/provider"
+	"thingue-launcher/server/sgcc/config"
 )
 
 type RegisterMessage struct {
@@ -25,9 +25,9 @@ func NewRegister(maxNode int) *RegisterMessage {
 		Type:       "register",
 		ResType:    0,
 		MaxNode:    maxNode,
-		Maintainer: provider.Config.Register.Maintainer,
-		Url:        provider.Config.Register.Url,
-		Stations:   provider.Config.Register.Stations,
+		Maintainer: config.Config.Register.Maintainer,
+		Url:        config.Config.Register.Url,
+		Stations:   config.Config.Register.Stations,
 	}
 }
 
