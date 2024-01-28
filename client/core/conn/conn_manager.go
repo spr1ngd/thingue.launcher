@@ -3,7 +3,6 @@ package conn
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/labstack/gommon/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -112,14 +111,7 @@ func (c *connManager) connect() error {
 		// 创建客户端
 		client := pb.NewServerInstanceServiceClient(cc)
 		global.GrpcClient = client
-		// 测试调用
-		agent, err := client.RegisterAgent(context.Background(), &pb.RegisterAgentRequest{
-			Instances:  nil,
-			DeviceInfo: nil,
-		})
-		if err == nil {
-			fmt.Println("grpc测试调用成功", agent.Id)
-		}
+
 		// 反向隧道
 		resultChan := make(chan error)
 		go TunnelServer.ServeTunnelServer(resultChan, cc)

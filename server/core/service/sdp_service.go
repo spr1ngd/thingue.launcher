@@ -143,15 +143,15 @@ func (m *sdpService) KickPlayerUser(userQueryMap map[string]string) (int, error)
 func (m *sdpService) OnStreamerNodeRestarted(streamer *provider.StreamerConnector) {
 	instance := InstanceService.GetInstanceByStreamerId(streamer.StreamerId)
 	restarting := provider.SdpConnProvider.GetStreamerRestartingState(streamer.StreamerId)
-	if restarting && instance.CurrentPak != "" {
-		logger.Zap.Infof("重启后加载 %s %s", instance.Name, instance.CurrentPak)
+	if restarting && instance.PakValue != "" {
+		logger.Zap.Infof("重启后加载 %s %s", instance.Name, instance.PakValue)
 		command := message.Command{}
-		command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.CurrentPak})
+		command.BuildBundleLoadCommand(message.BundleLoadParams{Bundle: instance.PakValue})
 		streamer.SendCommand(&command)
 		provider.SdpConnProvider.SetStreamerRestartingState(streamer.StreamerId, false)
 	} else if restarting {
 		provider.SdpConnProvider.SetStreamerRestartingState(streamer.StreamerId, false)
-		logger.Zap.Infof("重启后不需要加载pak %s %s", instance.Name, instance.CurrentPak)
+		logger.Zap.Infof("重启后不需要加载pak %s %s", instance.Name, instance.PakValue)
 	} else {
 		logger.Zap.Warnf("非重启时忽略nodeRestarted消息 %s", instance.Name)
 	}

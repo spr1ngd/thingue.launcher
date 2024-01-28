@@ -11,10 +11,6 @@ type InstanceService struct {
 	pb.UnimplementedServerInstanceServiceServer
 }
 
-func (s InstanceService) RegisterAgent(context.Context, *pb.RegisterAgentRequest) (*pb.RegisterAgentResponse, error) {
-	return &pb.RegisterAgentResponse{Id: 919}, nil
-}
-
 func (s InstanceService) AddInstance(ctx context.Context, req *pb.AddInstanceRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, core.InstanceService.AddInstance(req)
 }
@@ -23,8 +19,8 @@ func (s InstanceService) DeleteInstance(ctx context.Context, req *pb.DeleteInsta
 	return &emptypb.Empty{}, core.InstanceService.DeleteInstance(req)
 }
 
-func (s InstanceService) UpdateConfig(context.Context, *pb.UpdateConfigRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
+func (s InstanceService) UpdateConfig(ctx context.Context, req *pb.UpdateConfigRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, core.InstanceService.UpdateInstanceConfig(req)
 }
 
 func (s InstanceService) GetStreamerId(ctx context.Context, req *pb.GetStreamerIdRequest) (*pb.GetStreamerIdResponse, error) {
@@ -33,14 +29,14 @@ func (s InstanceService) GetStreamerId(ctx context.Context, req *pb.GetStreamerI
 }
 
 func (s InstanceService) UpdateProcessState(ctx context.Context, req *pb.UpdateProcessStateRequest) (*emptypb.Empty, error) {
-	core.InstanceService.UpdateProcessState(req.ClientId, req.InstanceId, req.StateCode, req.Pid)
+	return &emptypb.Empty{}, core.InstanceService.UpdateProcessState(req)
+}
+
+func (s InstanceService) UpdateRestarting(ctx context.Context, req *pb.UpdateRestartingRequest) (*emptypb.Empty, error) {
+	core.InstanceService.UpdateRestarting(req)
 	return &emptypb.Empty{}, nil
 }
 
-func (s InstanceService) UpdateRestarting(context.Context, *pb.UpdateRestartingRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
-}
-
-func (s InstanceService) ClearPakState(context.Context, *pb.ClearPakStateRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
+func (s InstanceService) ClearPakState(ctx context.Context, req *pb.ClearPakStateRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, core.InstanceService.ClearPakState(req)
 }

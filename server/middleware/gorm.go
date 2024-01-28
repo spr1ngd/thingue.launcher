@@ -15,12 +15,13 @@ func InitGorm() {
 		openServerDB()
 		openStorageDB()
 		global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Client{})
-		global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Instance{})
+		global.ServerDB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ServerInstance{})
 	}
 }
 
 func openServerDB() {
 	dsn := "file::memory:?cache=shared"
+	//dsn := "./thingue-launcher/server.db"
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logger.Zap.Panic("failed to connect database")
@@ -28,7 +29,7 @@ func openServerDB() {
 	global.ServerDB = db
 	if err = db.AutoMigrate(
 		&model.Client{},
-		&model.Instance{},
+		&model.ServerInstance{},
 	); err != nil {
 		logger.Zap.Error(err)
 	}

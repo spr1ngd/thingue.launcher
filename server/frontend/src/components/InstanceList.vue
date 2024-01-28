@@ -27,19 +27,19 @@ const subColumns = [
 
 const expanded = ref([])
 
-function start(sid) {
-  controlProcess(sid, 'START');
+function start(streamerId) {
+  controlProcess(streamerId, 'START');
 }
 
-function stop(sid) {
-  controlProcess(sid, 'STOP');
+function stop(streamerId) {
+  controlProcess(streamerId, 'STOP');
 }
 
 function handleChange(row) {
   let newPak = row.pakName;
   if (newPak) {
     sendPakControl({
-      sid: row.sid,
+      streamerId: row.streamerId,
       type: "load",
       pak: row.paks.filter(pak => pak.name === newPak)[0].value
     }).then((r) => {
@@ -51,7 +51,7 @@ function handleChange(row) {
     });
   } else {
     sendPakControl({
-      sid: row.sid,
+      streamerId: row.streamerId,
       type: "unload"
     }).then((r) => {
       if (r.code === 500) {
@@ -136,9 +136,10 @@ onMounted(() => {
 
             <template v-slot:body="props">
               <q-tr :props="props">
-                <q-td align="center">{{ props.row.cid }}</q-td>
+                <q-td align="center">{{ props.row.id }}</q-td>
                 <q-td align="center">
-                  <q-btn padding="none" flat no-caps dense color="primary" :href="`player.html?sid=${props.row.sid}`"
+                  <q-btn :href="`player.html?streamerId=${props.row.streamerId}`" color="primary" dense flat no-caps
+                         padding="none"
                          target="_blank" :label="props.row.name"/>
                 </q-td>
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -165,8 +166,9 @@ onMounted(() => {
                     <q-btn size="sm" color="primary" round dense icon="settings"
                            @click="$emit('someEvent', props.row, props.row.sessionId, 'instance')"></q-btn>
                     <q-btn size="sm" color="positive" round dense icon="play_arrow"
-                           @click="start(props.row.sid)"></q-btn>
-                    <q-btn size="sm" color="negative" round dense icon="stop" @click="stop(props.row.sid)"></q-btn>
+                           @click="start(props.row.streamerId)"></q-btn>
+                    <q-btn color="negative" dense icon="stop" round size="sm"
+                           @click="stop(props.row.streamerId)"></q-btn>
                   </div>
                 </q-td>
               </q-tr>

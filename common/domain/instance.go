@@ -8,21 +8,21 @@ import (
 )
 
 type Instance struct {
-	ID                uint32       `json:"id"`
-	Pid               int32        `json:"pid"`
-	StateCode         int32        `json:"stateCode"`
-	StreamerConnected bool         `json:"streamerConnected"`
-	StreamerId        string       `json:"streamerId"`
-	LastStartAt       time.Time    `json:"lastStartAt"`
-	LastStopAt        time.Time    `json:"lastStopAt"`
-	PlayerIds         []string     `json:"playerIds"`
-	PlayerCount       uint32       `json:"playerCount"`
-	IsInternal        bool         `json:"isInternal"`
-	Config            Config       `json:"instanceConfig"`
-	PlayerConfig      PlayerConfig `json:"playerConfig"`
+	ID                uint32         `json:"id"`
+	Pid               int32          `json:"pid"`
+	StateCode         int32          `json:"stateCode"`
+	StreamerConnected bool           `json:"streamerConnected"`
+	StreamerId        string         `json:"streamerId"`
+	LastStartAt       time.Time      `json:"lastStartAt"`
+	LastStopAt        time.Time      `json:"lastStopAt"`
+	PlayerIds         []string       `json:"playerIds"`
+	PlayerCount       uint32         `json:"playerCount"`
+	IsInternal        bool           `json:"isInternal"`
+	Config            InstanceConfig `json:"instanceConfig"`
+	PlayerConfig      PlayerConfig   `json:"playerConfig"`
 }
 
-type Config struct {
+type InstanceConfig struct {
 	Name                   string   `json:"name"`
 	CloudRes               string   `json:"cloudRes"`
 	ExecPath               string   `json:"execPath"`
@@ -44,9 +44,9 @@ type PlayerConfig struct {
 	IdleTimeout      uint32 `json:"idleTimeout"`
 }
 
-func (i *Instance) ToServerModel() *model.Instance { return nil }
+func (i *Instance) ToServerModel() *model.ServerInstance { return nil }
 
-func (i *Instance) FromServerModel(client *model.Instance) {}
+func (i *Instance) FromServerModel(client *model.ServerInstance) {}
 
 func (i *Instance) ToInstanceInfoTypes() *types.InstanceInfo {
 	var instanceInfo types.InstanceInfo
@@ -63,7 +63,7 @@ func (i *Instance) ToInstanceConfig() *model.InstanceConfig {
 }
 
 func (i *Instance) FromInstanceConfig(instanceConfig *model.InstanceConfig) {
-	var config Config
+	var config InstanceConfig
 	_ = mapstructure.Decode(instanceConfig, &config)
 	i.Config = config
 	var playerConfig PlayerConfig

@@ -80,7 +80,7 @@ func (m *runnerManager) List() []*domain.Instance {
 	return instanceList
 }
 
-func (m *runnerManager) NewRunner(id uint32, config domain.Config) error {
+func (m *runnerManager) NewRunner(id uint32, config domain.InstanceConfig) error {
 	if _, ok := m.IdRunnerMap[id]; ok {
 		return errors.New("无法重复创建")
 	}
@@ -133,8 +133,7 @@ func (m *runnerManager) RestartAllRunner() {
 				continue
 			}
 			_, err = global.GrpcClient.UpdateRestarting(context.Background(), &pb.UpdateRestartingRequest{
-				ClientId:   global.ClientId,
-				InstanceId: runner.ID,
+				StreamerId: runner.StreamerId,
 				Restarting: true,
 			})
 			if err != nil {
@@ -146,8 +145,7 @@ func (m *runnerManager) RestartAllRunner() {
 			if err != nil {
 				logger.Zap.Errorf("重启失败 %s %s", runner.Config.Name, err)
 				_, err = global.GrpcClient.UpdateRestarting(context.Background(), &pb.UpdateRestartingRequest{
-					ClientId:   global.ClientId,
-					InstanceId: runner.ID,
+					StreamerId: runner.StreamerId,
 					Restarting: true,
 				})
 				if err != nil {

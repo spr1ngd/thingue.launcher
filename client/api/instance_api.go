@@ -58,7 +58,10 @@ func (u *instanceApi) CreateInstance(instance *domain.Instance) error {
 	}
 	if global.GrpcClient != nil {
 		_, err := global.GrpcClient.AddInstance(context.Background(),
-			&pb.AddInstanceRequest{InstanceInfo: instance.ToInstanceInfoTypes()})
+			&pb.AddInstanceRequest{
+				ClientId:     global.ClientId,
+				InstanceInfo: instance.ToInstanceInfoTypes(),
+			})
 		if err != nil {
 			logger.Zap.Error(err)
 		}

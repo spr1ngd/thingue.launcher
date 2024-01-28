@@ -24,7 +24,7 @@ func (s *sgccService) GetNodeStatus(node string) int {
 	return -1
 }
 
-func (s *sgccService) GetInstanceStatus(instance *model.Instance) int {
+func (s *sgccService) GetInstanceStatus(instance *model.ServerInstance) int {
 	if instance.StateCode == 1 {
 		if instance.PakName == "" {
 			return 0

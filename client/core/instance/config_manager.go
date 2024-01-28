@@ -72,7 +72,7 @@ func (m *configManager) GetByCloudRes(res string) []model.InstanceConfig {
 
 func (m *configManager) GetDefault() *domain.Instance {
 	return &domain.Instance{
-		Config: domain.Config{
+		Config: domain.InstanceConfig{
 			LaunchArguments:        []string{"-AudioMixer", "-RenderOffScreen", "-ForceRes", "-ResX=1920", "-ResY=1080"},
 			FaultRecover:           false,
 			EnableRelay:            true,

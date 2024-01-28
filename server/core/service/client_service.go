@@ -33,14 +33,14 @@ func (s *clientService) ClientList() []*model.Client {
 }
 
 func (s *clientService) CreateClient(client *model.Client) {
-	global.ServerDB.Create(&client)
+	global.ServerDB.Create(client)
 }
 
 func (s *clientService) RegisterClient(client *model.Client, agentInfo *pb.GetAgentInfoResponse) {
 	_ = mapstructure.Decode(agentInfo.DeviceInfo, client)
-	var serverInstances = make([]*model.Instance, 0)
+	var serverInstances []*model.ServerInstance
 	for _, instance := range agentInfo.Instances {
-		var serverInstance = &model.Instance{}
+		var serverInstance = &model.ServerInstance{}
 		_ = mapstructure.Decode(instance, serverInstance)
 		_ = mapstructure.Decode(instance.Config, serverInstance)
 		serverInstance.ID = instance.Id
@@ -53,18 +53,18 @@ func (s *clientService) RegisterClient(client *model.Client, agentInfo *pb.GetAg
 		serverInstances = append(serverInstances, serverInstance)
 	}
 	client.Instances = serverInstances
-	global.ServerDB.Save(&client)
+	global.ServerDB.Save(client)
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *clientService) DeleteClient(client *model.Client) {
-	global.ServerDB.Delete(&client)
-	global.ServerDB.Where("client_id = ?", client.ID).Delete(&model.Instance{})
+	global.ServerDB.Delete(client)
+	global.ServerDB.Where("client_id = ?", client.ID).Delete(&model.ServerInstance{})
 	provider.AdminConnProvider.BroadcastUpdate()
 }
 
 func (s *clientService) GetInstanceStreamerId(clientId, instanceId uint32) (string, error) {
-	var instance model.Instance
+	var instance model.ServerInstance
 	err := global.ServerDB.Where("client_id = ? AND id = ?", clientId, instanceId).First(&instance).Error
 	if err == nil {
 		return instance.StreamerId, err

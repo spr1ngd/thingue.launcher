@@ -7,12 +7,12 @@ export function getClientList() {
     });
 }
 
-export function controlProcess(sid, command) {
+export function controlProcess(streamerId, command) {
     return request({
         url: `/instance/processControl`,
         method: 'POST',
         data: {
-            sid,
+            streamerId,
             command
         }
     });

@@ -20,6 +20,6 @@ type InstanceTicket struct {
 	PlayerConfig      domain.PlayerConfig `json:"playerConfig"`
 }
 
-func (t *InstanceTicket) SetInstanceInfo(instance *model.Instance) {
+func (t *InstanceTicket) SetInstanceInfo(instance *model.ServerInstance) {
 	mapstructure.Decode(instance, t)
 }

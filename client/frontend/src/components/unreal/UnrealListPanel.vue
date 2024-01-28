@@ -2,13 +2,13 @@
 import {onMounted, onUnmounted, ref} from "vue";
 import {
   DeleteInstance,
+  GetDefaultConfig,
   ListInstance,
   OpenInstanceLog,
   StartDownload,
   StartInstance,
   StartUpload,
-  StopInstance,
-  GetDefaultConfig
+  StopInstance
 } from "@wails/go/api/instanceApi";
 import {OpenExplorer} from "@wails/go/api/systemApi.js";
 import {ConnectServer, DisconnectServer, GetConnState} from "@wails/go/api/connApi";
@@ -196,7 +196,7 @@ function handleGotoServer(tab) {
               <q-list dense>
                 <q-item>
                   <q-item-section avatar class="clickable  cursor-pointer"
-                                  @click="OpenInstancePreviewUrl(props.row.sid)">
+                                  @click="OpenInstancePreviewUrl(props.row.streamerId)">
                     <q-item-label caption class="ellipsis">名称</q-item-label>
                     <q-item-label class="ellipsis">{{ props.row.instanceConfig.name }}</q-item-label>
                   </q-item-section>

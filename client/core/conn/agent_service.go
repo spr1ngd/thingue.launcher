@@ -2,7 +2,7 @@ package conn
 
 import (
 	"context"
-	"github.com/mitchellh/mapstructure"
+	"fmt"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"thingue-launcher/client/core/instance"
 	"thingue-launcher/client/global"
@@ -17,8 +17,10 @@ type AgentService struct {
 func (s AgentService) GetAgentInfo(ctx context.Context, request *pb.GetAgentInfoRequest) (*pb.GetAgentInfoResponse, error) {
 	global.ClientId = request.ClientId
 	var instanceInfos []*types.InstanceInfo
-	instances := instance.RunnerManager.List()
-	_ = mapstructure.Decode(instances, instanceInfos)
+	for _, item := range instance.RunnerManager.List() {
+		instanceInfos = append(instanceInfos, item.ToInstanceInfoTypes())
+	}
+	fmt.Printf("%+v", instanceInfos)
 	response := &pb.GetAgentInfoResponse{
 		DeviceInfo: GetDeviceInfo(),
 		Instances:  instanceInfos,

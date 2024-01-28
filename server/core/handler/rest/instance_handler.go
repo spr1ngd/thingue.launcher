@@ -125,13 +125,13 @@ func (g *InstanceGroup) GetTicketById(c *gin.Context) {
 
 func (g *InstanceGroup) InstanceList(c *gin.Context) {
 	list := core.InstanceService.InstanceList()
-	response.OkWithDetailed(response.PageResult[*model.Instance]{
+	response.OkWithDetailed(response.PageResult[*model.ServerInstance]{
 		List: list,
 	}, "", c)
 }
 
 func (g *InstanceGroup) GetInstanceByHostnameAndPid(c *gin.Context) {
-	var instance *model.Instance
+	var instance *model.ServerInstance
 	hostname := c.Query("hostname")
 	pidStr := c.Query("pid")
 	pid, err := strconv.Atoi(pidStr)

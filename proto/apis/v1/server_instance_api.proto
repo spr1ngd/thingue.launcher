@@ -33,9 +33,8 @@ message GetStreamerIdResponse {
 }
 
 message UpdateRestartingRequest {
-  uint32 client_id = 1;
-  uint32 instance_id = 2;
-  bool restarting = 3;
+  string streamer_id = 1;
+  bool restarting = 2;
 }
 
 message UpdateProcessStateRequest {
