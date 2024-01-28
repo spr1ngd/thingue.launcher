@@ -52,7 +52,7 @@ func (g *InstanceGroup) PakControl(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = core.InstanceService.PakControl(req)
+	err = core.InstanceService.PakControl(req.StreamerId, req.Type, req.PakName)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
