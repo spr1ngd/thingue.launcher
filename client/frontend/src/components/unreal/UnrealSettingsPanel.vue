@@ -2,8 +2,12 @@
 import {onMounted, ref, watch} from "vue";
 import {Notify, useQuasar} from "quasar";
 import {OpenFileDialog} from "@wails/go/api/systemApi";
-import {CreateInstance, UpdateConfig, StopInstance} from "@wails/go/api/instanceApi";
-import {createLaunchArgumentsEditor, createMetadataEditor, createPaksConfigEditor} from "@/components/unreal/settingsEditor";
+import {CreateInstance, StopInstance, UpdateConfig} from "@wails/go/api/instanceApi";
+import {
+  createLaunchArgumentsEditor,
+  createMetadataEditor,
+  createPaksConfigEditor
+} from "@/components/unreal/settingsEditor";
 
 const $q = useQuasar();
 const emit = defineEmits(['openListPanel'])
@@ -84,7 +88,7 @@ async function save() {
           cancel: true,
           persistent: true
         }).onOk(() => {
-          StopInstance(settings.cid).then(() => {
+          StopInstance(settings.id).then(() => {
             Notify.create("进程退出成功，请重新保存")
           }).catch(err => {
             Notify.create(err)
