@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
+	"path"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/server/core/service"
 	"thingue-launcher/server/sgcc/config"
 	"thingue-launcher/server/sgcc/provider"
@@ -14,7 +16,7 @@ import (
 
 func Init() {
 	// 读取配置文件
-	yamlFile, err := os.ReadFile("sgcc.yaml")
+	yamlFile, err := os.ReadFile(path.Join(constants.SaveDir, "sgcc.yaml"))
 	if err != nil {
 		fmt.Printf("Failed to read YAML file: %v\n", err)
 		panic(err)

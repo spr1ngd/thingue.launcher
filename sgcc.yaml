@@ -1,7 +1,0 @@
-cloud-server-url: ws://127.0.0.1:8088
-register:
-  maintainer: uino
-  url: http://10.100.31.150
-  stations:
-    - 宜宾
-    - 中都
