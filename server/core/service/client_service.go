@@ -6,6 +6,7 @@ import (
 	"github.com/bluele/gcache"
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/viper"
 	"math"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
@@ -45,8 +46,13 @@ func (s *clientService) RegisterClient(client *model.Client, agentInfo *pb.GetAg
 		_ = mapstructure.Decode(instance.Config, serverInstance)
 		serverInstance.ID = instance.Id
 		if serverInstance.StreamerId == "" {
-			streamerId, _ := uuid.NewUUID()
-			serverInstance.StreamerId = streamerId.String()
+			if viper.GetBool("enableSgcc") {
+				//负载均衡模式下使用实例名称作为ID
+				serverInstance.StreamerId = instance.Config.Name
+			} else {
+				streamerId, _ := uuid.NewUUID()
+				serverInstance.StreamerId = streamerId.String()
+			}
 		} else {
 			serverInstance.StreamerId = instance.StreamerId
 		}

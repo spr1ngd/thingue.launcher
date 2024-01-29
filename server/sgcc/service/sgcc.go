@@ -125,6 +125,7 @@ func (s *sgccService) Kill(nodes []string) {
 			StreamerId: node,
 			Command:    "STOP",
 		})
+		time.Sleep(2 * time.Second)
 		callbackNodes = append(callbackNodes, &message.CallBackNode{
 			Id:       node,
 			Status:   s.GetNodeStatus(node),

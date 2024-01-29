@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/labels"
 	"sync"
 	"thingue-launcher/common/domain"
@@ -209,8 +210,13 @@ func (s *instanceService) AddInstance(req *pb.AddInstanceRequest) error {
 	serverInstance.ClientID = req.ClientId
 	serverInstance.StreamerId = req.InstanceInfo.StreamerId
 	if serverInstance.StreamerId == "" {
-		streamerId, _ := uuid.NewUUID()
-		serverInstance.StreamerId = streamerId.String()
+		if viper.GetBool("enableSgcc") {
+			//负载均衡模式下使用实例名称作为ID
+			serverInstance.StreamerId = serverInstance.Name
+		} else {
+			streamerId, _ := uuid.NewUUID()
+			serverInstance.StreamerId = streamerId.String()
+		}
 	} else {
 		serverInstance.StreamerId = req.InstanceInfo.StreamerId
 	}
