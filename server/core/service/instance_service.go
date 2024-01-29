@@ -209,14 +209,12 @@ func (s *instanceService) AddInstance(req *pb.AddInstanceRequest) error {
 	serverInstance.ID = req.InstanceInfo.Id
 	serverInstance.ClientID = req.ClientId
 	serverInstance.StreamerId = req.InstanceInfo.StreamerId
-	if serverInstance.StreamerId == "" {
-		if viper.GetBool("enableSgcc") {
-			//负载均衡模式下使用实例名称作为ID
-			serverInstance.StreamerId = serverInstance.Name
-		} else {
-			streamerId, _ := uuid.NewUUID()
-			serverInstance.StreamerId = streamerId.String()
-		}
+	if viper.GetBool("enableSgcc") {
+		//负载均衡模式下使用实例名称作为ID
+		serverInstance.StreamerId = serverInstance.Name
+	} else if serverInstance.StreamerId == "" {
+		streamerId, _ := uuid.NewUUID()
+		serverInstance.StreamerId = streamerId.String()
 	} else {
 		serverInstance.StreamerId = req.InstanceInfo.StreamerId
 	}
