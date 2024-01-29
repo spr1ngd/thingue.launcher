@@ -23,7 +23,13 @@ func (g *InstanceGroup) InstanceSelect(c *gin.Context) {
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
-		response.OkWithData(SelectedInstances, c)
+		var list []*response.ServerInstance
+		for _, instance := range SelectedInstances {
+			var instanceRes *response.ServerInstance
+			instanceRes.FromModel(instance)
+			list = append(list, instanceRes)
+		}
+		response.OkWithData(list, c)
 	}
 }
 
@@ -124,25 +130,32 @@ func (g *InstanceGroup) GetTicketById(c *gin.Context) {
 }
 
 func (g *InstanceGroup) InstanceList(c *gin.Context) {
-	list := core.InstanceService.InstanceList()
-	response.OkWithDetailed(response.PageResult[*model.Instance]{
+	instanceList := core.InstanceService.InstanceList()
+	var list []*response.ServerInstance
+	for _, instance := range instanceList {
+		var instanceRes *response.ServerInstance
+		instanceRes.FromModel(instance)
+		list = append(list, instanceRes)
+	}
+	response.OkWithDetailed(response.PageResult[*response.ServerInstance]{
 		List: list,
 	}, "", c)
 }
 
 func (g *InstanceGroup) GetInstanceByHostnameAndPid(c *gin.Context) {
-	var instance *model.Instance
+	var instanceRes *response.ServerInstance
 	hostname := c.Query("hostname")
 	pidStr := c.Query("pid")
 	pid, err := strconv.Atoi(pidStr)
-	if err == nil {
-		instance, err = core.InstanceService.GetInstanceByHostnameAndPid(hostname, pid)
-	}
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
-	} else {
-		response.OkWithData(instance, c)
 	}
+	instance, err := core.InstanceService.GetInstanceByHostnameAndPid(hostname, pid)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	}
+	instanceRes.FromModel(instance)
+	response.OkWithData(instanceRes, c)
 }
 
 func (g *InstanceGroup) KickPlayerUser(c *gin.Context) {

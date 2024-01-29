@@ -15,7 +15,7 @@ type PublishText struct {
 }
 
 type SelectorCond struct {
-	StreamerId        string `json:"streamerId"`
+	StreamerId        string `json:"sid"`
 	Name              string `json:"name"`
 	PlayerCount       *int   `json:"playerCount"`
 	LabelSelector     string `json:"labelSelector"`

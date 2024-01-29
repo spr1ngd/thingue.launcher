@@ -138,7 +138,7 @@ onMounted(() => {
               <q-tr :props="props">
                 <q-td align="center">{{ props.row.id }}</q-td>
                 <q-td align="center">
-                  <q-btn :href="`player.html?streamerId=${props.row.streamerId}`" color="primary" dense flat no-caps
+                  <q-btn :href="`player.html?sid=${props.row.streamerId}`" color="primary" dense flat no-caps
                          padding="none"
                          target="_blank" :label="props.row.name"/>
                 </q-td>

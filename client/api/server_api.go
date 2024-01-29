@@ -130,7 +130,7 @@ func (s *serverApi) OpenInstancePreviewUrl(streamerId string) {
 	ServerURL, err := url.Parse(provider.AppConfig.ServerURL)
 	if err == nil {
 		path := ServerURL.JoinPath("/static/player.html")
-		runtime.BrowserOpenURL(s.ctx, fmt.Sprintf("%s?streamerId=%s", path.String(), streamerId))
+		runtime.BrowserOpenURL(s.ctx, fmt.Sprintf("%s?sid=%s", path.String(), streamerId))
 	}
 }
 
