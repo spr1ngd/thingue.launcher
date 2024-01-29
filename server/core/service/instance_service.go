@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/labels"
 	"sync"
 	"thingue-launcher/common/domain"
@@ -209,10 +208,7 @@ func (s *instanceService) AddInstance(req *pb.AddInstanceRequest) error {
 	serverInstance.ID = req.InstanceInfo.Id
 	serverInstance.ClientID = req.ClientId
 	serverInstance.StreamerId = req.InstanceInfo.StreamerId
-	if viper.GetBool("enableSgcc") {
-		//负载均衡模式下使用实例名称作为ID
-		serverInstance.StreamerId = serverInstance.Name
-	} else if serverInstance.StreamerId == "" {
+	if serverInstance.StreamerId == "" {
 		streamerId, _ := uuid.NewUUID()
 		serverInstance.StreamerId = streamerId.String()
 	} else {
@@ -230,7 +226,7 @@ func (s *instanceService) UpdateInstanceConfig(req *pb.UpdateConfigRequest) erro
 	}
 	_ = mapstructure.Decode(req.InstanceConfig, &instance)
 	_ = mapstructure.Decode(req.PlayerConfig, &instance)
-	tx := global.ServerDB.Omit("ID", "ClientID", "Pid", "StateCode", "StreamerConnected", "PlayerIds", "PlayerCount",
+	tx := global.ServerDB.Omit("ID", "ClientID", "StreamerId", "Pid", "StateCode", "StreamerConnected", "PlayerIds", "PlayerCount",
 		"PakName", "PakValue", "Rendering", "LastStartAt", "LastStopAt").Updates(instance)
 	provider.AdminConnProvider.BroadcastUpdate()
 	return tx.Error
