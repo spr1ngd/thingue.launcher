@@ -41,10 +41,11 @@ func (m *runnerManager) Init() {
 					defaultInstance.Config.ExecPath = filepath.Join(pwd, entry.Name())
 					defaultInstance.IsInternal = true
 					id := ConfigManager.Create(defaultInstance)
-					_ = m.NewRunner(id, defaultInstance.Config)
+					defaultInstance.ID = id
+					_ = m.NewRunner(defaultInstance)
 				} else {
 					instance.Config.ExecPath = filepath.Join(pwd, entry.Name())
-					_ = m.NewRunner(instance.ID, instance.Config)
+					_ = m.NewRunner(instance)
 					_ = ConfigManager.Update(instance)
 				}
 			}
@@ -57,7 +58,7 @@ func (m *runnerManager) Init() {
 		if !item.IsInternal {
 			var instance domain.Instance
 			instance.FromInstanceConfig(item)
-			err := m.NewRunner(instance.ID, instance.Config)
+			err := m.NewRunner(&instance)
 			if err != nil {
 				logger.Zap.Error("从配置中初始化runner失败")
 			}
@@ -80,18 +81,19 @@ func (m *runnerManager) List() []*domain.Instance {
 	return instanceList
 }
 
-func (m *runnerManager) NewRunner(id uint32, config domain.InstanceConfig) error {
-	if _, ok := m.IdRunnerMap[id]; ok {
+func (m *runnerManager) NewRunner(instance *domain.Instance) error {
+	if _, ok := m.IdRunnerMap[instance.ID]; ok {
 		return errors.New("无法重复创建")
 	}
 	r := &Runner{
 		Instance: &domain.Instance{
-			ID:     id,
-			Config: config,
+			ID:           instance.ID,
+			Config:       instance.Config,
+			PlayerConfig: instance.PlayerConfig,
 		},
 		ExitSignalChannel: make(chan error, 1),
 	}
-	m.IdRunnerMap[id] = r
+	m.IdRunnerMap[instance.ID] = r
 	return nil
 }
 

@@ -7,7 +7,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"k8s.io/apimachinery/pkg/labels"
 	"sync"
-	"thingue-launcher/common/domain"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	types "thingue-launcher/common/gen/proto/go/types/v1"
 	"thingue-launcher/common/logger"
@@ -226,19 +225,8 @@ func (s *instanceService) UpdateInstanceConfig(req *pb.UpdateConfigRequest) erro
 	}
 	_ = mapstructure.Decode(req.InstanceConfig, &instance)
 	_ = mapstructure.Decode(req.PlayerConfig, &instance)
-	tx := global.ServerDB.Omit("ID", "ClientID", "StreamerId", "Pid", "StateCode", "StreamerConnected", "PlayerIds", "PlayerCount",
-		"PakName", "PakValue", "Rendering", "LastStartAt", "LastStopAt").Updates(instance)
-	provider.AdminConnProvider.BroadcastUpdate()
-	return tx.Error
-}
-
-func (s *instanceService) UpdatePlayerConfig(req *pb.UpdateConfigRequest) error {
-	playerConfig := domain.PlayerConfig{}
-	_ = mapstructure.Decode(req.PlayerConfig, &playerConfig)
-	tx := global.ServerDB.Model(&model.Instance{}).Where(model.Instance{
-		ID:       req.InstanceId,
-		ClientID: req.ClientId,
-	}).Updates(playerConfig)
+	tx := global.ServerDB.Select("*").Omit("ID", "ClientID", "StreamerId", "Pid", "StateCode", "PlayerIds",
+		"StreamerConnected", "PlayerCount", "PakName", "PakValue", "Rendering", "LastStartAt", "LastStopAt").Updates(instance)
 	provider.AdminConnProvider.BroadcastUpdate()
 	return tx.Error
 }

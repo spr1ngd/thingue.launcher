@@ -44,6 +44,7 @@ func (s *clientService) RegisterClient(client *model.Client, agentInfo *pb.GetAg
 		var serverInstance = &model.Instance{}
 		_ = mapstructure.Decode(instance, serverInstance)
 		_ = mapstructure.Decode(instance.Config, serverInstance)
+		_ = mapstructure.Decode(instance.PlayerConfig, serverInstance)
 		serverInstance.ID = instance.Id
 		if serverInstance.StreamerId == "" {
 			streamerId, _ := uuid.NewUUID()

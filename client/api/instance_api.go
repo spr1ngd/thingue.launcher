@@ -51,7 +51,7 @@ func (u *instanceApi) GetDefaultConfig() *domain.Instance {
 func (u *instanceApi) CreateInstance(instance *domain.Instance) error {
 	id := core.ConfigManager.Create(instance)
 	instance.ID = id
-	err := core.RunnerManager.NewRunner(id, instance.Config)
+	err := core.RunnerManager.NewRunner(instance)
 	if err != nil {
 		core.ConfigManager.Delete(id)
 		return err
@@ -70,8 +70,14 @@ func (u *instanceApi) CreateInstance(instance *domain.Instance) error {
 }
 
 func (u *instanceApi) UpdateConfig(instance *domain.Instance) error {
-	//fmt.Printf("%+v", instance)
-	err := core.ConfigManager.Update(instance)
+	//fmt.Printf("更新%+v", instance)
+	runner, err := core.RunnerManager.GetRunnerById(instance.ID)
+	if err != nil {
+		return err
+	}
+	runner.Config = instance.Config
+	runner.PlayerConfig = instance.PlayerConfig
+	err = core.ConfigManager.Update(instance)
 	if err != nil {
 		return err
 	}
