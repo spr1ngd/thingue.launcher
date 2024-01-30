@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.5",
-    "@thingue/lib-pixelstreamingfrontend": "^0.0.5",
-    "@thingue/lib-pixelstreamingfrontend-ui": "^0.0.5",
+    "@thingue/lib-pixelstreamingfrontend": "^0.1.0",
+    "@thingue/lib-pixelstreamingfrontend-ui": "^0.1.0",
     "axios": "^1.4.0",
     "mitt": "^3.0.1",
     "monaco-editor": "^0.41.0",
