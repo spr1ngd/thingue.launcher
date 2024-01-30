@@ -21,7 +21,7 @@ type connManager struct {
 
 var ConnManager = &connManager{
 	maxReconnectInterval: 60,
-	reconnectInterval:    2,
+	reconnectInterval:    5,
 }
 
 func (m *connManager) connect() error {
@@ -60,13 +60,13 @@ func (m *connManager) StartConnectTask() {
 	go func() {
 		for {
 			<-m.reconnectTimer.C
-			logger.Zap.Debug("连接开始")
+			logger.Zap.Debug("开始连接云端负载均衡")
 			err := m.connect()
 			if err == nil {
 				break
 			} else {
 				m.reconnectTimer.Reset(time.Duration(m.reconnectInterval) * time.Second)
-				logger.Zap.Debug("连接失败,%d秒后重试", m.reconnectInterval)
+				logger.Zap.Debugf("连接云端负载均衡失败,%d秒后重试", m.reconnectInterval)
 			}
 		}
 	}()

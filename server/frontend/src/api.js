@@ -26,11 +26,11 @@ export function sendPakControl(data) {
     });
 }
 
-export function collectLogs(data) {
+export function collectLogs(id) {
     return request({
-        url: `/instance/collectLogs`,
-        method: 'POST',
-        data
+        url: `/instance/collectLogs?clientId=${id}`,
+        method: 'GET',
+        responseType: "blob"
     });
 }
 

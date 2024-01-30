@@ -67,18 +67,20 @@ func (g *InstanceGroup) PakControl(c *gin.Context) {
 }
 
 func (g *InstanceGroup) CollectLogs(c *gin.Context) {
-	var req request.LogsCollect
-	err := c.ShouldBindJSON(&req)
+	clientIdStr := c.Query("clientId")
+	clientId, err := strconv.Atoi(clientIdStr)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = core.ClientService.CollectLogs(req)
+	data, err := core.ClientService.CollectLogs(uint32(clientId))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	response.Ok(c)
+	c.Header("Content-Type", "application/zip")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=logs-%s.zip", clientIdStr))
+	c.Writer.Write(data)
 }
 
 func (g *InstanceGroup) UploadLogs(c *gin.Context) {

@@ -1,42 +1,11 @@
 <script setup>
-import {collectLogs, downloadLogs} from "@/api";
-import {Notify, useQuasar} from "quasar";
-import {v4 as uuidv4} from 'uuid';
-import {emitter, wsId} from "@/ws";
+import {collectLogs} from "@/api";
+import {Notify} from "quasar";
 
 const props = defineProps(['row']);
-const $q = useQuasar();
 
 async function handleCollectClick() {
-  const traceId = uuidv4()
-  let res = await collectLogs({
-    wsId: wsId,
-    clientId: props.row.id,
-    traceId
-  });
-  if (res.code === 200) {
-    const dialog = $q.dialog({
-      title: '提示',
-      message: '正在收集，请稍等',
-      progress: true,
-      persistent: true,
-      ok: false
-    })
-    emitter.on('downloadComplete', () => {
-      dialog.update({
-        message: '收集完成，请在60秒内完成下载',
-        progress: false,
-        ok: true
-      }).onOk(() => {
-        doLogsDownload(traceId);
-      })
-    })
-  }
-}
-
-function doLogsDownload(traceId) {
-  downloadLogs(traceId).then((response) => {
-    console.log(response)
+  collectLogs(props.row.id).then((response) => {
     if (response.data.type === 'application/zip') {
       let filename = 'logs.zip'; // 默认文件名
       const contentDisposition = response.headers['content-disposition'];
@@ -64,6 +33,7 @@ function doLogsDownload(traceId) {
     console.error('文件下载失败：', error);
   });
 }
+
 </script>
 <template>
   <div class="q-pa-md q-gutter-md">
@@ -126,7 +96,7 @@ function doLogsDownload(traceId) {
         </q-item-section>
       </q-item>
     </q-list>
-    <q-btn color="white" text-color="primary" label="收集客户端日志" @click="handleCollectClick"/>
+    <q-btn color="white" text-color="primary" label="收集实例日志" @click="handleCollectClick"/>
     <q-btn color="white" text-color="primary" label="关闭" @click="$emit('close')"/>
   </div>
 </template>

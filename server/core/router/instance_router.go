@@ -20,9 +20,7 @@ func (s *instanceRouter) BuildRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		instanceRouter.GET("instanceList", handler.InstanceGroup.InstanceList)
 		instanceRouter.POST("instanceSelect", handler.InstanceGroup.InstanceSelect)
 		instanceRouter.GET("getTicketById", handler.InstanceGroup.GetTicketById)
-		instanceRouter.POST("collectLogs", handler.InstanceGroup.CollectLogs)
-		instanceRouter.POST("uploadLogs", handler.InstanceGroup.UploadLogs)
-		instanceRouter.GET("downloadLogs", handler.InstanceGroup.DownloadLogs)
+		instanceRouter.GET("collectLogs", handler.InstanceGroup.CollectLogs)
 		instanceRouter.GET("getInstanceByHostnameAndPid", handler.InstanceGroup.GetInstanceByHostnameAndPid)
 		instanceRouter.GET("kickPlayerUser", handler.InstanceGroup.KickPlayerUser)
 	}

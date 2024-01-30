@@ -114,6 +114,15 @@
         }
       }
     },
+    "v1GetInstanceLogsResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
     "v1InstanceConfig": {
       "type": "object",
       "properties": {

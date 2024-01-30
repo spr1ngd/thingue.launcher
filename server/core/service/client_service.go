@@ -2,15 +2,16 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"github.com/bluele/gcache"
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"math"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
-	"thingue-launcher/common/request"
 	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/global"
 	"time"
@@ -73,14 +74,16 @@ func (s *clientService) GetInstanceStreamerId(clientId, instanceId uint32) (stri
 	}
 }
 
-func (s *clientService) CollectLogs(req request.LogsCollect) error {
-	//s.WsIdMap[req.TraceId] = req.WsId
-	//return provider.ClientConnProvider.SendToClient(req.ClientId, &message.Message{
-	//	Type: types.ServerCollectClientLogs,
-	//	Data: req.TraceId,
-	//})
-	// todo
-	return nil
+func (s *clientService) CollectLogs(clientId uint32) ([]byte, error) {
+	client, err := provider.GrpcClientProvider.GetClient(clientId)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.GetInstanceLogs(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
 }
 
 func (s *clientService) UploadLogs(traceId string, buf *bytes.Buffer) error {

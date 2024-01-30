@@ -23,10 +23,13 @@ message UpdateStreamerStateRequest {
   bool streamer_state = 2;
 }
 
-message UpdateStreamerStateResponse {}
+message GetInstanceLogsResponse {
+  bytes data = 1;
+}
 
 service AgentService {
   rpc GetAgentInfo(GetAgentInfoRequest) returns (GetAgentInfoResponse);
   rpc ControlProcess(ControlProcessRequest) returns (google.protobuf.Empty);
   rpc UpdateStreamerState(UpdateStreamerStateRequest) returns (google.protobuf.Empty);
+  rpc GetInstanceLogs(google.protobuf.Empty) returns (GetInstanceLogsResponse);
 }

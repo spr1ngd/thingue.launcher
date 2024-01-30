@@ -59,7 +59,7 @@ func getLogFile(instance *domain.Instance) (string, error) {
 	}
 }
 
-func getLogFiles(instance *domain.Instance) []string {
+func GetLogFiles(instance *domain.Instance) []string {
 	var logFiles []string
 	logsDir, err := getLogDir(instance)
 	if err != nil {

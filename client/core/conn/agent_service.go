@@ -1,6 +1,8 @@
 package conn
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"fmt"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -8,6 +10,7 @@ import (
 	"thingue-launcher/client/global"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
 	types "thingue-launcher/common/gen/proto/go/types/v1"
+	"thingue-launcher/common/util"
 )
 
 type AgentService struct {
@@ -47,4 +50,21 @@ func (s AgentService) UpdateStreamerState(ctx context.Context, request *pb.Updat
 		instance.RunnerManager.RunnerStatusUpdateChanel <- request.InstanceId
 	}
 	return &emptypb.Empty{}, err
+}
+
+func (s AgentService) GetInstanceLogs(context.Context, *emptypb.Empty) (*pb.GetInstanceLogsResponse, error) {
+	var filesToCompress []string
+	instances := instance.RunnerManager.List()
+	for _, item := range instances {
+		filesToCompress = append(filesToCompress, instance.GetLogFiles(item)...)
+	}
+
+	var buf bytes.Buffer
+	zipWriter := zip.NewWriter(&buf)
+	for _, filePath := range filesToCompress {
+		_ = util.AddFileToZip(zipWriter, filePath)
+	}
+	_ = zipWriter.Close()
+
+	return &pb.GetInstanceLogsResponse{Data: buf.Bytes()}, nil
 }
