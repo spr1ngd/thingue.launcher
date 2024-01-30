@@ -25,7 +25,7 @@ func (g *InstanceGroup) InstanceSelect(c *gin.Context) {
 	} else {
 		var list []*response.ServerInstance
 		for _, instance := range SelectedInstances {
-			var instanceRes *response.ServerInstance
+			var instanceRes = &response.ServerInstance{}
 			instanceRes.FromModel(instance)
 			list = append(list, instanceRes)
 		}
@@ -133,7 +133,7 @@ func (g *InstanceGroup) InstanceList(c *gin.Context) {
 	instanceList := core.InstanceService.InstanceList()
 	var list []*response.ServerInstance
 	for _, instance := range instanceList {
-		var instanceRes *response.ServerInstance
+		var instanceRes = &response.ServerInstance{}
 		instanceRes.FromModel(instance)
 		list = append(list, instanceRes)
 	}
@@ -143,7 +143,6 @@ func (g *InstanceGroup) InstanceList(c *gin.Context) {
 }
 
 func (g *InstanceGroup) GetInstanceByHostnameAndPid(c *gin.Context) {
-	var instanceRes *response.ServerInstance
 	hostname := c.Query("hostname")
 	pidStr := c.Query("pid")
 	pid, err := strconv.Atoi(pidStr)
@@ -154,6 +153,7 @@ func (g *InstanceGroup) GetInstanceByHostnameAndPid(c *gin.Context) {
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	}
+	var instanceRes = &response.ServerInstance{}
 	instanceRes.FromModel(instance)
 	response.OkWithData(instanceRes, c)
 }

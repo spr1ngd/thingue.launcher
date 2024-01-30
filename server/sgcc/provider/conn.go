@@ -11,9 +11,11 @@ import (
 var Conn *websocket.Conn
 
 func SendCloudMessage(data []byte) {
-	err := Conn.WriteMessage(websocket.TextMessage, data)
-	if err != nil {
-		logger.Zap.Errorf("消息发送失败%s", string(data))
+	if Conn != nil {
+		err := Conn.WriteMessage(websocket.TextMessage, data)
+		if err != nil {
+			logger.Zap.Errorf("消息发送失败%s", string(data))
+		}
 	}
 }
 

@@ -96,8 +96,8 @@ export function createPaksConfigEditor(domElement, paksConfig) {
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.5,
         run: function (ed) {
-            editor.setValue("paks:\n  - name: 宜宾换流站    #列表里显示名称\n    value: yibin       #pak目录名称 \n" +
-                "  - name: 雁门关换流站\n    value: yanmenguan\n  - name: 中都换流站\n    value: zhongdu")
+            editor.setValue("paks:\n  - name: 宜宾换流站    #列表里显示名称\n    value: /paks/yibin       #pak目录名称 \n" +
+                "  - name: 雁门关换流站\n    value: /paks/yanmenguan\n  - name: 中都换流站\n    value: /paks/zhongdu")
         },
     })
     editor.addAction({
