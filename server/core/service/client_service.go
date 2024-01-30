@@ -1,20 +1,16 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"errors"
 	"github.com/bluele/gcache"
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"math"
 	pb "thingue-launcher/common/gen/proto/go/apis/v1"
-	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"thingue-launcher/server/core/provider"
 	"thingue-launcher/server/global"
-	"time"
 )
 
 type clientService struct {
@@ -85,24 +81,4 @@ func (s *clientService) CollectLogs(clientId uint32) ([]byte, error) {
 		return nil, err
 	}
 	return resp.Data, nil
-}
-
-func (s *clientService) UploadLogs(traceId string, buf *bytes.Buffer) error {
-	err := s.BufferCache.SetWithExpire(traceId, buf, time.Second*60)
-	if err != nil {
-		logger.Zap.Error(err)
-		return err
-	}
-	provider.AdminConnProvider.NotifyDownloadComplete(s.WsIdMap[traceId])
-	delete(s.WsIdMap, traceId)
-	return nil
-}
-
-func (s *clientService) DownloadLogs(traceId string) (error, *bytes.Buffer) {
-	value, err := s.BufferCache.Get(traceId)
-	if err != nil {
-		return errors.New("缓冲区数据超时被清除"), nil
-	} else {
-		return err, value.(*bytes.Buffer)
-	}
 }

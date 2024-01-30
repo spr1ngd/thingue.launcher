@@ -8,11 +8,11 @@
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "info": {
-    "companyName": "UINO优锘科技",
-    "productName": "ThingUE启动程序",
-    "productVersion": "0.0.11",
-    "copyright": "北京优锘科技股份有限公司版权所有",
-    "comments": "ThingUE启动程序"
+    "companyName": "",
+    "productName": "",
+    "productVersion": "1.0.0",
+    "copyright": "",
+    "comments": ""
   },
   "author": {
     "name": "杨晋升",

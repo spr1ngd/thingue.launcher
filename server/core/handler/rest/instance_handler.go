@@ -1,10 +1,8 @@
 package rest
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"io"
 	"strconv"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/request"
@@ -15,6 +13,17 @@ import (
 )
 
 type InstanceGroup struct{}
+
+func (g *InstanceGroup) TicketSelect(c *gin.Context) {
+	var selectCond request.SelectorCond
+	err := c.ShouldBindJSON(&selectCond)
+	ticket, err := core.TicketService.TicketSelect(selectCond)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(ticket, c)
+	}
+}
 
 func (g *InstanceGroup) InstanceSelect(c *gin.Context) {
 	var selectCond request.SelectorCond
@@ -81,45 +90,6 @@ func (g *InstanceGroup) CollectLogs(c *gin.Context) {
 	c.Header("Content-Type", "application/zip")
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=logs-%s.zip", clientIdStr))
 	c.Writer.Write(data)
-}
-
-func (g *InstanceGroup) UploadLogs(c *gin.Context) {
-	traceId := c.Request.Header.Get("traceId")
-	buf := new(bytes.Buffer)
-	_, err := io.Copy(buf, c.Request.Body)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	err = core.ClientService.UploadLogs(traceId, buf)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-	response.Ok(c)
-}
-
-func (g *InstanceGroup) DownloadLogs(c *gin.Context) {
-	traceId := c.Query("traceId")
-	err, buf := core.ClientService.DownloadLogs(traceId)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-	} else {
-		c.Header("Content-Type", "application/zip")
-		c.Header("Content-Disposition", "attachment; filename="+traceId+".zip")
-		c.Writer.Write(buf.Bytes())
-	}
-}
-
-func (g *InstanceGroup) TicketSelect(c *gin.Context) {
-	var selectCond request.SelectorCond
-	err := c.ShouldBindJSON(&selectCond)
-	ticket, err := core.TicketService.TicketSelect(selectCond)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-	} else {
-		response.OkWithData(ticket, c)
-	}
 }
 
 func (g *InstanceGroup) GetTicketById(c *gin.Context) {

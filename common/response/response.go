@@ -21,7 +21,8 @@ type InstanceTicket struct {
 }
 
 func (t *InstanceTicket) SetInstanceInfo(instance *model.Instance) {
-	mapstructure.Decode(instance, t)
+	_ = mapstructure.Decode(instance, t)
+	_ = mapstructure.Decode(instance, &t.PlayerConfig)
 }
 
 type ServerInstance struct {
