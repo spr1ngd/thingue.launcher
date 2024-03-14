@@ -20,14 +20,14 @@ function changeServerTab(tab) {
 
 <template>
   <div style="display: flex">
-    <div style="height: 100vh;border-right: 1px solid rgba(0, 0, 0, 0.12);">
+    <div style="height: 100vh;border-right: 1px solid rgba(0, 0, 0, 0.12); background-color: #FFFFFF;">
       <q-tabs v-model="appTab" vertical class="text-primary shadow-0">
         <q-tab name="unreal" icon="svguse:ue-logo-white.svg#icon-1" label="unreal"/>
         <q-tab name="server" icon="sym_o_cloud" label="服务"/>
         <q-tab name="settings" icon="sym_o_settings" label="设置"/>
       </q-tabs>
     </div>
-    <div class="bi-border-left" style="height: 100vh;flex: 1 1 auto;overflow-y: auto;">
+    <div class="bi-border-left" style="height: 100vh;flex: 1 1 auto;overflow-y: auto; background-color: #FFFFFF;">
       <q-tab-panels
           v-model="appTab"
           vertical
