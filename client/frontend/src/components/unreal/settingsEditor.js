@@ -20,7 +20,27 @@ export function createLaunchArgumentsEditor(domElement, launchArguments) {
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.5,
         run: function (ed) {
-            editor.setValue("-AudioMixer\n-RenderOffScreen\n-ForceRes\n-ResX=1920\n-ResY=1080")
+            editor.setValue(`
+-AudioMixer
+-RenderOffScreen
+-ForceRes
+-ResX=1920
+-ResY=1080
+-PixelStreamingEncoderRateControl=VBR
+-PixelStreamingEncoderMinQP=17
+-PixelStreamingEncoderMinQP=50
+-PixelStreamingDegradationPreference=BALANCED
+-PixelStreamingEncoderTargetBitrate=50000000
+-PixelStreamingEncoderMaxBitrate=500000000
+-PixelStreamingWebRTCStartBitrate=200000000
+-PixelStreamingWebRTCMinBitrate=200000000
+-PixelStreamingWebRTCMaxBitrate=500000000
+-PixelStreamingWebRTCDisableReceiveAudio=1
+-PixelStreamingWebRTCDisableAudioSync=1
+-PixelStreamingWebRTCDisableTransmitAudio=1
+-PixelStreamingEncoderMultipass=QUARTER
+-PixelStreamingWebRTCMaxFps=60
+-PixelStreamingHEVCEncoderPreset=1`)
         },
     })
     editor.addAction({

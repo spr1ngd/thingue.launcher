@@ -1,6 +1,6 @@
-import {Config, PixelStreaming} from '@thingue/lib-pixelstreamingfrontend';
-import {Application, PixelStreamingApplicationStyle} from '@thingue/lib-pixelstreamingfrontend-ui';
-import {v4 as uuidv4} from "uuid";
+import { Config, PixelStreaming } from '@thingue/lib-pixelstreamingfrontend';
+import { Application, PixelStreamingApplicationStyle } from '@thingue/lib-pixelstreamingfrontend-ui';
+import { v4 as uuidv4 } from "uuid";
 
 const PixelStreamingApplicationStyles = new PixelStreamingApplicationStyle();
 PixelStreamingApplicationStyles.applyStyleSheet();
@@ -40,7 +40,22 @@ document.body.onload = function () {
             MatchViewportRes: false,
             SuppressBrowserKeys: false,
         },
-        useUrlParams: true
+        useUrlParams: true,
+        blockKeycodes: [
+            "F1",
+            "F1",
+            "F2",
+            "F3",
+            "F4",
+            "F5",
+            "F6",
+            "F7",
+            "F8",
+            "F9",
+            "F10",
+            "F11",
+            "F12"
+        ]
     });
     const stream = new PixelStreaming(config, {
         playerUrlBuilder: playerUrlBuilder

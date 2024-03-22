@@ -1,7 +1,7 @@
 @echo off
 
 :: 设置应用版本
-set AppVersion=0.0.12
+set AppVersion=0.0.13
 
 :: 获取 Git 提交哈希
 for /f "delims=" %%i in ('git rev-parse HEAD') do set GitCommit=%%i
@@ -14,4 +14,4 @@ set GOOS=windows
 set GOARCH=amd64
 
 :: 执行构建命令
-wails build -ldflags "-X main.GitCommit=%GitCommit% -X 'main.BuildDate=%BuildDate%' -X main.AppVersion=%AppVersion%" -o thingue-launcher-v%AppVersion%.exe
+wails build -ldflags "-X main.GitCommit=%GitCommit% -X 'main.BuildDate=%BuildDate%' -X main.AppVersion=%AppVersion%" -o thingue-launcher-v%AppVersion%.exe -windowsconsole
