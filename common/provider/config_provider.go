@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -34,26 +33,6 @@ type SystemSettings struct {
 	RestartTaskCron    string `json:"restartTaskCron" yaml:"restartTaskCron"`
 	ExternalEditorPath string `json:"externalEditorPath" yaml:"externalEditorPath"`
 	LogLevel           string `json:"logLevel" yaml:"logLevel"`
-}
-
-func InitFlagConfig() {
-	pflag.StringP("bind", "b", "0.0.0.0:8877", "Sets the server bind address")
-	pflag.String("content-path", "/", "Sets the server base content path")
-	pflag.String("log-level", "info", "设置日志级别")
-	pflag.String("static-dir", "", "Path to directory containing the web static resources. Defaults use embed")
-	pflag.BoolP("help", "h", false, "show help")
-	pflag.BoolP("version", "v", false, "show version")
-	pflag.Parse()
-	_ = viper.BindPFlag("showHelp", pflag.Lookup("help"))
-	_ = viper.BindPFlag("showVersion", pflag.Lookup("version"))
-	_ = viper.BindPFlag("bindAddr", pflag.Lookup("bind"))
-	_ = viper.BindPFlag("contentPath", pflag.Lookup("content-path"))
-	_ = viper.BindPFlag("staticDir", pflag.Lookup("static-dir"))
-	_ = viper.BindPFlag("logLevel", pflag.Lookup("log-level"))
-	_ = viper.Unmarshal(&AppConfig.LocalServer)
-	if AppConfig.LocalServer.StaticDir != "" {
-		AppConfig.LocalServer.UseExternalStatic = true
-	}
 }
 
 func InitConfigFromFile() {
