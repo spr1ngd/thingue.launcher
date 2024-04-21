@@ -10,13 +10,16 @@ import (
 	"strconv"
 	"strings"
 	"thingue-launcher/client"
+	"thingue-launcher/client/global"
 	"thingue-launcher/client/initialize"
 	"thingue-launcher/client/service"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/model"
 )
 
 var (
 	removeId uint
+	modId    uint
 )
 
 var instanceCmd = &cobra.Command{
@@ -84,7 +87,7 @@ var instanceAddCmd = &cobra.Command{
 			} else if "自动启停" == s {
 				instance.AutoControl = true
 				prompt := &survey.Input{
-					Message: "自动启停->关闭延迟时间(秒):",
+					Message: "自动启停关闭延迟时间(秒):",
 				}
 				survey.AskOne(prompt, &instance.StopDelay)
 			} else if "使用WebRTC中继" == s {
@@ -96,20 +99,16 @@ var instanceAddCmd = &cobra.Command{
 			} else if "无操作关闭连接" == s {
 				instance.PlayerConfig.IdleDisconnect = true
 				prompt := &survey.Input{
-					Message: "无操作关闭连接->等待时间(分钟):",
+					Message: "无操作关闭连接等待时间(分钟):",
 				}
 				survey.AskOne(prompt, &instance.PlayerConfig.IdleTimeout)
 			}
 		}
 
-		launchArguments := `-AudioMixer
--RenderOffScreen
--ForceRes
--ResX=1920
--ResY=1080`
+		launchArguments := ""
 		prompt3 := &survey.Editor{
 			Message:       "启动参数配置",
-			Default:       launchArguments,
+			Default:       constants.DEFAULT_LAUNCH_ARGUMENTS,
 			AppendDefault: true,
 			Help:          "Enter进入编辑器修改，Ctrl+C使用当前值",
 		}
@@ -150,10 +149,42 @@ var instanceRemoveCmd = &cobra.Command{
 	},
 }
 
+var instanceModCmd = &cobra.Command{
+	Use: `mod`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		client.Init()
+		instance := service.InstanceManager.GetById(modId)
+		if instance == nil {
+			fmt.Println("实例不存在")
+			return nil
+		}
+		prompt0 := &survey.Input{
+			Message: "实例名称:",
+			Default: instance.Name,
+		}
+		survey.AskOne(prompt0, &instance.Name)
+
+		prompt1 := &survey.Input{
+			Message: "选择ThingUE启动位置:",
+			Default: instance.ExecPath,
+			Suggest: func(toComplete string) []string {
+				files, _ := filepath.Glob(toComplete + "*")
+				return files
+			},
+		}
+		survey.AskOne(prompt1, &instance.ExecPath)
+
+		global.APP_DB.Save(instance)
+		return nil
+	},
+}
+
 func init() {
 	instanceCmd.AddCommand(instanceListCmd)
 	instanceCmd.AddCommand(instanceAddCmd)
-	instanceRemoveCmd.Flags().UintVar(&removeId, "id", 0, "要删除的实例ID")
+	instanceRemoveCmd.Flags().UintVarP(&removeId, "id", "i", 0, "要删除的实例ID")
 	instanceCmd.AddCommand(instanceRemoveCmd)
+	instanceModCmd.Flags().UintVarP(&modId, "id", "i", 0, "要修改的实例ID")
+	instanceCmd.AddCommand(instanceModCmd)
 	rootCmd.AddCommand(instanceCmd)
 }
