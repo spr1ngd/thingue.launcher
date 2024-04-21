@@ -5,6 +5,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"os"
 	"path/filepath"
+	"strings"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
@@ -38,7 +40,7 @@ func (m *runnerManager) Init() {
 					instance = &model.ClientInstance{
 						Name:            "ThingUE",
 						ExecPath:        filepath.Join(pwd, entry.Name()),
-						LaunchArguments: []string{"-AudioMixer", "-RenderOffScreen", "-ForceRes", "-ResX=1920", "-ResY=1080"},
+						LaunchArguments: strings.Split(constants.DEFAULT_THINGUE_LAUNCH_ARGUMENTS, "\n"),
 						IsInternal:      true,
 						EnableRelay:     true,
 						PlayerConfig: domain.PlayerConfig{

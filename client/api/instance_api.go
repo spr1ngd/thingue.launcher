@@ -104,3 +104,7 @@ func (u *instanceApi) StartUpload(id uint) (string, error) {
 func (u *instanceApi) StartDownload(id uint) (string, error) {
 	return service.SyncManager.StartUpdate(id)
 }
+
+func (u *instanceApi) GetDefaultLaunchArguments() string {
+	return constants.DEFAULT_THINGUE_LAUNCH_ARGUMENTS
+}

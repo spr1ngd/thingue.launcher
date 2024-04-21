@@ -58,7 +58,7 @@ var instanceAddCmd = &cobra.Command{
 		prompt0 := &survey.Input{
 			Message: "实例名称:",
 		}
-		survey.AskOne(prompt0, &instance.Name)
+		_ = survey.AskOne(prompt0, &instance.Name)
 
 		prompt1 := &survey.Input{
 			Message: "选择ThingUE启动位置:",
@@ -67,73 +67,56 @@ var instanceAddCmd = &cobra.Command{
 				return files
 			},
 		}
-		survey.AskOne(prompt1, &instance.ExecPath)
+		_ = survey.AskOne(prompt1, &instance.ExecPath)
 
-		selected := []string{}
+		var selected []string
 		prompt2 := &survey.MultiSelect{
 			Message:  "实例设置:",
 			PageSize: 10,
 			Options:  []string{"渲染控制", "多用户同时操作", "故障恢复", "自动启停", "使用WebRTC中继", "根据视口大小调整分辨率", "隐藏控制UI", "无操作关闭连接"},
 			Default:  []string{"使用WebRTC中继", "渲染控制"},
 		}
-		survey.AskOne(prompt2, &selected)
-		for _, s := range selected {
-			if "渲染控制" == s {
-				instance.EnableRenderControl = true
-			} else if "多用户同时操作" == s {
-				instance.EnableMultiuserControl = true
-			} else if "故障恢复" == s {
-				instance.FaultRecover = true
-			} else if "自动启停" == s {
-				instance.AutoControl = true
-				prompt := &survey.Input{
-					Message: "自动启停关闭延迟时间(秒):",
-				}
-				survey.AskOne(prompt, &instance.StopDelay)
-			} else if "使用WebRTC中继" == s {
-				instance.EnableRelay = true
-			} else if "根据视口大小调整分辨率" == s {
-				instance.PlayerConfig.MatchViewportRes = true
-			} else if "隐藏控制UI" == s {
-				instance.PlayerConfig.HideUI = true
-			} else if "无操作关闭连接" == s {
-				instance.PlayerConfig.IdleDisconnect = true
-				prompt := &survey.Input{
-					Message: "无操作关闭连接等待时间(分钟):",
-				}
-				survey.AskOne(prompt, &instance.PlayerConfig.IdleTimeout)
+		if survey.AskOne(prompt2, &selected) == nil {
+			setSelected(instance, selected)
+		}
+
+		if instance.AutoControl {
+			prompt := &survey.Input{
+				Message: "自动启停关闭延迟时间(秒):",
 			}
+			_ = survey.AskOne(prompt, &instance.StopDelay)
+		}
+
+		if instance.PlayerConfig.IdleDisconnect {
+			prompt := &survey.Input{
+				Message: "无操作关闭连接等待时间(分钟):",
+			}
+			_ = survey.AskOne(prompt, &instance.PlayerConfig.IdleTimeout)
 		}
 
 		launchArguments := ""
 		prompt3 := &survey.Editor{
 			Message:       "启动参数配置",
-			Default:       constants.DEFAULT_LAUNCH_ARGUMENTS,
+			Default:       constants.DEFAULT_THINGUE_LAUNCH_ARGUMENTS,
 			AppendDefault: true,
-			Help:          "Enter进入编辑器修改，Ctrl+C使用当前值",
 		}
-		survey.AskOne(prompt3, &launchArguments)
-		instance.LaunchArguments = strings.Split(launchArguments, "\n")
+		if survey.AskOne(prompt3, &launchArguments) == nil {
+			instance.LaunchArguments = strings.Split(launchArguments, "\n")
+		}
 
-		metadata := ""
 		prompt4 := &survey.Editor{
 			Message:       "元数据配置",
-			Default:       metadata,
+			Default:       instance.Metadata,
 			AppendDefault: true,
-			Help:          "Enter进入编辑器修改，Ctrl+C使用当前值",
 		}
-		survey.AskOne(prompt4, &metadata)
-		instance.Metadata = metadata
+		_ = survey.AskOne(prompt4, &instance.Metadata)
 
-		paksConfig := ""
 		prompt5 := &survey.Editor{
 			Message:       "Pak资源配置",
-			Default:       paksConfig,
+			Default:       instance.PaksConfig,
 			AppendDefault: true,
-			Help:          "Enter进入编辑器修改，Ctrl+C使用当前值",
 		}
-		survey.AskOne(prompt5, &paksConfig)
-		instance.PaksConfig = paksConfig
+		_ = survey.AskOne(prompt5, &instance.PaksConfig)
 
 		service.InstanceManager.Create(instance)
 		return nil
@@ -158,11 +141,12 @@ var instanceModCmd = &cobra.Command{
 			fmt.Println("实例不存在")
 			return nil
 		}
+
 		prompt0 := &survey.Input{
 			Message: "实例名称:",
 			Default: instance.Name,
 		}
-		survey.AskOne(prompt0, &instance.Name)
+		_ = survey.AskOne(prompt0, &instance.Name)
 
 		prompt1 := &survey.Input{
 			Message: "选择ThingUE启动位置:",
@@ -172,7 +156,58 @@ var instanceModCmd = &cobra.Command{
 				return files
 			},
 		}
-		survey.AskOne(prompt1, &instance.ExecPath)
+		_ = survey.AskOne(prompt1, &instance.ExecPath)
+
+		var selected []string
+		prompt2 := &survey.MultiSelect{
+			Message:  "实例设置:",
+			PageSize: 10,
+			Options:  []string{"渲染控制", "多用户同时操作", "故障恢复", "自动启停", "使用WebRTC中继", "根据视口大小调整分辨率", "隐藏控制UI", "无操作关闭连接"},
+			Default:  reverseSelected(instance),
+		}
+		if survey.AskOne(prompt2, &selected) == nil {
+			setSelected(instance, selected)
+		}
+
+		if instance.AutoControl {
+			prompt := &survey.Input{
+				Message: "自动启停关闭延迟时间(秒):",
+				Default: strconv.Itoa(instance.StopDelay),
+			}
+			_ = survey.AskOne(prompt, &instance.StopDelay)
+		}
+
+		if instance.PlayerConfig.IdleDisconnect {
+			prompt := &survey.Input{
+				Message: "无操作关闭连接等待时间(分钟):",
+				Default: strconv.Itoa(int(instance.PlayerConfig.IdleTimeout)),
+			}
+			_ = survey.AskOne(prompt, &instance.PlayerConfig.IdleTimeout)
+		}
+
+		launchArguments := ""
+		prompt3 := &survey.Editor{
+			Message:       "启动参数配置",
+			Default:       strings.Join(instance.LaunchArguments, "\n"),
+			AppendDefault: true,
+		}
+		if survey.AskOne(prompt3, &launchArguments) == nil {
+			instance.LaunchArguments = strings.Split(launchArguments, "\n")
+		}
+
+		prompt4 := &survey.Editor{
+			Message:       "元数据配置",
+			Default:       instance.Metadata,
+			AppendDefault: true,
+		}
+		_ = survey.AskOne(prompt4, &instance.Metadata)
+
+		prompt5 := &survey.Editor{
+			Message:       "Pak资源配置",
+			Default:       instance.PaksConfig,
+			AppendDefault: true,
+		}
+		_ = survey.AskOne(prompt5, &instance.PaksConfig)
 
 		global.APP_DB.Save(instance)
 		return nil
@@ -187,4 +222,64 @@ func init() {
 	instanceModCmd.Flags().UintVarP(&modId, "id", "i", 0, "要修改的实例ID")
 	instanceCmd.AddCommand(instanceModCmd)
 	rootCmd.AddCommand(instanceCmd)
+}
+
+func setSelected(instance *model.ClientInstance, selected []string) {
+	instance.EnableRenderControl = false
+	instance.EnableMultiuserControl = false
+	instance.FaultRecover = false
+	instance.AutoControl = false
+	instance.EnableRelay = false
+	instance.PlayerConfig.MatchViewportRes = false
+	instance.PlayerConfig.HideUI = false
+	instance.PlayerConfig.IdleDisconnect = false
+	for _, s := range selected {
+		if "渲染控制" == s {
+			instance.EnableRenderControl = true
+		} else if "多用户同时操作" == s {
+			instance.EnableMultiuserControl = true
+		} else if "故障恢复" == s {
+			instance.FaultRecover = true
+		} else if "自动启停" == s {
+			instance.AutoControl = true
+		} else if "使用WebRTC中继" == s {
+			instance.EnableRelay = true
+		} else if "根据视口大小调整分辨率" == s {
+			instance.PlayerConfig.MatchViewportRes = true
+		} else if "隐藏控制UI" == s {
+			instance.PlayerConfig.HideUI = true
+		} else if "无操作关闭连接" == s {
+			instance.PlayerConfig.IdleDisconnect = true
+		}
+	}
+}
+
+func reverseSelected(instance *model.ClientInstance) []string {
+	var selected []string
+	if instance.EnableRenderControl {
+		selected = append(selected, "渲染控制")
+	}
+	if instance.EnableMultiuserControl {
+		selected = append(selected, "多用户同时操作")
+	}
+	if instance.FaultRecover {
+		selected = append(selected, "故障恢复")
+	}
+	if instance.AutoControl {
+		selected = append(selected, "自动启停")
+	}
+	if instance.EnableRelay {
+		selected = append(selected, "使用WebRTC中继")
+	}
+	if instance.PlayerConfig.MatchViewportRes {
+		selected = append(selected, "根据视口大小调整分辨率")
+	}
+	if instance.PlayerConfig.HideUI {
+		selected = append(selected, "隐藏控制UI")
+	}
+	if instance.PlayerConfig.IdleDisconnect {
+		selected = append(selected, "无操作关闭连接")
+	}
+	fmt.Println(selected)
+	return selected
 }

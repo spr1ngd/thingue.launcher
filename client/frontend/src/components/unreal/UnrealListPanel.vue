@@ -2,12 +2,13 @@
 import {onMounted, onUnmounted, ref} from "vue";
 import {
   DeleteInstance,
+  GetDefaultLaunchArguments,
   ListInstance,
   OpenInstanceLog,
   StartDownload,
   StartInstance,
   StartUpload,
-  StopInstance
+  StopInstance,
 } from "@wails/go/api/instanceApi";
 import {OpenExplorer} from "@wails/go/api/systemApi.js";
 import {
@@ -68,32 +69,29 @@ async function list() {
 }
 
 function handleNewSettings() {
-  emit("openSettingsPanel", {
-    type: 'new',
-    settings: {
-      launchArguments: [
-        "-AudioMixer",
-        "-RenderOffScreen",
-        "-ForceRes",
-        "-ResX=1920",
-        "-ResY=1080",
-      ],
-      cloudRes: "",
-      faultRecover: false,
-      enableMultiuserControl: false,
-      autoResizeRes: false,
-      autoControl: false,
-      stopDelay: 5,
-      enableRelay: true,
-      enableRenderControl: false,
-      playerConfig: {
-        matchViewportRes: true,
-        hideUI: false,
-        idleDisconnect: false,
-        idleTimeout: 5
+  GetDefaultLaunchArguments().then((args) => {
+    emit("openSettingsPanel", {
+      type: 'new',
+      settings: {
+        launchArguments: args.split('\n'),
+        cloudRes: "",
+        faultRecover: false,
+        enableMultiuserControl: false,
+        autoResizeRes: false,
+        autoControl: false,
+        stopDelay: 5,
+        enableRelay: true,
+        enableRenderControl: false,
+        playerConfig: {
+          matchViewportRes: true,
+          hideUI: false,
+          idleDisconnect: false,
+          idleTimeout: 5
+        }
       }
-    }
+    })
   })
+
 }
 
 function handleEditSettings(row) {
