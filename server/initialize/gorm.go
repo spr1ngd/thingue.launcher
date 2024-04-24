@@ -1,7 +1,8 @@
 package initialize
 
 import (
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
+	//"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"thingue-launcher/common/constants"
 	"thingue-launcher/common/logger"

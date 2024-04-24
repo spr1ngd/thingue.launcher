@@ -6,7 +6,8 @@ import (
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 
-	"gorm.io/driver/sqlite"
+	//"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
