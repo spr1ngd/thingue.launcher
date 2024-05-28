@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"thingue-launcher/common/constants"
+	provider2 "thingue-launcher/common/provider"
 	"thingue-launcher/server/core/service"
 	"thingue-launcher/server/sgcc/config"
 	"thingue-launcher/server/sgcc/provider"
@@ -22,6 +23,7 @@ func Init() {
 		panic(err)
 	}
 	err = yaml.Unmarshal(yamlFile, config.Config)
+	provider2.AppConfig.PeerConnectionOptions = config.Config.PeerConnectionOptions
 	if err != nil {
 		fmt.Printf("Failed to unmarshal YAML: %v", err)
 		panic(err)

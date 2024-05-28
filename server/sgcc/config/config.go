@@ -1,8 +1,9 @@
 package config
 
 type config struct {
-	CloudServerURL string    `yaml:"cloud-server-url"`
-	Register       *register `yaml:"register"`
+	CloudServerURL        string    `yaml:"cloud-server-url"`
+	Register              *register `yaml:"register"`
+	PeerConnectionOptions string    `json:"peerConnectionOptions" yaml:"peerConnectionOptions"`
 }
 
 type register struct {

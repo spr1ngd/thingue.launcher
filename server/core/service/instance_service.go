@@ -153,7 +153,7 @@ func (s *instanceService) InstanceSelect(selectCond request.SelectorCond) ([]*mo
 		query = query.Where("name = ?", selectCond.Name)
 	}
 	if selectCond.PlayerCount != nil && *selectCond.PlayerCount >= 0 {
-		query = query.Where("player_count = ?", selectCond.PlayerCount)
+		query = query.Where("player_count < ?", selectCond.PlayerCount)
 	}
 	var findInstances []*model.Instance
 	query.Find(&findInstances)

@@ -1,10 +1,11 @@
 package ws
 
 import (
-	"github.com/mitchellh/mapstructure"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/server/sgcc/message"
 	"thingue-launcher/server/sgcc/service"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 func MsgReceive(msg map[string]any) {
@@ -46,7 +47,7 @@ func MsgReceive(msg map[string]any) {
 			logger.Zap.Error("不支持的消息类型")
 		}
 		if err != nil {
-			logger.Zap.Error(msgType, "格式不正确")
+			logger.Zap.Error(msgType, "格式不正确: ", msg)
 		}
 	}
 }

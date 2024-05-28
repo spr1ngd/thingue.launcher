@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"github.com/bluele/gcache"
-	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"math"
@@ -42,12 +41,7 @@ func (s *clientService) RegisterClient(client *model.Client, agentInfo *pb.GetAg
 		_ = mapstructure.Decode(instance.Config, serverInstance)
 		_ = mapstructure.Decode(instance.PlayerConfig, serverInstance)
 		serverInstance.ID = instance.Id
-		if serverInstance.StreamerId == "" {
-			streamerId, _ := uuid.NewUUID()
-			serverInstance.StreamerId = streamerId.String()
-		} else {
-			serverInstance.StreamerId = instance.StreamerId
-		}
+		serverInstance.StreamerId = instance.Config.Name
 		serverInstances = append(serverInstances, serverInstance)
 	}
 	client.Instances = serverInstances

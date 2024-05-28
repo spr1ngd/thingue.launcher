@@ -37,13 +37,13 @@ func (s *ticketService) TicketSelect(selectCond request.SelectorCond) (response.
 		query = query.Where("name = ?", selectCond.Name)
 	}
 	if selectCond.PlayerCount != nil && *selectCond.PlayerCount >= 0 {
-		query = query.Where("player_count = ?", selectCond.PlayerCount)
+		query = query.Where("player_count < ?", selectCond.PlayerCount)
 	}
 	var findInstances []*model.Instance
 	query.Find(&findInstances)
 	// 判断查询后是否有结果
 	if len(findInstances) == 0 {
-		return ticket, errors.New("没有匹配的实例")
+		return ticket, errors.New("连接数已满")
 	}
 	// 筛选掉未启动且未开启自动启停的实例
 	var readyInstances []*model.Instance
