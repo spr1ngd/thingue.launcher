@@ -35,7 +35,7 @@ wails doctor
 ### Windows客户端编译
 ```shell
 # 设置版本号
-$AppVersion = "1.0.0"
+$AppVersion = "1.0.2"
 # 构建不带控制台的程序
 wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion.exe
 # 构建带控制台的程序，闪退情况下比较方便排查问题
@@ -43,16 +43,16 @@ wails build -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate
 ```
 ### Linux客户端编译
 ```shell
-export AppVersion="1.0.0"
+export AppVersion="1.0.2"
 wails build -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`' -X main.AppVersion=0.0.4 -X main.AppVersion=$AppVersion" -o thingue-launcher-v$AppVersion
 ```
 ### Windows独立服务程序编译
 ```shell
-$AppVersion = "1.0.0"
+$AppVersion = "1.0.2"
 go build -o build/bin/thingue-server-v$AppVersion.exe -ldflags "-X main.GitCommit=$(git rev-parse HEAD) -X 'main.BuildDate=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')' -X main.AppVersion=$AppVersion" server/main.go
 ```
 ### Linux独立服务程序编译
 ```shell
-export AppVersion="1.0.0"
+export AppVersion="1.0.2"
 go build -o build/bin/thingue-server_$AppVersion -ldflags "-X main.GitCommit=`git rev-parse HEAD` -X 'main.BuildDate=`date "+%Y-%m-%d %H:%M:%S"`' -X main.AppVersion=$AppVersion" server/main.go
 ```

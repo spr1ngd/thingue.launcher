@@ -9,10 +9,13 @@ import (
 )
 
 func MsgReceive(msg map[string]any) {
+	logger.Zap.Info("接收负载均衡消息: ", msg)
 	msgType, ok := msg["type"].(string)
 	if ok {
 		var err error
 		switch msgType {
+		case "connected":
+			logger.Zap.Info("连接成功", msg["code"])
 		case "register_callback":
 			callback := &message.RegisterCallback{}
 			if err = mapstructure.Decode(msg, callback); err == nil {
