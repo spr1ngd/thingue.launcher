@@ -5,13 +5,13 @@ import (
 )
 
 type Deploy struct {
-	Type     string   `json:"type"`
-	Stage    []string `json:"stage"`
-	Station  string   `json:"station"`
-	AssetId  string   `json:"assetId"`
-	User     string   `json:"user"`
-	Node     string   `json:"node"`
-	Datetime string   `json:"datetime"`
+	Type     string `json:"type"`
+	Stage    any    `json:"stage"`
+	Station  string `json:"station"`
+	AssetId  string `json:"assetId"`
+	User     string `json:"user"`
+	Node     string `json:"node"`
+	Datetime string `json:"datetime"`
 }
 
 type DeployCallback struct {

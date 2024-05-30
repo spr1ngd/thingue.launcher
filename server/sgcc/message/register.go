@@ -16,7 +16,7 @@ type RegisterMessage struct {
 
 type RegisterCallback struct {
 	Type string `json:"type"`
-	Code string `json:"code"`
+	Code any    `json:"code"`
 	Id   string `json:"id"`
 }
 
