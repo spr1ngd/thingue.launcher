@@ -2,12 +2,12 @@ package instance
 
 import (
 	"errors"
-	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
 	"thingue-launcher/client/global"
+	"thingue-launcher/client/service/instance/os_cmd"
 	"thingue-launcher/common/domain"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/provider"
@@ -91,8 +91,7 @@ func (r *Runner) Stop() error {
 	} else {
 		return errors.New("不支持的系统")
 	}
-	cmd.SysProcAttr = &windows.SysProcAttr{HideWindow: true}
-	cmd.Stdout = os.Stdout
+	os_cmd.SetCmd(cmd)
 	err := cmd.Start()
 	exitStatus := <-r.ExitSignalChannel
 	logger.Zap.Infof("实例停止 %s %s", r.Name, exitStatus)

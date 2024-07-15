@@ -34,7 +34,7 @@ func GetDeviceInfo() *domain.DeviceInfo {
 	gpu, _ := ghw.GPU()
 	if gpu != nil {
 		for _, card := range gpu.GraphicsCards {
-			if strings.HasPrefix(card.DeviceInfo.Address, "PCI") {
+			if card.DeviceInfo != nil && strings.HasPrefix(card.DeviceInfo.Address, "PCI") {
 				gpus = append(gpus, card.DeviceInfo.Product.Name)
 			}
 		}
