@@ -26,6 +26,7 @@ type LocalServer struct {
 	AutoStart         bool   `json:"autoStart" yaml:"autoStart"`
 	UseExternalStatic bool   `json:"useExternalStatic" yaml:"useExternalStatic"`
 	StaticDir         string `json:"staticDir" yaml:"staticDir"`
+	Tls               bool   `json:"tls" yaml:"tls"`
 }
 
 type SystemSettings struct {

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"thingue-launcher/common/constants"
 	"thingue-launcher/common/logger"
 	"thingue-launcher/common/model"
 	"thingue-launcher/common/provider"
@@ -43,7 +44,11 @@ func (s *server) Serve() {
 	}
 	s.IsRunning = true
 	logger.Zap.Info("thingue server listening at: ", s.listen.Addr)
-	err = s.listen.ListenAndServe() //运行中阻塞
+	if provider.AppConfig.LocalServer.Tls {
+		err = s.listen.ListenAndServeTLS(constants.CERT_FILE, constants.KEY_FILE) //运行中阻塞
+	} else {
+		err = s.listen.ListenAndServe() //运行中阻塞
+	}
 	s.IsRunning = false
 	if s.CloseReturnChanel != nil {
 		s.CloseReturnChanel <- err.Error()

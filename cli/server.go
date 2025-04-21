@@ -18,6 +18,7 @@ var (
 
 func init() {
 	serverCmd.Flags().StringVarP(&provider.AppConfig.LocalServer.BindAddr, "bindAddr", "b", "0.0.0.0:8877", "设置服务绑定的地址与端口")
+	serverCmd.Flags().BoolVarP(&provider.AppConfig.LocalServer.Tls, "tls", "b", false, "是否开启TLS")
 	serverCmd.Flags().StringVar(&provider.AppConfig.LocalServer.ContentPath, "contentPath", "/", "设置服务路径前缀")
 	serverCmd.Flags().StringVar(&serverLogLevel, "logLevel", "info", "设置日志级别")
 	serverCmd.Flags().StringVar(&provider.AppConfig.LocalServer.StaticDir, "staticDir", "", "Path to directory containing the web static resources. Defaults use embed")

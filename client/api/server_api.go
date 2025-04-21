@@ -135,10 +135,16 @@ func (s *serverApi) GetLocalServerUrl() (*url.URL, error) {
 	}
 	var baseUrl string
 	ip := net.ParseIP(split[0])
-	if ip != nil && ip.String() != "0.0.0.0" {
-		baseUrl = fmt.Sprintf("http://%s:%s", ip, split[1])
+	protocol := ""
+	if provider.AppConfig.LocalServer.Tls {
+		protocol = "https://"
 	} else {
-		baseUrl = fmt.Sprintf("http://localhost:%s", split[1])
+		protocol = "http://"
+	}
+	if ip != nil && ip.String() != "0.0.0.0" {
+		baseUrl = fmt.Sprintf("%s%s:%s", protocol, ip, split[1])
+	} else {
+		baseUrl = fmt.Sprintf("%slocalhost:%s", protocol, split[1])
 	}
 	parse, err := url.Parse(baseUrl)
 	if err != nil {

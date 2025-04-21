@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/tls"
 	"errors"
 	"net/url"
 	"sync"
@@ -47,7 +48,11 @@ func (m *connManager) connect() error {
 		return nil
 	}
 	wsUrl := util.HttpUrlToWsUrl(m.ServerAddr, "/ws/client")
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
+	dialer := websocket.DefaultDialer
+	dialer.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	conn, _, err := dialer.Dial(wsUrl, nil)
 	if err == nil {
 		m.IsConnected = true
 		m.conn = conn

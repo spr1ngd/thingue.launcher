@@ -24,7 +24,8 @@ const localServerConfig = reactive({
     contentPath: "",
     autoStart: false,
     useExternalStatic: false,
-    staticDir: ""
+    staticDir: "",
+    tls: false
   }
 })
 
@@ -131,6 +132,9 @@ onUnmounted(() => {
               </q-item-section>
             </q-item>
             <q-item>
+              <q-item-section avatar>
+                <q-toggle left-label v-model="localServerConfig.data.tls" label="TLS"/>
+              </q-item-section>
               <q-item-section avatar>
                 <q-toggle left-label v-model="localServerConfig.data.autoStart" label="随应用启动"/>
               </q-item-section>
