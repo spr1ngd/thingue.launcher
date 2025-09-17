@@ -14,6 +14,8 @@ type sdpConnProvider struct {
 	idPlayerMap   map[uint]*PlayerConnector
 	restartingMap map[string]bool
 	stateLock     sync.Mutex
+	streamerLock  sync.Mutex
+	playerLock    sync.Mutex
 }
 
 var SdpConnProvider = sdpConnProvider{
@@ -23,6 +25,8 @@ var SdpConnProvider = sdpConnProvider{
 }
 
 func (sdp *sdpConnProvider) NewStreamer(streamerId string, conn *websocket.Conn, enableRelay bool, enableRenderControl bool) *StreamerConnector {
+	sdp.streamerLock.Lock()
+	defer sdp.streamerLock.Unlock()
 	streamer := &StreamerConnector{
 		StreamerId:          streamerId,
 		conn:                conn,
@@ -37,6 +41,8 @@ func (sdp *sdpConnProvider) NewStreamer(streamerId string, conn *websocket.Conn,
 }
 
 func (sdp *sdpConnProvider) NewPlayer(conn *websocket.Conn) *PlayerConnector {
+	sdp.playerLock.Lock()
+	defer sdp.playerLock.Unlock()
 	sdp.playerIdCount++
 	player := &PlayerConnector{
 		PlayerId: sdp.playerIdCount,

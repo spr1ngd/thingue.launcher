@@ -1,5 +1,5 @@
 # usage
-## 安装工具连
+## 安装工具链
 ```shell
 go install github.com/bufbuild/buf/cmd/buf@v1.28.1
 go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
